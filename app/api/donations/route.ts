@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
+
+function getSupabase() {
+  return createClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +22,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const supabase = await createClient();
+    const supabase = getSupabase();
     let slip_url: string | null = null;
 
     if (slipFile && slipFile.size > 0) {
@@ -47,7 +55,7 @@ export async function POST(request: NextRequest) {
         amount,
         message: message || null,
         slip_url,
-        status: "pending",
+        status: "pending" as const,
       })
       .select()
       .single();
@@ -72,7 +80,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "memorial_id required" }, { status: 400 });
   }
 
-  const supabase = await createClient();
+  const supabase = getSupabase();
   const { data, error } = await supabase
     .from("donations")
     .select("*")
