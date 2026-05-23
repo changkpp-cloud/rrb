@@ -1,0 +1,178 @@
+"use client";
+
+import { Suspense, useRef, useEffect } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { Printer, Home } from "lucide-react";
+import Link from "next/link";
+import LotusIcon from "@/components/LotusIcon";
+
+export default function PrintConfirmPage() {
+  return (
+    <Suspense>
+      <PrintConfirmInner />
+    </Suspense>
+  );
+}
+
+function PrintConfirmInner() {
+  const params = useSearchParams();
+  const name = params.get("name") ?? "";
+  const title = params.get("title") ?? "";
+  const message = params.get("message") ?? "";
+  const router = useRouter();
+
+  function handlePrint() {
+    const q = new URLSearchParams({ name, title, message });
+    router.push(`/ecard?${q.toString()}`);
+  }
+
+  return (
+    <div
+      className="min-h-dvh flex flex-col"
+      style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
+    >
+      {/* Header */}
+      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
+        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
+          <div className="w-8" />
+          <div className="flex items-center gap-2">
+            <LotusIcon className="w-6 h-6 text-gold-600" />
+            <div className="text-center">
+              <h1 className="text-lg font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
+              <p className="text-[9px] font-medium text-gold-500 tracking-[0.25em] uppercase -mt-0.5">Zero Waste</p>
+            </div>
+            <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
+          </div>
+          <div className="w-8" />
+        </div>
+      </header>
+
+      <main className="flex-1 overflow-y-auto print:overflow-visible">
+        <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+
+          {/* Page title */}
+          <div className="text-center print:hidden">
+            <h2 className="text-2xl font-bold text-gold-800">ยืนยันการพิมพ์</h2>
+            <div className="flex items-center justify-center gap-2 mt-1">
+              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gold-300" />
+              <span className="text-gold-400 text-xs">❖</span>
+              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gold-300" />
+            </div>
+          </div>
+
+          {/* Sign preview */}
+          <SignCard name={name} title={title} message={message} />
+
+          {/* Print button */}
+          <button
+            onClick={handlePrint}
+            className="w-full gold-gradient text-white font-semibold py-4 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 print:hidden"
+          >
+            <Printer className="w-5 h-5" />
+            พิมพ์ป้าย
+          </button>
+
+          {/* Home button */}
+          <Link
+            href="/"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors print:hidden"
+          >
+            <Home className="w-4 h-4" />
+            กลับหน้าหลัก
+          </Link>
+
+          <div className="h-2 print:hidden" />
+        </div>
+      </main>
+
+    </div>
+  );
+}
+
+/* ขนาดจริง 9×24 นิ้ว → scale 12px/inch → 288×108px */
+const CARD_W = 288;
+const CARD_H = 80;
+
+function SignCard({ name, title, message }: { name: string; title: string; message: string }) {
+  const displayName = name || "ชื่อผู้มอบ";
+  const displayTitle = title.trim();
+  const nameRef = useRef<HTMLParagraphElement>(null);
+  const titleRef = useRef<HTMLParagraphElement>(null);
+
+  const available = CARD_W - 12;
+
+  useEffect(() => {
+    const nameEl = nameRef.current;
+    if (!nameEl) return;
+    const MAX_PX = 26;
+    nameEl.style.fontSize = MAX_PX + "px";
+    nameEl.style.width = "max-content";
+    const textW = nameEl.getBoundingClientRect().width;
+    nameEl.style.width = "";
+    if (textW > 0) {
+      const size = Math.max(8, Math.min(MAX_PX, (available / textW) * MAX_PX));
+      nameEl.style.fontSize = size + "px";
+    }
+  }, [displayName, available]);
+
+  useEffect(() => {
+    const titleEl = titleRef.current;
+    if (!titleEl) return;
+    const MAX_PX = 15;
+    titleEl.style.fontSize = MAX_PX + "px";
+    titleEl.style.width = "max-content";
+    const textW = titleEl.getBoundingClientRect().width;
+    titleEl.style.width = "";
+    if (textW > 0) {
+      const size = Math.max(7, Math.min(MAX_PX, (available / textW) * MAX_PX));
+      titleEl.style.fontSize = size + "px";
+    }
+  }, [displayTitle, available]);
+
+  return (
+    <div className="flex justify-center">
+      <div
+        className="relative flex-shrink-0 rounded-xl overflow-hidden"
+        style={{
+          width: CARD_W,
+          height: CARD_H,
+          background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)",
+          border: "1.5px solid #c9a84c",
+          boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
+        }}
+      >
+        <span className="absolute top-1 left-1.5 text-gold-400 text-xs select-none leading-none">❧</span>
+        <span className="absolute top-1 right-1.5 text-gold-400 text-xs select-none leading-none scale-x-[-1] inline-block">❧</span>
+        <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
+        <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
+
+        <div className="relative h-full">
+          {/* ชื่อ — ยึดตำแหน่งบนคงที่ */}
+          <div className="absolute left-2 right-2 top-[6px] flex justify-center">
+            <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
+              {displayName}
+            </p>
+          </div>
+          {/* ตำแหน่ง — display none เมื่อไม่มีข้อมูล */}
+          <div
+            className="absolute left-2 right-2 flex justify-center"
+            style={{ top: "32px", display: displayTitle ? "flex" : "none" }}
+          >
+            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+              {displayTitle}
+            </p>
+          </div>
+          {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
+          <div className="absolute left-2 right-2 bottom-[5px]">
+            <div className="flex items-center gap-1 w-full mb-0.5">
+              <div className="flex-1 h-px bg-gold-300/60" />
+              <span className="text-gold-400 text-[6px]">◆</span>
+              <div className="flex-1 h-px bg-gold-300/60" />
+            </div>
+            <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

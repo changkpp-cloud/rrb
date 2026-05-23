@@ -1,0 +1,170 @@
+@import "tailwindcss";
+
+@theme {
+  /* ── Celestial Thai Memorial Palette ── */
+  --color-gold-50:  #FFF8F1;
+  --color-gold-100: #F7F3EA;
+  --color-gold-200: #EDD8B0;
+  --color-gold-300: #DEB86E;
+  --color-gold-400: #C9983C;
+  --color-gold-500: #B07820;
+  --color-gold-600: #8A5C14;
+  --color-gold-700: #6B4A24;
+  --color-gold-800: #4D3318;
+  --color-gold-900: #321E0A;
+
+  --color-cream-50:  #FFFCF8;
+  --color-cream-100: #FFF8F1;
+  --color-cream-200: #F7F3EA;
+  --color-cream-300: #F1E6DC;
+  --color-cream-400: #E8D8C8;
+
+  --font-sans: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-sans);
+    background-color: #FFF8F1;
+  }
+
+  body {
+    color: #4D3318;
+    /* Layered celestial background — heaven light from above, warm lotus glow below */
+    background:
+      radial-gradient(ellipse 125% 48% at 50% -3%, rgba(245,222,170,0.42) 0%, transparent 100%),
+      radial-gradient(ellipse 65% 32% at  8%  94%, rgba(232,216,180,0.24) 0%, transparent 100%),
+      radial-gradient(ellipse 58% 28% at 94%  90%, rgba(243,198,168,0.20) 0%, transparent 100%),
+      linear-gradient(180deg, #FFF8F1 0%, #F7F3EA 35%, #F1E6DC 62%, #F7F3EA 85%, #FFF8F1 100%);
+    background-attachment: fixed;
+  }
+}
+
+@layer utilities {
+
+  /* ── Glassmorphism card — primary ── */
+  .glass-card {
+    background: rgba(255, 252, 248, 0.72);
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    border: 1px solid rgba(222, 184, 110, 0.40);
+    box-shadow:
+      0 8px 36px rgba(176, 120, 32, 0.11),
+      0 2px 6px  rgba(176, 120, 32, 0.06),
+      0 0 0 1px rgba(255, 245, 220, 0.22),
+      inset 0 1px 0 rgba(255, 255, 255, 0.78);
+  }
+
+  /* ── Glassmorphism card — lighter variant ── */
+  .glass-card-light {
+    background: rgba(255, 252, 248, 0.55);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(201, 152, 60, 0.28);
+    box-shadow:
+      0 4px 20px rgba(176, 120, 32, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.65);
+  }
+
+  /* ── Standard border & shadow ── */
+  .gold-border {
+    border: 1px solid rgba(201, 152, 60, 0.40);
+  }
+
+  .card-shadow {
+    box-shadow:
+      0 4px 24px rgba(176, 120, 32, 0.09),
+      0 1px 4px  rgba(176, 120, 32, 0.05),
+      inset 0 1px 0 rgba(255, 255, 255, 0.62);
+  }
+
+  .wreath-shadow {
+    box-shadow:
+      inset 0 2px 8px  rgba(176, 120, 32, 0.12),
+      0    4px 20px    rgba(176, 120, 32, 0.16);
+  }
+
+  /* ── Gold gradient button ── */
+  .gold-gradient {
+    background: linear-gradient(135deg, #C4913D 0%, #F0C85A 38%, #B07820 78%, #C9A84C 100%);
+  }
+
+  /* ── Gold text gradient ── */
+  .gold-gradient-text {
+    background: linear-gradient(135deg, #8A5C14 0%, #C9983C 42%, #6B4A24 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* ── Celestial sacred glow ── */
+  .celestial-glow {
+    box-shadow:
+      0 0 28px rgba(245, 222, 170, 0.58),
+      0 0 56px rgba(232, 216, 180, 0.32),
+      0 4px 24px rgba(176, 120, 32, 0.12);
+  }
+
+  /* ── Photo frame halo (lotus portrait) ── */
+  .lotus-halo {
+    box-shadow:
+      0 0 32px rgba(245, 222, 170, 0.50),
+      0 0 64px rgba(232, 200, 140, 0.24),
+      0 6px 36px rgba(176, 120, 32, 0.18);
+  }
+
+  /* ── Ornament divider ── */
+  .ornament-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ornament-divider::before,
+  .ornament-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201, 152, 60, 0.50), transparent);
+  }
+
+  /* ── Gold input focus ring ── */
+  .gold-focus:focus {
+    outline: none;
+    border-color: rgba(201, 152, 60, 0.65);
+    box-shadow: 0 0 0 3px rgba(201, 152, 60, 0.14);
+  }
+}
+
+/* ── Keyframe animations ── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.52; }
+  50%       { opacity: 1; }
+}
+
+@keyframes drift {
+  0%, 100% { transform: translateX(0)    translateY(0)    rotate(0deg); }
+  33%       { transform: translateX(8px) translateY(-12px) rotate(5deg); }
+  66%       { transform: translateX(-6px) translateY(-6px) rotate(-3deg); }
+}
+
+@keyframes halo-pulse {
+  0%, 100% { box-shadow: 0 0 24px rgba(245,222,170,0.40), 0 0 48px rgba(232,200,140,0.18); }
+  50%       { box-shadow: 0 0 40px rgba(245,222,170,0.65), 0 0 80px rgba(232,200,140,0.30); }
+}
+
+.animate-shimmer    { background-size: 200% auto; animation: shimmer 3s linear infinite; }
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+.animate-drift      { animation: drift 8s ease-in-out infinite; }
+.animate-halo-pulse { animation: halo-pulse 4s ease-in-out infinite; }
