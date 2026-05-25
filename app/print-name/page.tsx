@@ -17,12 +17,12 @@ export default function PrintNamePage() {
 function PrintNameInner() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
+  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
   const amount = params.get("amount") ?? "";
 
-  function handleConfirm() {
-    if (!name.trim()) return;
+  function handleSend() {
     const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount });
     router.push(`/print-confirm?${q.toString()}`);
   }
@@ -58,7 +58,7 @@ function PrintNameInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
 
-          {/* ── Preview อยู่ด้านบนสุด ── */}
+          {/* ── Preview ── */}
           <SignPreview name={name} title={title} />
 
           {/* ── กล่องกรอกข้อมูล ── */}
@@ -96,13 +96,13 @@ function PrintNameInner() {
 
           </div>
 
-          {/* ── ยืนยัน ── */}
+          {/* ── แสดงก่อนส่งพิมพ์ ── */}
           <button
-            onClick={handleConfirm}
+            onClick={() => setShowModal(true)}
             disabled={!name.trim()}
             className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
           >
-            ยืนยันข้อมูลส่งปริ้น
+            แสดงก่อนส่งพิมพ์
           </button>
 
           <Link
@@ -115,6 +115,37 @@ function PrintNameInner() {
           <div className="h-1" />
         </div>
       </main>
+
+      {/* ── Modal Preview ── */}
+      {showModal && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4"
+          style={{ background: "rgba(0,0,0,0.72)" }}
+          onClick={() => setShowModal(false)}
+        >
+          <div
+            className="w-full max-w-lg space-y-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="text-center text-white/80 text-sm tracking-wide">ตัวอย่างป้ายที่จะพิมพ์</p>
+            <SignPreview name={name} title={title} />
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all"
+              >
+                แก้ไขข้อความ
+              </button>
+              <button
+                onClick={handleSend}
+                className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
+              >
+                ส่งพิมพ์
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
