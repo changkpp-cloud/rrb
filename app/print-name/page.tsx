@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase, Check, Minus, Plus } from "lucide-react";
+import { User, Briefcase, Check, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const MESSAGES = [
@@ -17,10 +17,15 @@ export default function PrintNamePage() {
   const [message, setMessage] = useState(MESSAGES[0]);
   const [nameZoom, setNameZoom] = useState(1.0);
   const [titleZoom, setTitleZoom] = useState(1.0);
+  const [nameY, setNameY] = useState(6);
+  const [titleY, setTitleY] = useState(32);
   const router = useRouter();
 
   function stepZoom(current: number, delta: number) {
     return parseFloat(Math.min(2.0, Math.max(0.3, current + delta)).toFixed(1));
+  }
+  function stepY(current: number, delta: number) {
+    return Math.min(58, Math.max(2, current + delta));
   }
 
   function handleConfirm() {
@@ -70,35 +75,41 @@ export default function PrintNamePage() {
           </div>
 
           {/* Preview card */}
-          <SignPreview name={name} title={title} message={message} nameZoom={nameZoom} titleZoom={titleZoom} />
+          <SignPreview name={name} title={title} message={message} nameZoom={nameZoom} titleZoom={titleZoom} nameY={nameY} titleY={titleY} />
 
-          {/* ── ปรับขนาดตัวอักษร ── */}
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2">
-            <p className="text-xs font-semibold text-gold-700">ปรับขนาดตัวอักษร</p>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-gold-600 w-10 flex-shrink-0">ชื่อ</span>
-              <button
-                onClick={() => setNameZoom(z => stepZoom(z, -0.1))}
-                className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
-              ><Minus className="w-3.5 h-3.5" /></button>
-              <span className="flex-1 text-center text-xs text-gold-700 font-medium">{Math.round(nameZoom * 100)}%</span>
-              <button
-                onClick={() => setNameZoom(z => stepZoom(z, 0.1))}
-                className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
-              ><Plus className="w-3.5 h-3.5" /></button>
+          {/* ── ปรับขนาดและตำแหน่งตัวอักษร ── */}
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
+            <p className="text-xs font-semibold text-gold-700">ปรับขนาดและตำแหน่งตัวอักษร</p>
+
+            {/* ── ชื่อ ── */}
+            <div className="space-y-1.5">
+              <span className="text-xs text-gold-600 font-medium">ชื่อ</span>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ตำแหน่ง</span>
+                <button onClick={() => setNameY(y => stepY(y, -2))} className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><ChevronUp className="w-3.5 h-3.5" /></button>
+                <button onClick={() => setNameY(y => stepY(y, 2))}  className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><ChevronDown className="w-3.5 h-3.5" /></button>
+                <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
+                <span className="text-[10px] text-gold-400 w-6 flex-shrink-0">ขนาด</span>
+                <button onClick={() => setNameZoom(z => stepZoom(z, -0.1))} className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><Minus className="w-3.5 h-3.5" /></button>
+                <span className="text-xs text-gold-700 font-medium w-8 text-center">{Math.round(nameZoom * 100)}%</span>
+                <button onClick={() => setNameZoom(z => stepZoom(z, 0.1))}  className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><Plus className="w-3.5 h-3.5" /></button>
+              </div>
             </div>
+
+            {/* ── ตำแหน่ง (แสดงเมื่อมีข้อมูล) ── */}
             {title.trim() && (
-              <div className="flex items-center gap-3">
-                <span className="text-xs text-gold-600 w-10 flex-shrink-0">ตำแหน่ง</span>
-                <button
-                  onClick={() => setTitleZoom(z => stepZoom(z, -0.1))}
-                  className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
-                ><Minus className="w-3.5 h-3.5" /></button>
-                <span className="flex-1 text-center text-xs text-gold-700 font-medium">{Math.round(titleZoom * 100)}%</span>
-                <button
-                  onClick={() => setTitleZoom(z => stepZoom(z, 0.1))}
-                  className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
-                ><Plus className="w-3.5 h-3.5" /></button>
+              <div className="space-y-1.5">
+                <span className="text-xs text-gold-600 font-medium">ตำแหน่ง</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ตำแหน่ง</span>
+                  <button onClick={() => setTitleY(y => stepY(y, -2))} className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><ChevronUp className="w-3.5 h-3.5" /></button>
+                  <button onClick={() => setTitleY(y => stepY(y, 2))}  className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><ChevronDown className="w-3.5 h-3.5" /></button>
+                  <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
+                  <span className="text-[10px] text-gold-400 w-6 flex-shrink-0">ขนาด</span>
+                  <button onClick={() => setTitleZoom(z => stepZoom(z, -0.1))} className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><Minus className="w-3.5 h-3.5" /></button>
+                  <span className="text-xs text-gold-700 font-medium w-8 text-center">{Math.round(titleZoom * 100)}%</span>
+                  <button onClick={() => setTitleZoom(z => stepZoom(z, 0.1))}  className="w-7 h-7 rounded-lg border border-gold-300 bg-white text-gold-600 flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"><Plus className="w-3.5 h-3.5" /></button>
+                </div>
               </div>
             )}
           </div>
@@ -219,8 +230,8 @@ export default function PrintNamePage() {
 const CARD_W = 288;
 const CARD_H = 80;
 
-function SignPreview({ name, title, message, nameZoom, titleZoom }: {
-  name: string; title: string; message: string; nameZoom: number; titleZoom: number;
+function SignPreview({ name, title, message, nameZoom, titleZoom, nameY, titleY }: {
+  name: string; title: string; message: string; nameZoom: number; titleZoom: number; nameY: number; titleY: number;
 }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
   const displayTitle = title.trim();
@@ -275,17 +286,20 @@ function SignPreview({ name, title, message, nameZoom, titleZoom }: {
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
         <div className="relative h-full">
-          {/* ชื่อ + ตำแหน่ง — flex column ยึดบน ชื่อไม่ขยับเมื่อเพิ่มตำแหน่ง */}
-          <div className="absolute left-2 right-2 top-[6px] flex flex-col items-center gap-0.5">
+          {/* ชื่อ — absolute ปรับตำแหน่ง Y ได้ */}
+          <div className="absolute left-2 right-2 flex justify-center" style={{ top: `${nameY}px` }}>
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
-            {displayTitle && (
+          </div>
+          {/* ตำแหน่ง — absolute ปรับตำแหน่ง Y ได้ */}
+          {displayTitle && (
+            <div className="absolute left-2 right-2 flex justify-center" style={{ top: `${titleY}px` }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>
-            )}
-          </div>
+            </div>
+          )}
           {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
           <div className="absolute left-2 right-2 bottom-[5px]">
             <div className="flex items-center gap-1 w-full mb-0.5">
