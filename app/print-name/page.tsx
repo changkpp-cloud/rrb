@@ -54,79 +54,63 @@ function PrintNameInner() {
       </header>
 
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
+        <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
 
-          {/* Page title */}
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gold-800">พิมพ์ชื่อในป้าย</h2>
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gold-300" />
-              <span className="text-gold-400 text-xs">❖</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gold-300" />
-            </div>
-          </div>
+          {/* ── Preview อยู่ด้านบนสุด ── */}
+          <SignPreview name={name} title={title} />
 
           {/* ── กล่องกรอกข้อมูล ── */}
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-4">
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-gold-700">
                 <User className="w-4 h-4" />
                 <span className="text-sm font-semibold">ชื่อผู้มอบ</span>
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="กรอกชื่อ-นามสกุล"
-                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
-              </div>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="กรอกชื่อ-นามสกุล"
+                className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+              />
             </div>
 
             <div className="h-px bg-gold-200/50" />
 
-            <div className="space-y-2">
+            <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-gold-700">
                 <Briefcase className="w-4 h-4" />
                 <span className="text-sm font-semibold">ตำแหน่ง / ข้อความแสดงอาลัย</span>
               </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="กรอกตำแหน่ง/ข้อความ (ถ้ามี)"
-                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
-              </div>
+              <input
+                type="text"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="ตำแหน่ง / ขอแสดงความอาลัย"
+                className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+              />
             </div>
 
           </div>
-
-          {/* ── Preview ── */}
-          <SignPreview name={name} title={title} />
 
           {/* ── ยืนยัน ── */}
           <button
             onClick={handleConfirm}
             disabled={!name.trim()}
-            className="w-full gold-gradient text-white font-semibold py-4 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+            className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
           >
             ยืนยันข้อมูลส่งปริ้น
           </button>
 
           <Link
             href="/payment"
-            className="flex items-center justify-center w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
+            className="flex items-center justify-center w-full py-3 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
           >
             ย้อนกลับ
           </Link>
 
-          <div className="h-2" />
+          <div className="h-1" />
         </div>
       </main>
     </div>
@@ -140,7 +124,9 @@ const TITLE_AVAILABLE = 240;
 
 function SignPreview({ name, title }: { name: string; title: string }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
-  const displayTitle = title.trim();
+  const displayTitle = title.trim() || "ตำแหน่ง / ข้อความแสดงอาลัย";
+  const isNamePlaceholder = !name.trim();
+  const isTitlePlaceholder = !title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
 
@@ -188,18 +174,16 @@ function SignPreview({ name, title }: { name: string; title: string }) {
           className="absolute left-3 right-3 flex justify-center"
           style={{ top: "40%", transform: "translateY(-50%)" }}
         >
-          <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
+          <p ref={nameRef} className={`font-bold whitespace-nowrap leading-tight text-center ${isNamePlaceholder ? "text-gold-300" : "text-gold-800"}`}>
             {displayName}
           </p>
         </div>
 
-        {displayTitle && (
-          <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
-            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-              {displayTitle}
-            </p>
-          </div>
-        )}
+        <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
+          <p ref={titleRef} className={`whitespace-nowrap leading-tight text-center ${isTitlePlaceholder ? "text-gold-300" : "text-gold-600"}`}>
+            {displayTitle}
+          </p>
+        </div>
       </div>
     </div>
   );
