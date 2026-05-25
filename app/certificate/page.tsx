@@ -1,9 +1,9 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Home, FileText } from "lucide-react";
+import { Home, Download, Share2 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const DECEASED_NAME = "นางสาว สุภาพร ปทุมานนท์";
@@ -25,9 +25,44 @@ function CertificateInner() {
   const amount = params.get("amount") ?? "";
   const message = params.get("message") ?? "";
 
+  const cardRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
+
   const amountDisplay = amount
     ? Number(amount).toLocaleString("th-TH") + " บาท"
     : "";
+
+  async function handleSave() {
+    if (!cardRef.current) return;
+    setSaving(true);
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(cardRef.current, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#fdf8ee",
+      });
+      const link = document.createElement("a");
+      link.download = `หลักฐานหรีดร่วมบุญ-${name || "certificate"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch {}
+    setSaving(false);
+  }
+
+  async function handleShare() {
+    if (typeof navigator !== "undefined" && navigator.share) {
+      try {
+        await navigator.share({
+          title: "หลักฐานการมอบหรีดร่วมบุญ Zero Waste",
+          text: `${name || "ผู้ร่วมบุญ"} ได้ร่วมมอบหรีดร่วมบุญ Zero Waste`,
+          url: window.location.href,
+        });
+      } catch {}
+    } else {
+      await navigator.clipboard.writeText(window.location.href).catch(() => {});
+    }
+  }
 
   return (
     <div
@@ -54,6 +89,7 @@ function CertificateInner() {
 
           {/* Certificate card */}
           <div
+            ref={cardRef}
             className="rounded-2xl overflow-hidden"
             style={{
               background: "linear-gradient(160deg,#fdf8ee 0%,#f0e0b8 50%,#fdf8ee 100%)",
@@ -122,6 +158,24 @@ function CertificateInner() {
                 <LotusIcon className="w-3 h-3 text-gold-300 scale-x-[-1]" />
               </div>
             </div>
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="flex-1 gold-gradient text-white font-semibold py-4 rounded-2xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              <Download className="w-4 h-4" />
+              {saving ? "กำลังบันทึก..." : "บันทึกเป็นรูปภาพ"}
+            </button>
+            <button
+              onClick={handleShare}
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+            >
+              <Share2 className="w-4 h-4" />
+              แชร์หลักฐาน
+            </button>
           </div>
 
           <Link

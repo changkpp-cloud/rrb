@@ -3,7 +3,7 @@
 import { Suspense, useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Share2, Home, Download, Flower2, FileText } from "lucide-react";
+import { Share2, Download, Flower2, FileText } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const DECEASED_NAME = "นางสาว สุภาพร ปทุมานนท์";
@@ -170,7 +170,7 @@ function ECardInner() {
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Share2 className="w-4 h-4" />
-              แชร์
+              แชร์ E-Card
             </button>
           </div>
 
@@ -190,14 +190,6 @@ function ECardInner() {
               ออกหลักฐานการมอบ
             </Link>
           </div>
-
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
-          >
-            <Home className="w-4 h-4" />
-            กลับหน้าหลัก
-          </Link>
 
           <div className="h-2" />
         </div>
