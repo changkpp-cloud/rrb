@@ -3,21 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase, MessageSquare, Check, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { User, Briefcase, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-
-const MESSAGES = [
-  "ขอแสดงความเสียใจอย่างสุดซึ้ง",
-  "ด้วยความอาลัย",
-];
-
-type SignMode = "message" | "title";
 
 export default function PrintNamePage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
-  const [message, setMessage] = useState(MESSAGES[0]);
-  const [signMode, setSignMode] = useState<SignMode>("message");
   const [nameZoom, setNameZoom] = useState(1.0);
   const [titleZoom, setTitleZoom] = useState(1.0);
   const [nameY, setNameY] = useState(6);
@@ -37,9 +28,7 @@ export default function PrintNamePage() {
     if (!name.trim()) return;
     const q = new URLSearchParams({
       name: name.trim(),
-      title: signMode === "title" ? title.trim() : "",
-      message: signMode === "message" ? message : "",
-      signMode,
+      title: title.trim(),
       nameZoom: String(nameZoom),
       titleZoom: String(titleZoom),
       nameY: String(nameY),
@@ -114,106 +103,28 @@ export default function PrintNamePage() {
 
             <div className="h-px bg-gold-200/50" />
 
-            {/* Toggle + เนื้อหา */}
-            <div className="space-y-3">
-              <p className="text-sm font-semibold text-gold-700">บรรทัดที่สองในป้าย</p>
-
-              {/* Segmented control */}
-              <div className="flex rounded-xl border border-gold-300 overflow-hidden">
-                <button
-                  onClick={() => setSignMode("message")}
-                  className={`flex-1 py-2.5 text-sm font-medium transition-all ${
-                    signMode === "message" ? "gold-gradient text-white" : "bg-white text-gold-600 hover:bg-gold-50"
-                  }`}
-                >
-                  ข้อความอาลัย
-                </button>
-                <button
-                  onClick={() => setSignMode("title")}
-                  className={`flex-1 py-2.5 text-sm font-medium transition-all border-l border-gold-300 ${
-                    signMode === "title" ? "gold-gradient text-white" : "bg-white text-gold-600 hover:bg-gold-50"
-                  }`}
-                >
-                  ตำแหน่ง
-                </button>
+            {/* ตำแหน่ง */}
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-gold-700">
+                <Briefcase className="w-4 h-4" />
+                <span className="text-sm font-semibold">ตำแหน่ง (ถ้ามี)</span>
               </div>
-
-              {/* เนื้อหาตามโหมด */}
-              {signMode === "title" ? (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-gold-600">
-                    <Briefcase className="w-4 h-4" />
-                    <span className="text-xs">ตำแหน่ง/องค์กร</span>
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="กรอกตำแหน่ง/องค์กร"
-                      className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
-                    />
-                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-gold-600">
-                    <MessageSquare className="w-4 h-4" />
-                    <span className="text-xs">ข้อความแสดงความอาลัย</span>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {MESSAGES.map((m) => (
-                      <button
-                        key={m}
-                        onClick={() => setMessage(m)}
-                        className={`relative w-full px-4 py-2.5 rounded-xl border text-sm text-left transition-all flex items-center gap-2 ${
-                          message === m && MESSAGES.includes(message)
-                            ? "gold-gradient text-white border-transparent shadow"
-                            : "bg-white text-gold-700 border-gold-300 hover:border-gold-500"
-                        }`}
-                      >
-                        <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                          message === m && MESSAGES.includes(message)
-                            ? "border-white bg-white/30"
-                            : "border-gold-300"
-                        }`}>
-                          {message === m && MESSAGES.includes(message) && (
-                            <Check className="w-2.5 h-2.5 text-white" />
-                          )}
-                        </span>
-                        {m}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={MESSAGES.includes(message) ? "" : message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      onFocus={() => { if (MESSAGES.includes(message)) setMessage(""); }}
-                      placeholder="หรือพิมพ์ข้อความอาลัยเอง..."
-                      className={`w-full px-4 py-2.5 rounded-xl border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8 transition-all ${
-                        !MESSAGES.includes(message) && message
-                          ? "border-gold-500 ring-1 ring-gold-400"
-                          : "border-gold-300"
-                      }`}
-                    />
-                    {!MESSAGES.includes(message) && message && (
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gold-500 flex items-center justify-center">
-                        <Check className="w-2.5 h-2.5 text-white" />
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="กรอกตำแหน่ง/องค์กร"
+                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
+              </div>
             </div>
           </div>
 
           {/* ── Preview ── */}
           <SignPreview
-            name={name} title={title} message={message}
-            signMode={signMode}
+            name={name} title={title}
             nameZoom={nameZoom} titleZoom={titleZoom}
             nameY={nameY} titleY={titleY}
             onNameAtCap={setNameAtCap} onTitleAtCap={setTitleAtCap}
@@ -244,8 +155,8 @@ export default function PrintNamePage() {
               </div>
             </div>
 
-            {/* ตำแหน่ง (แสดงเมื่อ signMode="title" และมีข้อมูล) */}
-            {signMode === "title" && title.trim() && (
+            {/* ตำแหน่ง (แสดงเมื่อมีข้อมูล) */}
+            {title.trim() && (
               <div className="space-y-1.5">
                 <span className="text-xs text-gold-600 font-medium">ตำแหน่ง</span>
                 <div className="flex items-center gap-2">
@@ -291,29 +202,29 @@ export default function PrintNamePage() {
   );
 }
 
-/* ── Preview card ── */
+/* ── Sign card constants ── */
 const CARD_W = 288;
 const CARD_H = 80;
+/* ชื่อ: margin 12px แต่ละด้าน | ตำแหน่ง: margin 24px แต่ละด้าน (แคบกว่า) */
+const NAME_AVAILABLE = CARD_W - 24;
+const TITLE_AVAILABLE = CARD_W - 48;
 
 function SignPreview({
-  name, title, message, signMode,
-  nameZoom, titleZoom, nameY, titleY,
+  name, title,
+  nameZoom, titleZoom,
+  nameY, titleY,
   onNameAtCap, onTitleAtCap,
 }: {
-  name: string; title: string; message: string;
-  signMode: SignMode;
+  name: string; title: string;
   nameZoom: number; titleZoom: number;
   nameY: number; titleY: number;
   onNameAtCap: (v: boolean) => void;
   onTitleAtCap: (v: boolean) => void;
 }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
-  const displayTitle = signMode === "title" ? title.trim() : "";
-  const displayMessage = signMode === "message" ? message : "";
+  const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
-
-  const available = CARD_W - 24;
 
   useEffect(() => {
     const el = nameRef.current;
@@ -324,30 +235,30 @@ function SignPreview({
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) {
-      const ratio = available / tw;
+      const ratio = NAME_AVAILABLE / tw;
       onNameAtCap(ratio < 1);
       el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
     } else {
       onNameAtCap(false);
     }
-  }, [displayName, available, nameZoom, onNameAtCap]);
+  }, [displayName, nameZoom, onNameAtCap]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 11 * titleZoom;
+    const MAX = 14 * titleZoom;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) {
-      const ratio = available / tw;
+      const ratio = TITLE_AVAILABLE / tw;
       onTitleAtCap(ratio < 1);
       el.style.fontSize = Math.max(5, Math.min(MAX, ratio * MAX)) + "px";
     } else {
       onTitleAtCap(false);
     }
-  }, [displayTitle, available, titleZoom, onTitleAtCap]);
+  }, [displayTitle, titleZoom, onTitleAtCap]);
 
   return (
     <div className="flex justify-center">
@@ -367,21 +278,18 @@ function SignPreview({
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
         <div className="relative h-full">
+          {/* ชื่อ — margin 12px */}
           <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
           </div>
+          {/* ตำแหน่ง — margin 24px (แคบกว่าชื่อ) */}
           {displayTitle && (
-            <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${titleY}px` }}>
+            <div className="absolute left-6 right-6 flex justify-center" style={{ top: `${titleY}px` }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>
-            </div>
-          )}
-          {displayMessage && (
-            <div className="absolute left-3 right-3 bottom-[5px]">
-              <p className="text-[12px] text-gold-700 text-center leading-tight">{displayMessage}</p>
             </div>
           )}
         </div>

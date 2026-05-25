@@ -18,8 +18,6 @@ function PrintConfirmInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
-  const message = params.get("message") ?? "";
-  const signMode = (params.get("signMode") ?? "message") as "title" | "message";
   const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
   const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
   const nameY = parseInt(params.get("nameY") ?? "6");
@@ -28,7 +26,7 @@ function PrintConfirmInner() {
 
   function handlePrint() {
     const q = new URLSearchParams({
-      name, title, message, signMode,
+      name, title,
       nameZoom: String(nameZoom),
       titleZoom: String(titleZoom),
       nameY: String(nameY),
@@ -73,8 +71,7 @@ function PrintConfirmInner() {
 
           {/* Sign preview */}
           <SignCard
-            name={name} title={title} message={message}
-            signMode={signMode}
+            name={name} title={title}
             nameZoom={nameZoom} titleZoom={titleZoom}
             nameY={nameY} titleY={titleY}
           />
@@ -107,23 +104,22 @@ function PrintConfirmInner() {
 
 const CARD_W = 288;
 const CARD_H = 80;
+const NAME_AVAILABLE = CARD_W - 24;
+const TITLE_AVAILABLE = CARD_W - 48;
 
 function SignCard({
-  name, title, message, signMode,
-  nameZoom, titleZoom, nameY, titleY,
+  name, title,
+  nameZoom, titleZoom,
+  nameY, titleY,
 }: {
-  name: string; title: string; message: string;
-  signMode: "title" | "message";
+  name: string; title: string;
   nameZoom: number; titleZoom: number;
   nameY: number; titleY: number;
 }) {
   const displayName = name || "ชื่อผู้มอบ";
-  const displayTitle = signMode === "title" ? title.trim() : "";
-  const displayMessage = signMode === "message" ? message : "";
+  const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
-
-  const available = CARD_W - 24;
 
   useEffect(() => {
     const el = nameRef.current;
@@ -133,19 +129,19 @@ function SignCard({
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayName, available, nameZoom]);
+    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
+  }, [displayName, nameZoom]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 11 * titleZoom;
+    const MAX = 14 * titleZoom;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayTitle, available, titleZoom]);
+    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (TITLE_AVAILABLE / tw) * MAX)) + "px";
+  }, [displayTitle, titleZoom]);
 
   return (
     <div className="flex justify-center">
@@ -171,15 +167,10 @@ function SignCard({
             </p>
           </div>
           {displayTitle && (
-            <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${titleY}px` }}>
+            <div className="absolute left-6 right-6 flex justify-center" style={{ top: `${titleY}px` }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>
-            </div>
-          )}
-          {displayMessage && (
-            <div className="absolute left-3 right-3 bottom-[5px]">
-              <p className="text-[12px] text-gold-700 text-center leading-tight">{displayMessage}</p>
             </div>
           )}
         </div>
