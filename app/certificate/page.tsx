@@ -52,15 +52,6 @@ function CertificateInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-          <div className="text-center">
-            <h2 className="text-2xl font-bold text-gold-800">หลักฐานการมอบหรีด</h2>
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gold-300" />
-              <span className="text-gold-400 text-xs">❖</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gold-300" />
-            </div>
-          </div>
-
           {/* Certificate card */}
           <div
             className="rounded-2xl overflow-hidden"
