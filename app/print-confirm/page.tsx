@@ -128,11 +128,6 @@ function SignCard({ name, title }: { name: string; title: string }) {
           boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
         }}
       >
-        <span className="absolute top-1 left-1.5 text-gold-400 text-xs select-none leading-none">❧</span>
-        <span className="absolute top-1 right-1.5 text-gold-400 text-xs select-none leading-none scale-x-[-1] inline-block">❧</span>
-        <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
-        <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
-
         <div
           className="absolute left-3 right-3 flex justify-center"
           style={{ top: "40%", transform: "translateY(-50%)" }}
