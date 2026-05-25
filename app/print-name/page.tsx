@@ -20,7 +20,7 @@ export default function PrintNamePage() {
     return parseFloat(Math.min(2.0, Math.max(0.3, current + delta)).toFixed(1));
   }
   function stepY(current: number, delta: number) {
-    return Math.min(58, Math.max(2, current + delta));
+    return Math.min(38, Math.max(2, current + delta));
   }
 
   function handleConfirm() {
@@ -200,7 +200,7 @@ export default function PrintNamePage() {
 const CARD_W = 288;
 const CARD_H = 80;
 const NAME_AVAILABLE = CARD_W - 24;   // ชื่อ: margin 12px แต่ละด้าน
-const TITLE_AVAILABLE = CARD_W - 48;  // ตำแหน่ง: margin 24px แต่ละด้าน (แคบกว่า)
+const TITLE_AVAILABLE = 220;          // ตำแหน่ง: margin 34px แต่ละด้าน (แคบกว่า)
 
 function SignPreview({
   name, title,
@@ -277,9 +277,9 @@ function SignPreview({
               {displayName}
             </p>
           </div>
-          {/* ตำแหน่ง — ยึดล่างป้ายเสมอ, margin แคบกว่าชื่อ */}
+          {/* ตำแหน่ง — ยึดล่างป้ายเสมอ, margin 34px แต่ละด้าน */}
           {displayTitle && (
-            <div className="absolute left-6 right-6 bottom-[5px] flex justify-center">
+            <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>

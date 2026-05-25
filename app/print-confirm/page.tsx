@@ -103,7 +103,7 @@ function PrintConfirmInner() {
 const CARD_W = 288;
 const CARD_H = 80;
 const NAME_AVAILABLE = CARD_W - 24;
-const TITLE_AVAILABLE = CARD_W - 48;
+const TITLE_AVAILABLE = 220;
 
 function SignCard({
   name, title,
@@ -165,7 +165,7 @@ function SignCard({
             </p>
           </div>
           {displayTitle && (
-            <div className="absolute left-6 right-6 bottom-[5px] flex justify-center">
+            <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>

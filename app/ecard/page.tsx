@@ -13,7 +13,7 @@ const CEREMONY_LOCATION = "วัดไตรภูมิ ต.พรานกร
 const SIGN_W = 288;
 const SIGN_H = 80;
 const NAME_AVAILABLE = SIGN_W - 24;
-const TITLE_AVAILABLE = SIGN_W - 48;
+const TITLE_AVAILABLE = 220;
 
 export default function ECardPage() {
   return (
@@ -291,7 +291,7 @@ function DonorSign({
           </p>
         </div>
         {displayTitle && (
-          <div className="absolute left-6 right-6 bottom-[5px] flex justify-center">
+          <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
             <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
               {displayTitle}
             </p>
