@@ -14,7 +14,7 @@ const DEMO_MEMORIAL: Memorial = {
   ceremony_time: "",
   ceremony_location: "วัดไตรภูมิ",
   ceremony_hall: "ต.พรานกระต่าย อ.พรานกระต่าย จ.กำแพงเพชร",
-  bank_name: "มูลนิธิหรีดร่วมบุญ ESG Zero Waste\nธนาคารกสิกรไทย",
+  bank_name: "มูลนิธิหรีดร่วมบุญ ESG Zero Waste\nธนาคารกรุงไทย",
   bank_account_number: "6200358257",
   bank_account_name: "มูลนิธิหรีดร่วมบุญ ESG Zero Waste",
   bank_account_image_url: null,

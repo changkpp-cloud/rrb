@@ -172,18 +172,10 @@ export default function PaymentPageClient({ memorial }: Props) {
             </button>
 
             {/* Fee info — แสดงหลังปุ่มตรวจสอบสลิป */}
-            <div className="mt-4 flex items-center justify-between">
-              <p className="text-xs text-gold-600">
-                หักค่าดำเนินการระบบ {SYSTEM_FEE} บาท ต่อการโอน
-              </p>
-              <Info className="w-3.5 h-3.5 text-gold-400 shrink-0" />
-            </div>
-
             <div className="mt-2 bg-cream-100 border border-gold-200 rounded-xl px-3 py-2.5 flex gap-2">
               <Info className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
               <p className="text-xs text-gold-600 leading-relaxed">
-                ป้ายหรีดร่วมบุญ หัก {SYSTEM_FEE} บาท เป็นค่าดำเนินการ
-                ประกอบด้วย ค่ากระดาษ ค่าหมึก ค่าซ่อมบำรุง และค่าจิตอาสา
+                ทุกยอดการทำรายการ หัก {SYSTEM_FEE} บาท ที่เหลือส่งถึงเจ้าภาพ
               </p>
             </div>
           </Card>
