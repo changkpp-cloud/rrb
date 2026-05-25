@@ -167,7 +167,6 @@ function SignPreview({ name, title }: { name: string; title: string }) {
     if (tw > 0) el.style.fontSize = Math.max(5 * scale, Math.min(MAX, (avail / tw) * MAX)) + "px";
   }, [displayTitle, cardWidth, scale]);
 
-  const corner = Math.round(12 * scale);
   const titleMargin = Math.round(34 * scale);
   const titleBottom = Math.round(5 * scale);
 
@@ -182,11 +181,6 @@ function SignPreview({ name, title }: { name: string; title: string }) {
         boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
       }}
     >
-      <span className="absolute top-1 left-1.5 text-gold-400 select-none leading-none" style={{ fontSize: corner + "px" }}>❧</span>
-      <span className="absolute top-1 right-1.5 text-gold-400 select-none leading-none scale-x-[-1] inline-block" style={{ fontSize: corner + "px" }}>❧</span>
-      <span className="absolute bottom-1 left-1.5 text-gold-400 select-none leading-none scale-y-[-1] inline-block" style={{ fontSize: corner + "px" }}>❧</span>
-      <span className="absolute bottom-1 right-1.5 text-gold-400 select-none leading-none rotate-180 inline-block" style={{ fontSize: corner + "px" }}>❧</span>
-
       <div
         className="absolute left-3 right-3 flex justify-center"
         style={{ top: "40%", transform: "translateY(-50%)" }}
