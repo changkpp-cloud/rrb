@@ -238,7 +238,7 @@ function SignPreview({ name, title, message, nameZoom, titleZoom, nameY, titleY 
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
 
-  const available = CARD_W - 12;
+  const available = CARD_W - 24;
 
   useEffect(() => {
     const nameEl = nameRef.current;
@@ -287,26 +287,21 @@ function SignPreview({ name, title, message, nameZoom, titleZoom, nameY, titleY 
 
         <div className="relative h-full">
           {/* ชื่อ — absolute ปรับตำแหน่ง Y ได้ */}
-          <div className="absolute left-2 right-2 flex justify-center" style={{ top: `${nameY}px` }}>
+          <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
           </div>
           {/* ตำแหน่ง — absolute ปรับตำแหน่ง Y ได้ */}
           {displayTitle && (
-            <div className="absolute left-2 right-2 flex justify-center" style={{ top: `${titleY}px` }}>
+            <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${titleY}px` }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>
             </div>
           )}
           {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
-          <div className="absolute left-2 right-2 bottom-[5px]">
-            <div className="flex items-center gap-1 w-full mb-0.5">
-              <div className="flex-1 h-px bg-gold-300/60" />
-              <span className="text-gold-400 text-[6px]">◆</span>
-              <div className="flex-1 h-px bg-gold-300/60" />
-            </div>
+          <div className="absolute left-3 right-3 bottom-[5px]">
             <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
           </div>
         </div>

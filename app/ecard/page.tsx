@@ -223,7 +223,7 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
-  const available = SIGN_W - 12;
+  const available = SIGN_W - 24;
 
   useEffect(() => {
     const el = nameRef.current;
@@ -264,8 +264,8 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
       <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
       <div className="relative h-full">
-        {/* ชื่อ + ตำแหน่ง — flex column ยึดบน ชื่อไม่ขยับเมื่อเพิ่มตำแหน่ง */}
-        <div className="absolute left-2 right-2 top-[6px] flex flex-col items-center gap-0.5">
+        {/* ชื่อ + ตำแหน่ง — flex column ยึดบน */}
+        <div className="absolute left-3 right-3 top-[6px] flex flex-col items-center gap-0.5">
           <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
             {displayName}
           </p>
@@ -276,12 +276,7 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
           )}
         </div>
         {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
-        <div className="absolute left-2 right-2 bottom-[5px]">
-          <div className="flex items-center gap-1 w-full mb-0.5">
-            <div className="flex-1 h-px bg-gold-300/60" />
-            <span className="text-gold-400 text-[6px]">◆</span>
-            <div className="flex-1 h-px bg-gold-300/60" />
-          </div>
+        <div className="absolute left-3 right-3 bottom-[5px]">
           <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
         </div>
       </div>
