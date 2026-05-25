@@ -34,9 +34,10 @@ function PrintingInner() {
   const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
-  const name = params.get("name") ?? "";
-  const title = params.get("title") ?? "";
-  const amount = params.get("amount") ?? "";
+  const name    = params.get("name")    ?? "";
+  const title   = params.get("title")   ?? "";
+  const amount  = params.get("amount")  ?? "";
+  const message = params.get("message") ?? "";
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -53,13 +54,13 @@ function PrintingInner() {
     // หลัง popup 3 วินาที → ไปหน้า ecard
     timers.push(
       setTimeout(() => {
-        const q = new URLSearchParams({ name, title, amount });
+        const q = new URLSearchParams({ name, title, amount, message });
         router.push(`/ecard?${q.toString()}`);
       }, STEPS.length * 1100 + 400 + 3000)
     );
 
     return () => timers.forEach(clearTimeout);
-  }, [router, name, title, amount]);
+  }, [router, name, title, amount, message]);
 
   return (
     <div

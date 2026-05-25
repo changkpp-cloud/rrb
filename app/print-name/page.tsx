@@ -3,7 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Briefcase } from "lucide-react";
+import { User, Briefcase, MessageCircle } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
@@ -15,15 +15,18 @@ export default function PrintNamePage() {
 }
 
 function PrintNameInner() {
-  const [name, setName] = useState("");
-  const [title, setTitle] = useState("");
-  const [showModal, setShowModal] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
-  const amount = params.get("amount") ?? "";
+  const amount  = params.get("amount")  ?? "";
+
+  // Pre-fill from URL when navigating back from ecard
+  const [name,    setName]    = useState(params.get("name")    ?? "");
+  const [title,   setTitle]   = useState(params.get("title")   ?? "");
+  const [message, setMessage] = useState(params.get("message") ?? "");
+  const [showModal, setShowModal] = useState(false);
 
   function handleSend() {
-    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount });
+    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount, message: message.trim() });
     router.push(`/printing?${q.toString()}`);
   }
 
@@ -32,7 +35,6 @@ function PrintNameInner() {
       className="min-h-dvh flex flex-col"
       style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
     >
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <div className="w-8" />
@@ -58,10 +60,8 @@ function PrintNameInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
 
-          {/* ── Preview ── */}
           <SignPreview name={name} title={title} />
 
-          {/* ── กล่องกรอกข้อมูล ── */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
 
             <div className="space-y-1.5">
@@ -94,9 +94,24 @@ function PrintNameInner() {
               />
             </div>
 
+            <div className="h-px bg-gold-200/50" />
+
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-gold-700">
+                <MessageCircle className="w-4 h-4" />
+                <span className="text-sm font-semibold">ข้อความแสดงความอาลัย <span className="text-gold-400 font-normal">(ไม่บังคับ)</span></span>
+              </div>
+              <input
+                type="text"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="ขอแสดงความอาลัยและระลึกถึงตลอดไป..."
+                className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+              />
+            </div>
+
           </div>
 
-          {/* ── แสดงก่อนส่งพิมพ์ ── */}
           <button
             onClick={() => setShowModal(true)}
             disabled={!name.trim()}
@@ -116,19 +131,18 @@ function PrintNameInner() {
         </div>
       </main>
 
-      {/* ── Modal Preview ── */}
       {showModal && (
         <div
           className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4"
           style={{ background: "rgba(0,0,0,0.72)" }}
           onClick={() => setShowModal(false)}
         >
-          <div
-            className="w-full max-w-lg space-y-5"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="w-full max-w-lg space-y-5" onClick={(e) => e.stopPropagation()}>
             <p className="text-center text-white/80 text-sm tracking-wide">ตัวอย่างป้ายที่จะพิมพ์</p>
             <SignPreview name={name} title={title} />
+            {message.trim() && (
+              <p className="text-center text-white/70 text-xs italic">"{message.trim()}"</p>
+            )}
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
@@ -154,13 +168,13 @@ const BASE_W = 288;
 const BASE_H = 80;
 
 function SignPreview({ name, title }: { name: string; title: string }) {
-  const displayName = name.trim() || "ชื่อผู้มอบ";
+  const displayName  = name.trim()  || "ชื่อผู้มอบ";
   const displayTitle = title.trim() || "ตำแหน่ง / ข้อความแสดงอาลัย";
-  const isNamePlaceholder = !name.trim();
+  const isNamePlaceholder  = !name.trim();
   const isTitlePlaceholder = !title.trim();
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLParagraphElement>(null);
+  const cardRef  = useRef<HTMLDivElement>(null);
+  const nameRef  = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
   const [cardWidth, setCardWidth] = useState(BASE_W);
 
@@ -177,7 +191,7 @@ function SignPreview({ name, title }: { name: string; title: string }) {
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26 * scale;
+    const MAX   = 26 * scale;
     const avail = cardWidth - 24;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
@@ -189,7 +203,7 @@ function SignPreview({ name, title }: { name: string; title: string }) {
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 16 * scale;
+    const MAX   = 16 * scale;
     const avail = cardWidth - 68;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
@@ -212,19 +226,12 @@ function SignPreview({ name, title }: { name: string; title: string }) {
         boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
       }}
     >
-      <div
-        className="absolute left-3 right-3 flex justify-center"
-        style={{ top: "40%", transform: "translateY(-50%)" }}
-      >
+      <div className="absolute left-3 right-3 flex justify-center" style={{ top: "40%", transform: "translateY(-50%)" }}>
         <p ref={nameRef} className={`font-bold whitespace-nowrap leading-tight text-center ${isNamePlaceholder ? "text-gold-300" : "text-gold-800"}`}>
           {displayName}
         </p>
       </div>
-
-      <div
-        className="absolute flex justify-center"
-        style={{ bottom: titleBottom + "px", left: titleMargin + "px", right: titleMargin + "px" }}
-      >
+      <div className="absolute flex justify-center" style={{ bottom: titleBottom + "px", left: titleMargin + "px", right: titleMargin + "px" }}>
         <p ref={titleRef} className={`whitespace-nowrap leading-tight text-center ${isTitlePlaceholder ? "text-gold-300" : "text-gold-600"}`}>
           {displayTitle}
         </p>
