@@ -68,20 +68,11 @@ export default async function Home() {
         <SiteHeader />
 
         <main className="flex-1">
-          {/* Above-fold: ข้อมูลผู้วายชนม์ + กำหนดการ อยู่ในหน้าจอก่อน scroll */}
-          <section className="min-h-dvh flex flex-col justify-between pb-5">
-            <div>
-              <MemorialProfile memorial={memorial} />
-              <CeremonyInfo memorial={memorial} />
-            </div>
-            {/* Scroll hint */}
-            <div className="flex flex-col items-center gap-1 opacity-50 select-none">
-              <span className="text-gold-500 text-xs tracking-wide">เลื่อนดูภาพบอร์ดหรีดร่วมบุญ</span>
-              <span className="text-gold-400 text-sm animate-bounce">↓</span>
-            </div>
-          </section>
-          {/* Below-fold: WreathBoard + PaymentSection (ปุ่มปรากฏเมื่อเห็นภาพ) */}
-          <HomeScrollClient />
+          <MemorialProfile memorial={memorial} />
+          <CeremonyInfo memorial={memorial} />
+          <div className="mt-[5px]">
+            <HomeScrollClient />
+          </div>
         </main>
 
         <SiteFooter />
