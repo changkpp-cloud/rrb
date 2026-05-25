@@ -3,14 +3,14 @@
 import { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Share2, Download, Flower2, FileText } from "lucide-react";
+import { Share2, Download, FileText, ImagePlus, Sparkles, ChevronRight } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
-const SIGN_W = 288;
-const SIGN_H = 80;
+const SIGN_W = 260;
+const SIGN_H = 72;
 const NAME_AVAILABLE = SIGN_W - 24;
-const TITLE_AVAILABLE = 240;
+const TITLE_AVAILABLE = 220;
 
 const THAI_MONTHS = [
   "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
@@ -22,29 +22,85 @@ function thaiDate(iso: string) {
   return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
+type Pose = "stand" | "bow" | "kneel";
+
+const POSES: { id: Pose; label: string; icon: React.ReactNode }[] = [
+  {
+    id: "stand",
+    label: "ยืนถือป้าย",
+    icon: (
+      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
+        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
+        <rect x="10" y="18" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <path d="M16 12v6M16 26v8M10 30l-4 8M22 30l4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M10 18l-3-3M22 18l3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    id: "bow",
+    label: "ไหว้อาลัย",
+    icon: (
+      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
+        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
+        <path d="M16 12v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M10 19s2 2 6 2 6-2 6-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M12 17l-5 2M20 17l5 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M13 21v10M19 21v10M13 31l-3 6M19 31l3 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M11 21l3-1.5M21 21l-3-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
+    id: "kneel",
+    label: "นั่งคุกเข่า",
+    icon: (
+      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
+        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
+        <path d="M16 12v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M10 16l6 4 6-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M10 16l-3 4M22 16l3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        <path d="M16 20v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        <path d="M13 28l-5 3M19 28l5 3M8 31h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+];
+
 export default function ECardClient({ memorial }: { memorial: Memorial }) {
   const params = useSearchParams();
-  const name   = params.get("name")   ?? "";
-  const title  = params.get("title")  ?? "";
-  const amount = params.get("amount") ?? "";
+  const name    = params.get("name")    ?? "";
+  const title   = params.get("title")   ?? "";
+  const amount  = params.get("amount")  ?? "";
+  const message = params.get("message") ?? "";
 
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [saving, setSaving] = useState(false);
+  const cardRef     = useRef<HTMLDivElement>(null);
+  const faceInputRef = useRef<HTMLInputElement>(null);
 
-  const extraParams = new URLSearchParams({ name, title, amount }).toString();
+  const [saving, setSaving]           = useState(false);
+  const [pose, setPose]               = useState<Pose>("stand");
+  const [faceUrl, setFaceUrl]         = useState<string | null>(null);
+  const [generating, setGenerating]   = useState(false);
+  const [generatedImg, setGeneratedImg] = useState<string | null>(null);
+  const [savingMock, setSavingMock]   = useState(false);
+  const [genError, setGenError]       = useState("");
 
-  const deceasedName     = memorial.name;
-  const ceremonyDate     = thaiDate(memorial.ceremony_date);
+  const extraParams = new URLSearchParams({ name, title, amount, message }).toString();
+
+  const deceasedName = memorial.name;
+  const birthDate    = memorial.birth_date ? thaiDate(memorial.birth_date) : "";
+  const deathDate    = memorial.death_date ? thaiDate(memorial.death_date) : "";
+  const ceremonyDate = thaiDate(memorial.ceremony_date);
   const ceremonyLocation = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
 
-  async function handleSave() {
+  async function handleSaveCard() {
     if (!cardRef.current) return;
     setSaving(true);
     try {
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(cardRef.current, { scale: 3, useCORS: true, backgroundColor: "#fdf8ee" });
       const link = document.createElement("a");
-      link.download = `หรีดร่วมบุญ-${name || "ecard"}.png`;
+      link.download = `E-card-ขอบคุณ-${name || "ecard"}.png`;
       link.href = canvas.toDataURL("image/png");
       link.click();
     } catch {}
@@ -54,13 +110,115 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   async function handleShare() {
     if (navigator.share) {
       await navigator.share({
-        title: "หรีดร่วมบุญ Zero Waste",
+        title: "หรีดร่วมบุญ Zero Waste — ขอบคุณ",
         text: `${name || "ผู้ร่วมบุญ"} ขอร่วมแสดงความอาลัยแด่ ${deceasedName}`,
         url: window.location.href,
       }).catch(() => {});
     } else {
       await navigator.clipboard.writeText(window.location.href).catch(() => {});
     }
+  }
+
+  function handleFaceChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setFaceUrl(reader.result as string);
+    reader.readAsDataURL(file);
+  }
+
+  async function handleGenerate() {
+    setGenerating(true);
+    setGenError("");
+    try {
+      const res = await fetch("/api/generate-wreath", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pose, donorName: name || "ผู้ร่วมบุญ", donorTitle: title }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "เกิดข้อผิดพลาด");
+      setGeneratedImg(data.url);
+    } catch (e) {
+      setGenError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
+    }
+    setGenerating(false);
+  }
+
+  async function handleSaveMock() {
+    if (!generatedImg) return;
+    setSavingMock(true);
+    try {
+      const canvas = document.createElement("canvas");
+      const W = 800, H = 1067; // 3:4
+      canvas.width = W; canvas.height = H;
+      const ctx = canvas.getContext("2d")!;
+
+      // Background image
+      const bgImg = new Image();
+      bgImg.crossOrigin = "anonymous";
+      bgImg.src = generatedImg;
+      await new Promise<void>((res, rej) => { bgImg.onload = () => res(); bgImg.onerror = rej; });
+      ctx.drawImage(bgImg, 0, 0, W, H);
+
+      // Face overlay if uploaded
+      if (faceUrl) {
+        const faceImg = new Image();
+        faceImg.src = faceUrl;
+        await new Promise<void>(res => { faceImg.onload = () => res(); });
+        const headY = pose === "stand" ? 0.13 : pose === "bow" ? 0.16 : 0.24;
+        const cx = W * 0.5, cy = H * headY;
+        const rx = W * 0.11, ry = W * 0.13;
+        ctx.save();
+        ctx.beginPath();
+        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
+        ctx.clip();
+        const fz = rx * 2.6;
+        ctx.drawImage(faceImg, cx - fz / 2, cy - ry, fz, fz * 1.2);
+        ctx.restore();
+      }
+
+      // Name card overlay
+      const cardH = H * 0.10;
+      const cardY = H - cardH - H * 0.04;
+      const cardX = W * 0.10;
+      const cardW = W * 0.80;
+      const r = 12;
+
+      ctx.beginPath();
+      ctx.moveTo(cardX + r, cardY);
+      ctx.lineTo(cardX + cardW - r, cardY);
+      ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
+      ctx.lineTo(cardX + cardW, cardY + cardH - r);
+      ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
+      ctx.lineTo(cardX + r, cardY + cardH);
+      ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
+      ctx.lineTo(cardX, cardY + r);
+      ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
+      ctx.closePath();
+      ctx.fillStyle = "rgba(253,248,238,0.94)";
+      ctx.fill();
+      ctx.strokeStyle = "#c9a84c";
+      ctx.lineWidth = 2.5;
+      ctx.stroke();
+
+      ctx.textAlign = "center";
+      const displayName = name || "ผู้ร่วมบุญ";
+      ctx.font = `bold 28px Sarabun, sans-serif`;
+      ctx.fillStyle = "#78350f";
+      ctx.fillText(displayName, W / 2, cardY + cardH * 0.48 + 12);
+      if (title) {
+        ctx.font = `18px Sarabun, sans-serif`;
+        ctx.fillStyle = "#92400e";
+        ctx.fillText(title, W / 2, cardY + cardH * 0.78 + 8);
+      }
+
+      const link = document.createElement("a");
+      link.download = `หรีดร่วมบุญ-จำลอง-${name || "image"}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    } catch {}
+    setSavingMock(false);
   }
 
   return (
@@ -86,8 +244,9 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
+          {/* Page title */}
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gold-800">ภาพมอบหรีดร่วมบุญ</h2>
+            <h2 className="text-3xl font-bold text-gold-800">ขอบคุณ</h2>
             <div className="flex items-center justify-center gap-2 mt-1">
               <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gold-300" />
               <span className="text-gold-400 text-xs">❖</span>
@@ -95,98 +254,220 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
             </div>
           </div>
 
-          {/* E-Card */}
-          <div
-            ref={cardRef}
-            className="rounded-3xl overflow-hidden"
-            style={{
-              background: "linear-gradient(160deg,#fdf8ee 0%,#f0e0b8 50%,#fdf8ee 100%)",
-              border: "2px solid #c9a84c",
-              boxShadow: "0 8px 32px rgba(184,134,11,0.22)",
-            }}
-          >
-            <div className="gold-gradient px-4 py-2.5 flex items-center justify-center gap-2">
-              <LotusIcon className="w-4 h-4 text-white/90" />
-              <span className="text-white font-semibold text-xs tracking-[0.18em]">หรีดร่วมบุญ · Zero Waste</span>
-              <LotusIcon className="w-4 h-4 text-white/90 scale-x-[-1]" />
+          {/* ── SECTION 1: E-Card ── */}
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-3">
+            <div className="flex items-center gap-1.5">
+              <LotusIcon className="w-4 h-4 text-gold-500" />
+              <span className="text-sm font-semibold text-gold-700">E-card ขอบคุณ</span>
             </div>
 
-            <div className="pt-5 pb-3 px-5 text-center">
-              <div className="flex items-center justify-center gap-2 mb-3 select-none">
-                <div className="flex-1 h-px bg-gold-300/60" />
-                <LotusIcon className="w-3.5 h-3.5 text-gold-400" />
-                <span className="text-gold-400 text-[9px]">✦</span>
-                <LotusIcon className="w-3.5 h-3.5 text-gold-400 scale-x-[-1]" />
-                <div className="flex-1 h-px bg-gold-300/60" />
+            {/* New ecard design */}
+            <div
+              ref={cardRef}
+              className="rounded-2xl overflow-hidden"
+              style={{
+                background: "linear-gradient(160deg,#fdf8ee 0%,#f0e0b8 50%,#fdf8ee 100%)",
+                border: "2px solid #c9a84c",
+                boxShadow: "0 8px 32px rgba(184,134,11,0.22)",
+              }}
+            >
+              {/* Header bar */}
+              <div className="gold-gradient px-4 py-2 flex items-center justify-center gap-2">
+                <LotusIcon className="w-3.5 h-3.5 text-white/90" />
+                <span className="text-white font-semibold text-[11px] tracking-[0.18em]">หรีดร่วมบุญ · Zero Waste</span>
+                <LotusIcon className="w-3.5 h-3.5 text-white/90 scale-x-[-1]" />
               </div>
-              <p className="text-[11px] text-gold-500 tracking-[0.30em] uppercase mb-1">— ด้วยความซาบซึ้งใจ —</p>
-              <h3 className="font-bold text-gold-800 leading-snug" style={{ fontSize: "22px" }}>
-                เจ้าภาพขอขอบพระคุณ
-              </h3>
-            </div>
 
-            <div className="flex justify-center pb-4 px-3">
-              <DonorSign name={name} title={title} />
-            </div>
+              {/* Split layout */}
+              <div className="flex">
+                {/* Left: Deceased photo + info */}
+                <div className="flex-1 flex flex-col items-center justify-center px-3 py-5 border-r border-gold-200/60">
+                  <div
+                    className="overflow-hidden border-2 border-gold-400 shadow-md mb-2.5"
+                    style={{ width: 80, height: 96, borderRadius: "50% / 45%", flexShrink: 0 }}
+                  >
+                    {memorial.photo_url ? (
+                      <img src={memorial.photo_url} alt={deceasedName} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                    ) : (
+                      <div className="w-full h-full bg-gold-100 flex items-center justify-center">
+                        <LotusIcon className="w-9 h-9 text-gold-400" />
+                      </div>
+                    )}
+                  </div>
+                  <p className="font-bold text-gold-800 text-[13px] text-center leading-snug px-1">{deceasedName}</p>
+                  {birthDate && <p className="text-[9px] text-gold-600 mt-0.5">ชาตะ {birthDate}</p>}
+                  {deathDate && <p className="text-[9px] text-gold-600">มรณะ {deathDate}</p>}
+                  {memorial.age ? <p className="text-[9px] text-gold-600">อายุ {memorial.age} ปี</p> : null}
+                </div>
 
-            <div className="mx-5">
-              <div className="flex items-center gap-2">
-                <div className="flex-1 h-px bg-gold-300/50" />
-                <LotusIcon className="w-3 h-3 text-gold-400" />
-                <div className="flex-1 h-px bg-gold-300/50" />
+                {/* Right: Donor info */}
+                <div className="flex-1 flex flex-col items-center justify-center px-3 py-5 gap-1">
+                  <LotusIcon className="w-5 h-5 text-gold-400 mb-0.5" />
+                  <p className="text-[10px] text-gold-500 text-center tracking-wide">เจ้าภาพขอขอบพระคุณ</p>
+                  <div className="my-1 w-full">
+                    <ECardDonorSign name={name} title={title} />
+                  </div>
+                  <div className="flex-1 h-px bg-gold-200/50 w-full my-1" />
+                  <p className="text-[9px] text-gold-600 text-center leading-relaxed">
+                    ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
+                  </p>
+                  <LotusIcon className="w-3 h-3 text-gold-300 mt-1" />
+                </div>
+              </div>
+
+              {/* Footer: ceremony info */}
+              <div className="px-4 py-2 border-t border-gold-200/60 text-center">
+                <p className="text-[9px] text-gold-500">ฌาปนกิจ {ceremonyDate} · {ceremonyLocation}</p>
               </div>
             </div>
 
-            <div className="px-5 py-4 text-center space-y-1">
-              <p className="text-xs text-gold-700 leading-relaxed">เป็นอย่างสูงที่ร่วม</p>
-              <p className="font-bold text-gold-600 text-sm tracking-wide">หรีดร่วมบุญ Zero Waste</p>
-              <p className="text-xs text-gold-700 leading-relaxed">แสดงความอาลัยแด่</p>
-              <p className="font-bold text-gold-800 text-sm pt-0.5">{deceasedName}</p>
-              <p className="text-xs text-gold-600">ฌาปนกิจ {ceremonyDate}</p>
-              <p className="text-[10px] text-gold-500">{ceremonyLocation}</p>
-            </div>
-
-            <div className="pb-4 flex items-center justify-center gap-1 select-none">
-              <LotusIcon className="w-3 h-3 text-gold-300" />
-              <span className="text-gold-300 text-[7px]">◆</span>
-              <LotusIcon className="w-3 h-3 text-gold-300 scale-x-[-1]" />
+            <div className="flex gap-2">
+              <button
+                onClick={handleSaveCard}
+                disabled={saving}
+                className="flex-1 gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <Download className="w-4 h-4" />
+                {saving ? "กำลังบันทึก..." : "บันทึก E-card"}
+              </button>
+              <button
+                onClick={handleShare}
+                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-all"
+              >
+                <Share2 className="w-4 h-4" />
+                แชร์
+              </button>
             </div>
           </div>
 
-          <div className="flex gap-3">
+          {/* ── SECTION 2: Mock wreath AI ── */}
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-3">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-gold-500" />
+              <span className="text-sm font-semibold text-gold-700">จำลองภาพมอบหรีดร่วมบุญ</span>
+            </div>
+            <p className="text-xs text-gold-500 -mt-1">สร้างภาพที่ระลึกด้วย AI เพื่อเก็บไว้เป็นความทรงจำ</p>
+
+            <div className="flex gap-3">
+              {/* Preview */}
+              <div
+                className="relative rounded-xl overflow-hidden bg-gold-100 border border-gold-200 flex-shrink-0"
+                style={{ width: "52%", aspectRatio: "3/4" }}
+              >
+                {generatedImg ? (
+                  <img src={generatedImg} alt="AI generated" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="flex flex-col items-center justify-center h-full text-gold-300 gap-2 p-3">
+                    <Sparkles className="w-8 h-8" />
+                    <span className="text-[10px] text-center leading-relaxed text-gold-400">
+                      เลือกท่าทางและ<br />กดสร้างภาพ →
+                    </span>
+                  </div>
+                )}
+
+                {/* Sign card overlay */}
+                {generatedImg && (
+                  <div className="absolute bottom-2 left-1.5 right-1.5">
+                    <div
+                      className="text-center px-2 py-1.5 rounded-lg"
+                      style={{
+                        background: "rgba(253,248,238,0.93)",
+                        border: "1.5px solid #c9a84c",
+                      }}
+                    >
+                      <p className="text-[10px] font-bold text-gold-800 leading-tight">{name || "ผู้ร่วมบุญ"}</p>
+                      {title && <p className="text-[8px] text-gold-600 leading-tight mt-0.5">{title}</p>}
+                    </div>
+                  </div>
+                )}
+
+                {/* Face preview badge */}
+                {faceUrl && (
+                  <div className="absolute top-2 right-2 w-8 h-8 rounded-full overflow-hidden border-2 border-gold-400 shadow">
+                    <img src={faceUrl} alt="face" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              {/* Controls */}
+              <div className="flex-1 flex flex-col gap-2">
+                <p className="text-[11px] font-semibold text-gold-600">เลือกท่าทาง</p>
+
+                {/* Pose buttons */}
+                <div className="flex gap-1.5">
+                  {POSES.map(p => (
+                    <button
+                      key={p.id}
+                      onClick={() => setPose(p.id)}
+                      className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl border-2 transition-all ${
+                        pose === p.id
+                          ? "border-gold-500 bg-gold-50 text-gold-700"
+                          : "border-gold-200 bg-white text-gold-400 hover:border-gold-300"
+                      }`}
+                    >
+                      {p.icon}
+                      <span className="text-[8px] font-medium leading-tight text-center">{p.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Face upload */}
+                <input ref={faceInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaceChange} />
+                <button
+                  onClick={() => faceInputRef.current?.click()}
+                  className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-[11px] font-medium hover:bg-gold-50 transition-colors"
+                >
+                  <ImagePlus className="w-3.5 h-3.5" />
+                  {faceUrl ? "เปลี่ยนรูปหน้า" : "แนบรูปหน้า"}
+                </button>
+
+                {/* Generate */}
+                <button
+                  onClick={handleGenerate}
+                  disabled={generating}
+                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl gold-gradient text-white text-[11px] font-semibold shadow-md hover:opacity-90 disabled:opacity-60 transition-all"
+                >
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {generating ? "กำลังสร้าง..." : "สร้างภาพที่ระลึก"}
+                </button>
+
+                {genError && <p className="text-[9px] text-red-400 text-center">{genError}</p>}
+              </div>
+            </div>
+
+            {/* Save mock */}
             <button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex-1 gold-gradient text-white font-semibold py-4 rounded-2xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              onClick={handleSaveMock}
+              disabled={!generatedImg || savingMock}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-medium hover:bg-gold-50 disabled:opacity-40 transition-all"
             >
               <Download className="w-4 h-4" />
-              {saving ? "กำลังบันทึก..." : "บันทึกอีการ์ด"}
-            </button>
-            <button
-              onClick={handleShare}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
-            >
-              <Share2 className="w-4 h-4" />
-              แชร์ E-Card
+              {savingMock ? "กำลังบันทึก..." : "บันทึกภาพ"}
             </button>
           </div>
 
-          <div className="flex gap-3">
-            <Link
-              href={`/mock-wreath?${extraParams}`}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
-            >
-              <Flower2 className="w-4 h-4" />
-              จำลองภาพมอบหรีด
-            </Link>
-            <Link
-              href={`/certificate?${extraParams}`}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
-            >
-              <FileText className="w-4 h-4" />
-              ออกหลักฐานการมอบ
-            </Link>
-          </div>
+          {/* ── SECTION 3: Certificate link ── */}
+          <Link
+            href={`/certificate?${extraParams}`}
+            className="flex items-center gap-3 bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 hover:bg-cream-100 active:scale-[0.98] transition-all"
+          >
+            <div className="w-12 h-12 rounded-xl bg-gold-100 border border-gold-200 flex items-center justify-center shrink-0">
+              <FileText className="w-6 h-6 text-gold-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-gold-800">ใบเสร็จ / ใบอนุโมทนาบุญ</p>
+              <p className="text-xs text-gold-500 mt-0.5">สำหรับผู้ที่ต้องการเอกสารยืนยันการร่วมบุญ</p>
+            </div>
+            <ChevronRight className="w-5 h-5 text-gold-400" />
+          </Link>
+
+          {/* Back */}
+          <Link
+            href={`/print-name?${extraParams}`}
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
+          >
+            ← ย้อนกลับ
+          </Link>
 
           <div className="h-2" />
         </div>
@@ -195,55 +476,67 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   );
 }
 
-function DonorSign({ name, title }: { name: string; title: string }) {
+function ECardDonorSign({ name, title }: { name: string; title: string }) {
   const displayName  = name || "ผู้ร่วมบุญ";
   const displayTitle = title.trim();
   const nameRef  = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = nameRef.current;
-    if (!el) return;
-    const MAX = 26;
+    const container = containerRef.current;
+    if (!el || !container) return;
+    const MAX = 18;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
+    const avail = container.getBoundingClientRect().width - 16;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
+    if (tw > 0 && avail > 0) {
+      el.style.fontSize = Math.max(8, Math.min(MAX, (avail / tw) * MAX)) + "px";
+    }
   }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
-    if (!el) return;
-    const MAX = 16;
+    const container = containerRef.current;
+    if (!el || !container) return;
+    const MAX = 12;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
+    const avail = container.getBoundingClientRect().width - 16;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (TITLE_AVAILABLE / tw) * MAX)) + "px";
+    if (tw > 0 && avail > 0) {
+      el.style.fontSize = Math.max(6, Math.min(MAX, (avail / tw) * MAX)) + "px";
+    }
   }, [displayTitle]);
 
   return (
     <div
-      className="relative flex-shrink-0 rounded-xl overflow-hidden"
+      ref={containerRef}
+      className="w-full rounded-lg overflow-hidden"
       style={{
-        width: SIGN_W, height: SIGN_H,
         background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)",
         border: "1.5px solid #c9a84c",
-        boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
+        boxShadow: "0 2px 10px rgba(184,134,11,0.15), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px #c9a84c33",
+        minHeight: 52,
+        padding: "8px 8px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        gap: 2,
       }}
     >
-      <div className="absolute left-3 right-3 flex justify-center" style={{ top: "40%", transform: "translateY(-50%)" }}>
-        <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
-          {displayName}
-        </p>
-      </div>
+      <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap text-center w-full">
+        {displayName}
+      </p>
       {displayTitle && (
-        <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
-          <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-            {displayTitle}
-          </p>
-        </div>
+        <p ref={titleRef} className="text-gold-600 whitespace-nowrap text-center w-full">
+          {displayTitle}
+        </p>
       )}
     </div>
   );
