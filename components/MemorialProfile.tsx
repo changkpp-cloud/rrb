@@ -22,7 +22,7 @@ export default function MemorialProfile({ memorial }: Props) {
     <section className="relative pt-2 pb-0">
 
       {/* Portrait frame */}
-      <div className="flex justify-center mb-2 px-3">
+      <div className="flex justify-center mb-[5px] px-3">
         <div className="relative w-[44vw] max-w-[185px] aspect-square">
 
           {/* Outer celestial halo — pulsing glow ring */}
