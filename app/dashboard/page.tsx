@@ -1,14 +1,18 @@
 import Link from "next/link";
 import { ArrowLeft, Users, Landmark, FileCheck, Settings } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import { getMemorial } from "@/lib/memorial";
 
-export default function DashboardPage() {
+export const revalidate = 60;
+
+export default async function DashboardPage() {
+  const memorial = await getMemorial();
+
   return (
     <div
       className="min-h-screen"
       style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
     >
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <Link
@@ -31,14 +35,12 @@ export default function DashboardPage() {
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
-        {/* Welcome card */}
         <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-4 text-center">
           <p className="text-sm text-gold-600 mb-0.5">ยินดีต้อนรับ</p>
           <p className="text-base font-bold text-gold-800">จัดการงานหรีดร่วมบุญ</p>
-          <p className="text-xs text-gold-500 mt-1">นางสาว สุภาพร ปทุมานนท์</p>
+          <p className="text-xs text-gold-500 mt-1">{memorial.name}</p>
         </div>
 
-        {/* Menu grid */}
         <div className="grid grid-cols-2 gap-3">
           <MenuCard
             icon={<Users className="w-6 h-6" />}
@@ -66,7 +68,6 @@ export default function DashboardPage() {
           />
         </div>
 
-        {/* Back to public page */}
         <Link
           href="/"
           className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-gold-300 bg-cream-50 text-gold-700 font-medium text-sm hover:bg-cream-100 transition-colors"

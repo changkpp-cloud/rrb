@@ -3,23 +3,52 @@
 import Link from "next/link";
 import { ArrowLeft, Save, Landmark } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
-const DEMO = {
-  bank_name: "มูลนิธิหรีดร่วมบุญ ESG Zero Waste\nธนาคารกรุงไทย",
-  bank_account_number: "6200358257",
-  bank_account_name: "มูลนิธิหรีดร่วมบุญ ESG Zero Waste",
-};
+const inputCls = "w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm";
 
 export default function BankPage() {
-  const [bankName, setBankName] = useState(DEMO.bank_name.split("\n")[1] ?? DEMO.bank_name);
-  const [accountNumber, setAccountNumber] = useState(DEMO.bank_account_number);
-  const [accountName, setAccountName] = useState(DEMO.bank_account_name);
-  const [saved, setSaved] = useState(false);
+  const [bankName, setBankName] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountName, setAccountName] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "saving" | "saved" | "error">("loading");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  function handleSave() {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  useEffect(() => {
+    fetch("/api/memorial")
+      .then(r => r.json())
+      .then(data => {
+        const lines: string[] = (data.bank_name ?? "").split("\n");
+        setBankName(lines[lines.length - 1] ?? "");
+        setAccountNumber(data.bank_account_number ?? "");
+        setAccountName(data.bank_account_name ?? "");
+        setStatus("idle");
+      })
+      .catch(() => setStatus("idle"));
+  }, []);
+
+  async function handleSave() {
+    setStatus("saving");
+    setErrorMsg("");
+    try {
+      const res = await fetch("/api/memorial", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          bank_name: `มูลนิธิหรีดร่วมบุญ ESG Zero Waste\n${bankName}`,
+          bank_account_number: accountNumber,
+          bank_account_name: accountName,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error ?? "บันทึกไม่สำเร็จ");
+      setStatus("saved");
+      setTimeout(() => setStatus("idle"), 2500);
+    } catch (e) {
+      setErrorMsg(e instanceof Error ? e.message : "บันทึกไม่สำเร็จ");
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
   }
 
   return (
@@ -46,7 +75,6 @@ export default function BankPage() {
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
-        {/* Info card */}
         <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-gold-100 border border-gold-200 flex items-center justify-center shrink-0">
             <Landmark className="w-5 h-5 text-gold-600" />
@@ -57,7 +85,6 @@ export default function BankPage() {
           </div>
         </div>
 
-        {/* Form */}
         <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-4">
 
           <div className="space-y-1.5">
@@ -66,8 +93,9 @@ export default function BankPage() {
               type="text"
               value={bankName}
               onChange={e => setBankName(e.target.value)}
-              placeholder="เช่น ธนาคารกสิกรไทย"
-              className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+              placeholder="เช่น ธนาคารกรุงไทย"
+              className={inputCls}
+              disabled={status === "loading"}
             />
           </div>
 
@@ -78,7 +106,8 @@ export default function BankPage() {
               value={accountNumber}
               onChange={e => setAccountNumber(e.target.value)}
               placeholder="เช่น 123-4-56789-0"
-              className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm tracking-wider"
+              className={`${inputCls} tracking-wider`}
+              disabled={status === "loading"}
             />
           </div>
 
@@ -89,22 +118,23 @@ export default function BankPage() {
               value={accountName}
               onChange={e => setAccountName(e.target.value)}
               placeholder="ชื่อเจ้าของบัญชี"
-              className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+              className={inputCls}
+              disabled={status === "loading"}
             />
           </div>
 
-          <div className="pt-1 flex items-center gap-2 text-[11px] text-gold-400 bg-cream-100 border border-gold-200 rounded-xl px-3 py-2.5">
-            <span>💡</span>
-            <span>การแก้ไขต้องเชื่อมต่อ Supabase ก่อน — ข้อมูลนี้แสดงตัวอย่างเท่านั้น</span>
-          </div>
+          {status === "error" && (
+            <p className="text-xs text-red-500">{errorMsg}</p>
+          )}
         </div>
 
         <button
           onClick={handleSave}
-          className="w-full gold-gradient text-white font-semibold py-4 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
+          disabled={status === "loading" || status === "saving"}
+          className="w-full gold-gradient text-white font-semibold py-4 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
         >
           <Save className="w-5 h-5" />
-          {saved ? "บันทึกแล้ว ✓" : "บันทึกข้อมูล"}
+          {status === "saving" ? "กำลังบันทึก..." : status === "saved" ? "บันทึกแล้ว ✓" : "บันทึกข้อมูล"}
         </button>
 
         <div className="h-2" />
