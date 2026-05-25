@@ -119,73 +119,90 @@ function PrintNameInner() {
   );
 }
 
-const CARD_W = 288;
-const CARD_H = 80;
-const NAME_AVAILABLE = CARD_W - 24;
-const TITLE_AVAILABLE = 240;
+const BASE_W = 288;
+const BASE_H = 80;
 
 function SignPreview({ name, title }: { name: string; title: string }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
   const displayTitle = title.trim() || "ตำแหน่ง / ข้อความแสดงอาลัย";
   const isNamePlaceholder = !name.trim();
   const isTitlePlaceholder = !title.trim();
+
+  const cardRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
+  const [cardWidth, setCardWidth] = useState(BASE_W);
+
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setCardWidth(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const scale = cardWidth / BASE_W;
 
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26;
+    const MAX = 26 * scale;
+    const avail = cardWidth - 24;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayName]);
+    if (tw > 0) el.style.fontSize = Math.max(6 * scale, Math.min(MAX, (avail / tw) * MAX)) + "px";
+  }, [displayName, cardWidth, scale]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 16;
+    const MAX = 16 * scale;
+    const avail = cardWidth - 68;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (TITLE_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayTitle]);
+    if (tw > 0) el.style.fontSize = Math.max(5 * scale, Math.min(MAX, (avail / tw) * MAX)) + "px";
+  }, [displayTitle, cardWidth, scale]);
+
+  const corner = Math.round(12 * scale);
+  const titleMargin = Math.round(34 * scale);
+  const titleBottom = Math.round(5 * scale);
 
   return (
-    <div className="flex justify-center">
+    <div
+      ref={cardRef}
+      className="relative w-full rounded-xl overflow-hidden"
+      style={{
+        aspectRatio: `${BASE_W} / ${BASE_H}`,
+        background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)",
+        border: "1.5px solid #c9a84c",
+        boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
+      }}
+    >
+      <span className="absolute top-1 left-1.5 text-gold-400 select-none leading-none" style={{ fontSize: corner + "px" }}>❧</span>
+      <span className="absolute top-1 right-1.5 text-gold-400 select-none leading-none scale-x-[-1] inline-block" style={{ fontSize: corner + "px" }}>❧</span>
+      <span className="absolute bottom-1 left-1.5 text-gold-400 select-none leading-none scale-y-[-1] inline-block" style={{ fontSize: corner + "px" }}>❧</span>
+      <span className="absolute bottom-1 right-1.5 text-gold-400 select-none leading-none rotate-180 inline-block" style={{ fontSize: corner + "px" }}>❧</span>
+
       <div
-        className="relative flex-shrink-0 rounded-xl overflow-hidden"
-        style={{
-          width: CARD_W,
-          height: CARD_H,
-          background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)",
-          border: "1.5px solid #c9a84c",
-          boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44",
-        }}
+        className="absolute left-3 right-3 flex justify-center"
+        style={{ top: "40%", transform: "translateY(-50%)" }}
       >
-        <span className="absolute top-1 left-1.5 text-gold-400 text-xs select-none leading-none">❧</span>
-        <span className="absolute top-1 right-1.5 text-gold-400 text-xs select-none leading-none scale-x-[-1] inline-block">❧</span>
-        <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
-        <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
+        <p ref={nameRef} className={`font-bold whitespace-nowrap leading-tight text-center ${isNamePlaceholder ? "text-gold-300" : "text-gold-800"}`}>
+          {displayName}
+        </p>
+      </div>
 
-        {/* ชื่อ: ปกติอยู่ที่ 40%, ถ้า auto-fit ลดขนาด → กึ่งกลาง 50% */}
-        <div
-          className="absolute left-3 right-3 flex justify-center"
-          style={{ top: "40%", transform: "translateY(-50%)" }}
-        >
-          <p ref={nameRef} className={`font-bold whitespace-nowrap leading-tight text-center ${isNamePlaceholder ? "text-gold-300" : "text-gold-800"}`}>
-            {displayName}
-          </p>
-        </div>
-
-        <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
-          <p ref={titleRef} className={`whitespace-nowrap leading-tight text-center ${isTitlePlaceholder ? "text-gold-300" : "text-gold-600"}`}>
-            {displayTitle}
-          </p>
-        </div>
+      <div
+        className="absolute flex justify-center"
+        style={{ bottom: titleBottom + "px", left: titleMargin + "px", right: titleMargin + "px" }}
+      >
+        <p ref={titleRef} className={`whitespace-nowrap leading-tight text-center ${isTitlePlaceholder ? "text-gold-300" : "text-gold-600"}`}>
+          {displayTitle}
+        </p>
       </div>
     </div>
   );
