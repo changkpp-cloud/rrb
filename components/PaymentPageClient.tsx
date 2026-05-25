@@ -150,7 +150,7 @@ export default function PaymentPageClient({ memorial }: Props) {
               <div className="mt-3 space-y-1.5">
                 <div className="flex items-center gap-2 text-gold-700">
                   <Banknote className="w-4 h-4" />
-                  <span className="text-sm font-semibold">จำนวนเงินที่โอน (บาท)</span>
+                  <span className="text-sm font-semibold">จำนวนเงินที่โอน (บาท) <span className="text-red-400">*</span></span>
                 </div>
                 <input
                   type="number"
@@ -165,7 +165,7 @@ export default function PaymentPageClient({ memorial }: Props) {
 
             <button
               onClick={handleVerify}
-              disabled={!slipFile || verifying}
+              disabled={!slipFile || !amount.trim() || verifying}
               className="mt-3 w-full gold-gradient text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-opacity"
             >
               {verifying ? "กำลังส่ง..." : "ตรวจสอบสลิป"}
