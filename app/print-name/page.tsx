@@ -193,7 +193,7 @@ function SignPreview({ name, title, message }: { name: string; title: string; me
   useEffect(() => {
     const nameEl = nameRef.current;
     if (!nameEl) return;
-    const MAX_PX = displayTitle ? 18 : 26;
+    const MAX_PX = 26;
     nameEl.style.fontSize = MAX_PX + "px";
     nameEl.style.width = "max-content";
     const textW = nameEl.getBoundingClientRect().width;
@@ -202,18 +202,18 @@ function SignPreview({ name, title, message }: { name: string; title: string; me
       const size = Math.max(8, Math.min(MAX_PX, (available / textW) * MAX_PX));
       nameEl.style.fontSize = size + "px";
     }
-  }, [displayName, displayTitle, available]);
+  }, [displayName, available]);
 
   useEffect(() => {
     const titleEl = titleRef.current;
     if (!titleEl) return;
-    const MAX_PX = 15;
+    const MAX_PX = 11;
     titleEl.style.fontSize = MAX_PX + "px";
     titleEl.style.width = "max-content";
     const textW = titleEl.getBoundingClientRect().width;
     titleEl.style.width = "";
     if (textW > 0) {
-      const size = Math.max(7, Math.min(MAX_PX, (available / textW) * MAX_PX));
+      const size = Math.max(6, Math.min(MAX_PX, (available / textW) * MAX_PX));
       titleEl.style.fontSize = size + "px";
     }
   }, [displayTitle, available]);
@@ -236,20 +236,16 @@ function SignPreview({ name, title, message }: { name: string; title: string; me
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
         <div className="relative h-full">
-          {/* ชื่อ — ยึดตำแหน่งบนคงที่ */}
-          <div className="absolute left-2 right-2 top-[6px] flex justify-center">
+          {/* ชื่อ + ตำแหน่ง — flex column ยึดบน ชื่อไม่ขยับเมื่อเพิ่มตำแหน่ง */}
+          <div className="absolute left-2 right-2 top-[6px] flex flex-col items-center gap-0.5">
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
-          </div>
-          {/* ตำแหน่ง — display none เมื่อไม่มีข้อมูล */}
-          <div
-            className="absolute left-2 right-2 flex justify-center"
-            style={{ top: "32px", display: displayTitle ? "flex" : "none" }}
-          >
-            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-              {displayTitle}
-            </p>
+            {displayTitle && (
+              <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+                {displayTitle}
+              </p>
+            )}
           </div>
           {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
           <div className="absolute left-2 right-2 bottom-[5px]">

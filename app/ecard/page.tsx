@@ -228,23 +228,23 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = displayTitle ? 18 : 26;
+    const MAX = 26;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(8, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayName, displayTitle, available]);
+  }, [displayName, available]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 15;
+    const MAX = 11;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(7, Math.min(MAX, (available / tw) * MAX)) + "px";
+    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (available / tw) * MAX)) + "px";
   }, [displayTitle, available]);
 
   return (
@@ -264,20 +264,16 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
       <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
       <div className="relative h-full">
-        {/* ชื่อ — ยึดตำแหน่งบนคงที่ */}
-        <div className="absolute left-2 right-2 top-[6px] flex justify-center">
+        {/* ชื่อ + ตำแหน่ง — flex column ยึดบน ชื่อไม่ขยับเมื่อเพิ่มตำแหน่ง */}
+        <div className="absolute left-2 right-2 top-[6px] flex flex-col items-center gap-0.5">
           <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
             {displayName}
           </p>
-        </div>
-        {/* ตำแหน่ง — display none เมื่อไม่มีข้อมูล */}
-        <div
-          className="absolute left-2 right-2 flex justify-center"
-          style={{ top: "32px", display: displayTitle ? "flex" : "none" }}
-        >
-          <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-            {displayTitle}
-          </p>
+          {displayTitle && (
+            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+              {displayTitle}
+            </p>
+          )}
         </div>
         {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
         <div className="absolute left-2 right-2 bottom-[5px]">
