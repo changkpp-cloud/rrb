@@ -105,7 +105,7 @@ export default function PrintNamePage() {
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gold-700">
                 <Briefcase className="w-4 h-4" />
-                <span className="text-sm font-semibold">ตำแหน่ง (ถ้ามี)</span>
+                <span className="text-sm font-semibold">ตำแหน่ง / ข้อความแสดงอาลัย</span>
               </div>
               <div className="relative">
                 <input
