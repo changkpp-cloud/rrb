@@ -101,30 +101,34 @@ export default function MemorialProfile({ memorial }: Props) {
       </div>
 
       {/* Name & dates — glassmorphism backing */}
-      <div
-        className="text-center mx-4 px-5 py-3 rounded-xl"
-        style={{
-          background: "rgba(255,252,248,0.70)",
-          backdropFilter: "blur(18px)",
-          WebkitBackdropFilter: "blur(18px)",
-          border: "1px solid rgba(222,184,110,0.36)",
-          boxShadow: "0 6px 28px rgba(176,120,32,0.09), 0 1px 4px rgba(176,120,32,0.05), inset 0 1px 0 rgba(255,255,255,0.75)",
-        }}
-      >
-        <h2 className="text-xl font-bold text-gold-800 leading-snug">
-          {memorial.name}
-        </h2>
-        <div className="mt-1.5 space-y-0.5">
-          <p className="text-xs text-gold-600">
-            <span className="font-semibold text-gold-700">ชาตะ</span>{" "}
-            {formatThaiDate(memorial.birth_date)}
-          </p>
-          <p className="text-xs text-gold-600">
-            <span className="font-semibold text-gold-700">มรณะ</span>{" "}
-            {formatThaiDate(memorial.death_date)}
-          </p>
+      <div className="px-4">
+        <div className="max-w-lg mx-auto">
+          <div
+            className="text-center px-5 py-3 rounded-xl"
+            style={{
+              background: "rgba(255,252,248,0.70)",
+              backdropFilter: "blur(18px)",
+              WebkitBackdropFilter: "blur(18px)",
+              border: "1px solid rgba(222,184,110,0.36)",
+              boxShadow: "0 6px 28px rgba(176,120,32,0.09), 0 1px 4px rgba(176,120,32,0.05), inset 0 1px 0 rgba(255,255,255,0.75)",
+            }}
+          >
+            <h2 className="text-xl font-bold text-gold-800 leading-snug">
+              {memorial.name}
+            </h2>
+            <div className="mt-1.5 space-y-0.5">
+              <p className="text-xs text-gold-600">
+                <span className="font-semibold text-gold-700">ชาตะ</span>{" "}
+                {formatThaiDate(memorial.birth_date)}
+              </p>
+              <p className="text-xs text-gold-600">
+                <span className="font-semibold text-gold-700">มรณะ</span>{" "}
+                {formatThaiDate(memorial.death_date)}
+              </p>
+            </div>
+            <p className="text-xs text-gold-500 mt-0.5">อายุ {memorial.age} ปี</p>
+          </div>
         </div>
-        <p className="text-xs text-gold-500 mt-0.5">อายุ {memorial.age} ปี</p>
       </div>
 
       {/* Bottom diamond ornament */}
