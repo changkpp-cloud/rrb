@@ -13,7 +13,7 @@ const CEREMONY_LOCATION = "วัดไตรภูมิ ต.พรานกร
 const SIGN_W = 288;
 const SIGN_H = 80;
 const NAME_AVAILABLE = SIGN_W - 24;
-const TITLE_AVAILABLE = 220;
+const TITLE_AVAILABLE = 240;
 
 export default function ECardPage() {
   return (
@@ -224,7 +224,7 @@ function DonorSign({ name, title }: { name: string; title: string }) {
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 14;
+    const MAX = 16;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;

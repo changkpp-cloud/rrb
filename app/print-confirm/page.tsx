@@ -85,7 +85,7 @@ function PrintConfirmInner() {
 const CARD_W = 288;
 const CARD_H = 80;
 const NAME_AVAILABLE = CARD_W - 24;
-const TITLE_AVAILABLE = 220;
+const TITLE_AVAILABLE = 240;
 
 function SignCard({ name, title }: { name: string; title: string }) {
   const displayName = name || "ชื่อผู้มอบ";
@@ -107,7 +107,7 @@ function SignCard({ name, title }: { name: string; title: string }) {
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 14;
+    const MAX = 16;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
