@@ -24,7 +24,7 @@ function PrintNameInner() {
 
   function handleSend() {
     const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount });
-    router.push(`/ecard?${q.toString()}`);
+    router.push(`/printing?${q.toString()}`);
   }
 
   return (
