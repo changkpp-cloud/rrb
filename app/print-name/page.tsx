@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase, Check, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { User, Briefcase, MessageSquare, Check, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const MESSAGES = [
@@ -11,14 +11,17 @@ const MESSAGES = [
   "ด้วยความอาลัย",
 ];
 
+type SignMode = "message" | "title";
+
 export default function PrintNamePage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState(MESSAGES[0]);
+  const [signMode, setSignMode] = useState<SignMode>("message");
   const [nameZoom, setNameZoom] = useState(1.0);
   const [titleZoom, setTitleZoom] = useState(1.0);
   const [nameY, setNameY] = useState(6);
-  const [titleY, setTitleY] = useState(32);
+  const [titleY, setTitleY] = useState(28);
   const [nameAtCap, setNameAtCap] = useState(false);
   const [titleAtCap, setTitleAtCap] = useState(false);
   const router = useRouter();
@@ -32,7 +35,16 @@ export default function PrintNamePage() {
 
   function handleConfirm() {
     if (!name.trim()) return;
-    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), message });
+    const q = new URLSearchParams({
+      name: name.trim(),
+      title: signMode === "title" ? title.trim() : "",
+      message: signMode === "message" ? message : "",
+      signMode,
+      nameZoom: String(nameZoom),
+      titleZoom: String(titleZoom),
+      nameY: String(nameY),
+      titleY: String(titleY),
+    });
     router.push(`/print-confirm?${q.toString()}`);
   }
 
@@ -79,7 +91,7 @@ export default function PrintNamePage() {
             </div>
           </div>
 
-          {/* ── กล่องกรอกข้อมูล (รวมทั้งหมด) ── */}
+          {/* ── กล่องกรอกข้อมูล ── */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-4">
 
             {/* ชื่อผู้มอบ */}
@@ -102,87 +114,112 @@ export default function PrintNamePage() {
 
             <div className="h-px bg-gold-200/50" />
 
-            {/* ตำแหน่ง */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-gold-700">
-                <Briefcase className="w-4 h-4" />
-                <span className="text-sm font-semibold">ตำแหน่ง (ถ้ามี)</span>
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="กรอกตำแหน่ง/องค์กร"
-                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
-                />
-                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
-              </div>
-            </div>
-
-            <div className="h-px bg-gold-200/50" />
-
-            {/* ข้อความอาลัย */}
+            {/* Toggle + เนื้อหา */}
             <div className="space-y-3">
-              <div className="flex items-center gap-2 text-gold-700">
-                <LotusIcon className="w-4 h-4 text-gold-600" />
-                <span className="text-sm font-semibold">ข้อความแสดงความอาลัย</span>
-              </div>
-              <div className="flex flex-col gap-2">
-                {MESSAGES.map((m) => (
-                  <button
-                    key={m}
-                    onClick={() => setMessage(m)}
-                    className={`relative w-full px-4 py-2.5 rounded-xl border text-sm text-left transition-all flex items-center gap-2 ${
-                      message === m && MESSAGES.includes(message)
-                        ? "gold-gradient text-white border-transparent shadow"
-                        : "bg-white text-gold-700 border-gold-300 hover:border-gold-500"
-                    }`}
-                  >
-                    <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
-                      message === m && MESSAGES.includes(message)
-                        ? "border-white bg-white/30"
-                        : "border-gold-300"
-                    }`}>
-                      {message === m && MESSAGES.includes(message) && (
-                        <Check className="w-2.5 h-2.5 text-white" />
-                      )}
-                    </span>
-                    {m}
-                  </button>
-                ))}
-              </div>
-              <div className="relative">
-                <input
-                  type="text"
-                  value={MESSAGES.includes(message) ? "" : message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  onFocus={() => { if (MESSAGES.includes(message)) setMessage(""); }}
-                  placeholder="หรือพิมพ์ข้อความอาลัยเอง..."
-                  className={`w-full px-4 py-2.5 rounded-xl border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8 transition-all ${
-                    !MESSAGES.includes(message) && message
-                      ? "border-gold-500 ring-1 ring-gold-400"
-                      : "border-gold-300"
+              <p className="text-sm font-semibold text-gold-700">บรรทัดที่สองในป้าย</p>
+
+              {/* Segmented control */}
+              <div className="flex rounded-xl border border-gold-300 overflow-hidden">
+                <button
+                  onClick={() => setSignMode("message")}
+                  className={`flex-1 py-2.5 text-sm font-medium transition-all ${
+                    signMode === "message" ? "gold-gradient text-white" : "bg-white text-gold-600 hover:bg-gold-50"
                   }`}
-                />
-                {!MESSAGES.includes(message) && message && (
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gold-500 flex items-center justify-center">
-                    <Check className="w-2.5 h-2.5 text-white" />
-                  </span>
-                )}
+                >
+                  ข้อความอาลัย
+                </button>
+                <button
+                  onClick={() => setSignMode("title")}
+                  className={`flex-1 py-2.5 text-sm font-medium transition-all border-l border-gold-300 ${
+                    signMode === "title" ? "gold-gradient text-white" : "bg-white text-gold-600 hover:bg-gold-50"
+                  }`}
+                >
+                  ตำแหน่ง
+                </button>
               </div>
+
+              {/* เนื้อหาตามโหมด */}
+              {signMode === "title" ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gold-600">
+                    <Briefcase className="w-4 h-4" />
+                    <span className="text-xs">ตำแหน่ง/องค์กร</span>
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="กรอกตำแหน่ง/องค์กร"
+                      className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
+                    />
+                    <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-gold-600">
+                    <MessageSquare className="w-4 h-4" />
+                    <span className="text-xs">ข้อความแสดงความอาลัย</span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {MESSAGES.map((m) => (
+                      <button
+                        key={m}
+                        onClick={() => setMessage(m)}
+                        className={`relative w-full px-4 py-2.5 rounded-xl border text-sm text-left transition-all flex items-center gap-2 ${
+                          message === m && MESSAGES.includes(message)
+                            ? "gold-gradient text-white border-transparent shadow"
+                            : "bg-white text-gold-700 border-gold-300 hover:border-gold-500"
+                        }`}
+                      >
+                        <span className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                          message === m && MESSAGES.includes(message)
+                            ? "border-white bg-white/30"
+                            : "border-gold-300"
+                        }`}>
+                          {message === m && MESSAGES.includes(message) && (
+                            <Check className="w-2.5 h-2.5 text-white" />
+                          )}
+                        </span>
+                        {m}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={MESSAGES.includes(message) ? "" : message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      onFocus={() => { if (MESSAGES.includes(message)) setMessage(""); }}
+                      placeholder="หรือพิมพ์ข้อความอาลัยเอง..."
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8 transition-all ${
+                        !MESSAGES.includes(message) && message
+                          ? "border-gold-500 ring-1 ring-gold-400"
+                          : "border-gold-300"
+                      }`}
+                    />
+                    {!MESSAGES.includes(message) && message && (
+                      <span className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-gold-500 flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" />
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* ── Preview card ── */}
+          {/* ── Preview ── */}
           <SignPreview
             name={name} title={title} message={message}
+            signMode={signMode}
             nameZoom={nameZoom} titleZoom={titleZoom}
             nameY={nameY} titleY={titleY}
             onNameAtCap={setNameAtCap} onTitleAtCap={setTitleAtCap}
           />
 
-          {/* ── ปรับขนาดและตำแหน่งตัวอักษร ── */}
+          {/* ── ปรับขนาดและตำแหน่ง ── */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
             <p className="text-xs font-semibold text-gold-700">ปรับขนาดและตำแหน่งตัวอักษร</p>
 
@@ -190,7 +227,7 @@ export default function PrintNamePage() {
             <div className="space-y-1.5">
               <span className="text-xs text-gold-600 font-medium">ชื่อ</span>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ตำแหน่ง</span>
+                <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">แนวตั้ง</span>
                 <button onClick={() => setNameY(y => stepY(y, -2))} className={`${btnBase} ${btnActive}`}><ChevronUp className="w-3.5 h-3.5" /></button>
                 <button onClick={() => setNameY(y => stepY(y, 2))}  className={`${btnBase} ${btnActive}`}><ChevronDown className="w-3.5 h-3.5" /></button>
                 <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
@@ -207,12 +244,12 @@ export default function PrintNamePage() {
               </div>
             </div>
 
-            {/* ตำแหน่ง (แสดงเมื่อมีข้อมูล) */}
-            {title.trim() && (
+            {/* ตำแหน่ง (แสดงเมื่อ signMode="title" และมีข้อมูล) */}
+            {signMode === "title" && title.trim() && (
               <div className="space-y-1.5">
                 <span className="text-xs text-gold-600 font-medium">ตำแหน่ง</span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ตำแหน่ง</span>
+                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">แนวตั้ง</span>
                   <button onClick={() => setTitleY(y => stepY(y, -2))} className={`${btnBase} ${btnActive}`}><ChevronUp className="w-3.5 h-3.5" /></button>
                   <button onClick={() => setTitleY(y => stepY(y, 2))}  className={`${btnBase} ${btnActive}`}><ChevronDown className="w-3.5 h-3.5" /></button>
                   <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
@@ -258,51 +295,55 @@ export default function PrintNamePage() {
 const CARD_W = 288;
 const CARD_H = 80;
 
-function SignPreview({ name, title, message, nameZoom, titleZoom, nameY, titleY, onNameAtCap, onTitleAtCap }: {
+function SignPreview({
+  name, title, message, signMode,
+  nameZoom, titleZoom, nameY, titleY,
+  onNameAtCap, onTitleAtCap,
+}: {
   name: string; title: string; message: string;
+  signMode: SignMode;
   nameZoom: number; titleZoom: number;
   nameY: number; titleY: number;
   onNameAtCap: (v: boolean) => void;
   onTitleAtCap: (v: boolean) => void;
 }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
-  const displayTitle = title.trim();
+  const displayTitle = signMode === "title" ? title.trim() : "";
+  const displayMessage = signMode === "message" ? message : "";
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
 
   const available = CARD_W - 24;
 
   useEffect(() => {
-    const nameEl = nameRef.current;
-    if (!nameEl) return;
-    const MAX_PX = 26 * nameZoom;
-    nameEl.style.fontSize = MAX_PX + "px";
-    nameEl.style.width = "max-content";
-    const textW = nameEl.getBoundingClientRect().width;
-    nameEl.style.width = "";
-    if (textW > 0) {
-      const ratio = available / textW;
+    const el = nameRef.current;
+    if (!el) return;
+    const MAX = 26 * nameZoom;
+    el.style.fontSize = MAX + "px";
+    el.style.width = "max-content";
+    const tw = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (tw > 0) {
+      const ratio = available / tw;
       onNameAtCap(ratio < 1);
-      const size = Math.max(6, Math.min(MAX_PX, ratio * MAX_PX));
-      nameEl.style.fontSize = size + "px";
+      el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
     } else {
       onNameAtCap(false);
     }
   }, [displayName, available, nameZoom, onNameAtCap]);
 
   useEffect(() => {
-    const titleEl = titleRef.current;
-    if (!titleEl) return;
-    const MAX_PX = 11 * titleZoom;
-    titleEl.style.fontSize = MAX_PX + "px";
-    titleEl.style.width = "max-content";
-    const textW = titleEl.getBoundingClientRect().width;
-    titleEl.style.width = "";
-    if (textW > 0) {
-      const ratio = available / textW;
+    const el = titleRef.current;
+    if (!el) return;
+    const MAX = 11 * titleZoom;
+    el.style.fontSize = MAX + "px";
+    el.style.width = "max-content";
+    const tw = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (tw > 0) {
+      const ratio = available / tw;
       onTitleAtCap(ratio < 1);
-      const size = Math.max(5, Math.min(MAX_PX, ratio * MAX_PX));
-      titleEl.style.fontSize = size + "px";
+      el.style.fontSize = Math.max(5, Math.min(MAX, ratio * MAX)) + "px";
     } else {
       onTitleAtCap(false);
     }
@@ -338,9 +379,11 @@ function SignPreview({ name, title, message, nameZoom, titleZoom, nameY, titleY,
               </p>
             </div>
           )}
-          <div className="absolute left-3 right-3 bottom-[5px]">
-            <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
-          </div>
+          {displayMessage && (
+            <div className="absolute left-3 right-3 bottom-[5px]">
+              <p className="text-[12px] text-gold-700 text-center leading-tight">{displayMessage}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

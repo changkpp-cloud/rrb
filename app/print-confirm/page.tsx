@@ -19,10 +19,21 @@ function PrintConfirmInner() {
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
   const message = params.get("message") ?? "";
+  const signMode = (params.get("signMode") ?? "message") as "title" | "message";
+  const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
+  const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
+  const nameY = parseInt(params.get("nameY") ?? "6");
+  const titleY = parseInt(params.get("titleY") ?? "28");
   const router = useRouter();
 
   function handlePrint() {
-    const q = new URLSearchParams({ name, title, message });
+    const q = new URLSearchParams({
+      name, title, message, signMode,
+      nameZoom: String(nameZoom),
+      titleZoom: String(titleZoom),
+      nameY: String(nameY),
+      titleY: String(titleY),
+    });
     router.push(`/ecard?${q.toString()}`);
   }
 
@@ -61,7 +72,12 @@ function PrintConfirmInner() {
           </div>
 
           {/* Sign preview */}
-          <SignCard name={name} title={title} message={message} />
+          <SignCard
+            name={name} title={title} message={message}
+            signMode={signMode}
+            nameZoom={nameZoom} titleZoom={titleZoom}
+            nameY={nameY} titleY={titleY}
+          />
 
           {/* Print button */}
           <button
@@ -89,45 +105,47 @@ function PrintConfirmInner() {
   );
 }
 
-/* ขนาดจริง 9×24 นิ้ว → scale 12px/inch → 288×108px */
 const CARD_W = 288;
 const CARD_H = 80;
 
-function SignCard({ name, title, message }: { name: string; title: string; message: string }) {
+function SignCard({
+  name, title, message, signMode,
+  nameZoom, titleZoom, nameY, titleY,
+}: {
+  name: string; title: string; message: string;
+  signMode: "title" | "message";
+  nameZoom: number; titleZoom: number;
+  nameY: number; titleY: number;
+}) {
   const displayName = name || "ชื่อผู้มอบ";
-  const displayTitle = title.trim();
+  const displayTitle = signMode === "title" ? title.trim() : "";
+  const displayMessage = signMode === "message" ? message : "";
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
 
   const available = CARD_W - 24;
 
   useEffect(() => {
-    const nameEl = nameRef.current;
-    if (!nameEl) return;
-    const MAX_PX = 26;
-    nameEl.style.fontSize = MAX_PX + "px";
-    nameEl.style.width = "max-content";
-    const textW = nameEl.getBoundingClientRect().width;
-    nameEl.style.width = "";
-    if (textW > 0) {
-      const size = Math.max(8, Math.min(MAX_PX, (available / textW) * MAX_PX));
-      nameEl.style.fontSize = size + "px";
-    }
-  }, [displayName, available]);
+    const el = nameRef.current;
+    if (!el) return;
+    const MAX = 26 * nameZoom;
+    el.style.fontSize = MAX + "px";
+    el.style.width = "max-content";
+    const tw = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (available / tw) * MAX)) + "px";
+  }, [displayName, available, nameZoom]);
 
   useEffect(() => {
-    const titleEl = titleRef.current;
-    if (!titleEl) return;
-    const MAX_PX = 11;
-    titleEl.style.fontSize = MAX_PX + "px";
-    titleEl.style.width = "max-content";
-    const textW = titleEl.getBoundingClientRect().width;
-    titleEl.style.width = "";
-    if (textW > 0) {
-      const size = Math.max(6, Math.min(MAX_PX, (available / textW) * MAX_PX));
-      titleEl.style.fontSize = size + "px";
-    }
-  }, [displayTitle, available]);
+    const el = titleRef.current;
+    if (!el) return;
+    const MAX = 11 * titleZoom;
+    el.style.fontSize = MAX + "px";
+    el.style.width = "max-content";
+    const tw = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (available / tw) * MAX)) + "px";
+  }, [displayTitle, available, titleZoom]);
 
   return (
     <div className="flex justify-center">
@@ -147,21 +165,23 @@ function SignCard({ name, title, message }: { name: string; title: string; messa
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
         <div className="relative h-full">
-          {/* ชื่อ + ตำแหน่ง — flex column ยึดบน */}
-          <div className="absolute left-3 right-3 top-[6px] flex flex-col items-center gap-0.5">
+          <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
-            {displayTitle && (
+          </div>
+          {displayTitle && (
+            <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${titleY}px` }}>
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>
-            )}
-          </div>
-          {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
-          <div className="absolute left-3 right-3 bottom-[5px]">
-            <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
-          </div>
+            </div>
+          )}
+          {displayMessage && (
+            <div className="absolute left-3 right-3 bottom-[5px]">
+              <p className="text-[12px] text-gold-700 text-center leading-tight">{displayMessage}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

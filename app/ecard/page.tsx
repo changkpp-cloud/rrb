@@ -26,8 +26,18 @@ function ECardInner() {
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
   const message = params.get("message") ?? "";
+  const signMode = (params.get("signMode") ?? "message") as "title" | "message";
+  const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
+  const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
+  const nameY = parseInt(params.get("nameY") ?? "6");
+  const titleY = parseInt(params.get("titleY") ?? "28");
+
   const cardRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
+
+  const extraParams = new URLSearchParams({ name, title, message, signMode,
+    nameZoom: String(nameZoom), titleZoom: String(titleZoom),
+    nameY: String(nameY), titleY: String(titleY) }).toString();
 
   async function handleSave() {
     if (!cardRef.current) return;
@@ -114,7 +124,6 @@ function ECardInner() {
 
             {/* ── เจ้าภาพขอขอบพระคุณ ── */}
             <div className="pt-5 pb-3 px-5 text-center">
-              {/* Ornament top */}
               <div className="flex items-center justify-center gap-2 mb-3 select-none">
                 <div className="flex-1 h-px bg-gold-300/60" />
                 <LotusIcon className="w-3.5 h-3.5 text-gold-400" />
@@ -134,10 +143,15 @@ function ECardInner() {
 
             {/* ── ป้ายชื่อหรีด ── */}
             <div className="flex justify-center pb-4 px-3">
-              <DonorSign name={name} title={title} message={message} />
+              <DonorSign
+                name={name} title={title} message={message}
+                signMode={signMode}
+                nameZoom={nameZoom} titleZoom={titleZoom}
+                nameY={nameY} titleY={titleY}
+              />
             </div>
 
-            {/* ── ข้อความกลาง ── */}
+            {/* ── divider ── */}
             <div className="mx-5">
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-px bg-gold-300/50" />
@@ -146,7 +160,7 @@ function ECardInner() {
               </div>
             </div>
 
-            {/* ── ข้อความ + ข้อมูลผู้วายชนม์ ── */}
+            {/* ── ข้อมูลผู้วายชนม์ ── */}
             <div className="px-5 py-4 text-center space-y-1">
               <p className="text-xs text-gold-700 leading-relaxed">เป็นอย่างสูงที่ร่วม</p>
               <p className="font-bold text-gold-600 text-sm tracking-wide">หรีดร่วมบุญ Zero Waste</p>
@@ -187,14 +201,14 @@ function ECardInner() {
           {/* Extra menu buttons */}
           <div className="flex gap-3">
             <Link
-              href={`/mock-wreath?${new URLSearchParams({ name, title, message }).toString()}`}
+              href={`/mock-wreath?${extraParams}`}
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Flower2 className="w-4 h-4" />
               จำลองภาพมอบหรีด
             </Link>
             <Link
-              href={`/certificate?${new URLSearchParams({ name, title, message }).toString()}`}
+              href={`/certificate?${extraParams}`}
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <FileText className="w-4 h-4" />
@@ -218,9 +232,18 @@ function ECardInner() {
   );
 }
 
-function DonorSign({ name, title, message }: { name: string; title: string; message: string }) {
+function DonorSign({
+  name, title, message, signMode,
+  nameZoom, titleZoom, nameY, titleY,
+}: {
+  name: string; title: string; message: string;
+  signMode: "title" | "message";
+  nameZoom: number; titleZoom: number;
+  nameY: number; titleY: number;
+}) {
   const displayName = name || "ผู้ร่วมบุญ";
-  const displayTitle = title.trim();
+  const displayTitle = signMode === "title" ? title.trim() : "";
+  const displayMessage = signMode === "message" ? message : "";
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
   const available = SIGN_W - 24;
@@ -228,24 +251,24 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26;
-    el.style.fontSize = MAX + "px";
-    el.style.width = "max-content";
-    const tw = el.getBoundingClientRect().width;
-    el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(8, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayName, available]);
-
-  useEffect(() => {
-    const el = titleRef.current;
-    if (!el) return;
-    const MAX = 11;
+    const MAX = 26 * nameZoom;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayTitle, available]);
+  }, [displayName, available, nameZoom]);
+
+  useEffect(() => {
+    const el = titleRef.current;
+    if (!el) return;
+    const MAX = 11 * titleZoom;
+    el.style.fontSize = MAX + "px";
+    el.style.width = "max-content";
+    const tw = el.getBoundingClientRect().width;
+    el.style.width = "";
+    if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (available / tw) * MAX)) + "px";
+  }, [displayTitle, available, titleZoom]);
 
   return (
     <div
@@ -264,21 +287,23 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
       <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
       <div className="relative h-full">
-        {/* ชื่อ + ตำแหน่ง — flex column ยึดบน */}
-        <div className="absolute left-3 right-3 top-[6px] flex flex-col items-center gap-0.5">
+        <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
           <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
             {displayName}
           </p>
-          {displayTitle && (
+        </div>
+        {displayTitle && (
+          <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${titleY}px` }}>
             <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
               {displayTitle}
             </p>
-          )}
-        </div>
-        {/* ข้อความ — ยึดตำแหน่งล่างคงที่ */}
-        <div className="absolute left-3 right-3 bottom-[5px]">
-          <p className="text-[12px] text-gold-700 text-center leading-tight">{message}</p>
-        </div>
+          </div>
+        )}
+        {displayMessage && (
+          <div className="absolute left-3 right-3 bottom-[5px]">
+            <p className="text-[12px] text-gold-700 text-center leading-tight">{displayMessage}</p>
+          </div>
+        )}
       </div>
     </div>
   );
