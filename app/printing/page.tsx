@@ -31,7 +31,7 @@ export default function PrintingPage() {
 
 function PrintingInner() {
   const [stepIndex, setStepIndex] = useState(0);
-  const [done, setDone] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const router = useRouter();
   const params = useSearchParams();
   const name = params.get("name") ?? "";
@@ -45,12 +45,17 @@ function PrintingInner() {
       timers.push(setTimeout(() => setStepIndex(i), i * 1100));
     });
 
+    // แสดง popup สำเร็จ
+    timers.push(
+      setTimeout(() => setShowSuccess(true), STEPS.length * 1100 + 400)
+    );
+
+    // หลัง popup 3 วินาที → ไปหน้า ecard
     timers.push(
       setTimeout(() => {
-        setDone(true);
         const q = new URLSearchParams({ name, title, amount });
-        router.push(`/print-done?${q.toString()}`);
-      }, STEPS.length * 1100 + 400)
+        router.push(`/ecard?${q.toString()}`);
+      }, STEPS.length * 1100 + 400 + 3000)
     );
 
     return () => timers.forEach(clearTimeout);
@@ -75,7 +80,7 @@ function PrintingInner() {
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm bg-cream-50 rounded-3xl gold-border card-shadow px-6 py-10 flex flex-col items-center gap-6">
 
-          {!done && (
+          {!showSuccess && (
             <>
               <div className="relative flex items-center justify-center">
                 <div
@@ -136,6 +141,49 @@ function PrintingInner() {
           )}
         </div>
       </main>
+
+      {/* ── Success popup ── */}
+      {showSuccess && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-6"
+          style={{ background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)" }}
+        >
+          <div
+            className="w-full max-w-xs flex flex-col items-center gap-4 px-8 py-10 rounded-3xl"
+            style={{
+              background: "linear-gradient(160deg,#fdf8ee 0%,#f0e0b8 50%,#fdf8ee 100%)",
+              border: "2px solid #c9a84c",
+              boxShadow: "0 8px 40px rgba(184,134,11,0.30)",
+            }}
+          >
+            {/* Check icon */}
+            <div
+              className="w-20 h-20 rounded-full flex items-center justify-center"
+              style={{
+                background: "linear-gradient(135deg,rgba(245,222,170,0.6) 0%,rgba(201,152,60,0.25) 100%)",
+                border: "2px solid rgba(201,152,60,0.55)",
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-gold-600">
+                <path d="M20 6L9 17l-5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+
+            <div className="text-center space-y-1">
+              <p className="text-xl font-bold text-gold-800">ส่งพิมพ์สำเร็จ</p>
+              {name && <p className="text-sm text-gold-600">ขอบคุณ <span className="font-semibold">{name}</span></p>}
+              <p className="text-xs text-gold-500 mt-1">กำลังแสดงอีการ์ดขอบคุณ...</p>
+            </div>
+
+            {/* Progress dots */}
+            <div className="flex gap-1.5">
+              {[0, 1, 2].map((d) => (
+                <span key={d} className="w-1.5 h-1.5 rounded-full bg-gold-400 animate-bounce" style={{ animationDelay: `${d * 0.2}s` }} />
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
