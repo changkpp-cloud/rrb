@@ -106,10 +106,12 @@ function CertificateInner() {
               <div className="space-y-2 text-center">
                 <p className="text-xs text-gold-700 leading-relaxed">
                   ได้ร่วมมอบ <span className="font-semibold text-gold-800">หรีดร่วมบุญ Zero Waste</span>
-                  {amountDisplay && (
-                    <> เป็นจำนวนเงิน <span className="font-semibold text-gold-800">{amountDisplay}</span></>
-                  )}
                 </p>
+                {amountDisplay && (
+                  <p className="text-xs text-gold-700 leading-relaxed">
+                    เป็นจำนวนเงิน <span className="font-semibold text-gold-800">{amountDisplay}</span>
+                  </p>
+                )}
                 <p className="text-xs text-gold-700">แสดงความอาลัยแด่</p>
                 <p className="font-bold text-gold-800 text-sm">{DECEASED_NAME}</p>
                 <p className="text-xs text-gold-600">ฌาปนกิจ {CEREMONY_DATE}</p>
