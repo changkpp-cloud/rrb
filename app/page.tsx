@@ -3,8 +3,7 @@ import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import MemorialProfile from "@/components/MemorialProfile";
 import CeremonyInfo from "@/components/CeremonyInfo";
-import WreathBoard from "@/components/WreathBoard";
-import PaymentSection from "@/components/PaymentSection";
+import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -69,10 +68,20 @@ export default async function Home() {
         <SiteHeader />
 
         <main className="flex-1">
-          <MemorialProfile memorial={memorial} />
-          <CeremonyInfo memorial={memorial} />
-          <WreathBoard />
-          <PaymentSection />
+          {/* Above-fold: ข้อมูลผู้วายชนม์ + กำหนดการ อยู่ในหน้าจอก่อน scroll */}
+          <section className="min-h-dvh flex flex-col justify-between pb-5">
+            <div>
+              <MemorialProfile memorial={memorial} />
+              <CeremonyInfo memorial={memorial} />
+            </div>
+            {/* Scroll hint */}
+            <div className="flex flex-col items-center gap-1 opacity-50 select-none">
+              <span className="text-gold-500 text-xs tracking-wide">เลื่อนดูภาพบอร์ดหรีดร่วมบุญ</span>
+              <span className="text-gold-400 text-sm animate-bounce">↓</span>
+            </div>
+          </section>
+          {/* Below-fold: WreathBoard + PaymentSection (ปุ่มปรากฏเมื่อเห็นภาพ) */}
+          <HomeScrollClient />
         </main>
 
         <SiteFooter />

@@ -132,7 +132,6 @@ function SignPreview({ name, title }: { name: string; title: string }) {
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
-  const [nameAtCap, setNameAtCap] = useState(false);
 
   useEffect(() => {
     const el = nameRef.current;
@@ -142,13 +141,7 @@ function SignPreview({ name, title }: { name: string; title: string }) {
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) {
-      const ratio = NAME_AVAILABLE / tw;
-      setNameAtCap(ratio < 1);
-      el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
-    } else {
-      setNameAtCap(false);
-    }
+    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
   }, [displayName]);
 
   useEffect(() => {
@@ -182,7 +175,7 @@ function SignPreview({ name, title }: { name: string; title: string }) {
         {/* ชื่อ: ปกติอยู่ที่ 40%, ถ้า auto-fit ลดขนาด → กึ่งกลาง 50% */}
         <div
           className="absolute left-3 right-3 flex justify-center"
-          style={{ top: nameAtCap ? "50%" : "40%", transform: "translateY(-50%)" }}
+          style={{ top: "40%", transform: "translateY(-50%)" }}
         >
           <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
             {displayName}
