@@ -3,24 +3,18 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase, Minus, Plus, ChevronUp, ChevronDown } from "lucide-react";
+import { User, Briefcase, Minus, Plus } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
-  const [nameZoom, setNameZoom] = useState(1.0);
   const [titleZoom, setTitleZoom] = useState(1.0);
-  const [nameY, setNameY] = useState(6);
-  const [nameAtCap, setNameAtCap] = useState(false);
   const [titleAtCap, setTitleAtCap] = useState(false);
   const router = useRouter();
 
   function stepZoom(current: number, delta: number) {
     return parseFloat(Math.min(2.0, Math.max(0.3, current + delta)).toFixed(1));
-  }
-  function stepY(current: number, delta: number) {
-    return Math.min(38, Math.max(2, current + delta));
   }
 
   function handleConfirm() {
@@ -28,9 +22,7 @@ export default function PrintNamePage() {
     const q = new URLSearchParams({
       name: name.trim(),
       title: title.trim(),
-      nameZoom: String(nameZoom),
       titleZoom: String(titleZoom),
-      nameY: String(nameY),
     });
     router.push(`/print-confirm?${q.toString()}`);
   }
@@ -101,7 +93,7 @@ export default function PrintNamePage() {
 
             <div className="h-px bg-gold-200/50" />
 
-            {/* ตำแหน่ง */}
+            {/* ตำแหน่ง / ข้อความแสดงอาลัย */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-gold-700">
                 <Briefcase className="w-4 h-4" />
@@ -112,7 +104,7 @@ export default function PrintNamePage() {
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="กรอกตำแหน่ง/องค์กร"
+                  placeholder="กรอกตำแหน่ง/ข้อความ (ถ้ามี)"
                   className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
@@ -123,55 +115,28 @@ export default function PrintNamePage() {
           {/* ── Preview ── */}
           <SignPreview
             name={name} title={title}
-            nameZoom={nameZoom} titleZoom={titleZoom}
-            nameY={nameY}
-            onNameAtCap={setNameAtCap} onTitleAtCap={setTitleAtCap}
+            titleZoom={titleZoom}
+            onTitleAtCap={setTitleAtCap}
           />
 
-          {/* ── ปรับขนาดและตำแหน่ง ── */}
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
-            <p className="text-xs font-semibold text-gold-700">ปรับขนาดและตำแหน่งตัวอักษร</p>
-
-            {/* ชื่อ */}
-            <div className="space-y-1.5">
-              <span className="text-xs text-gold-600 font-medium">ชื่อ</span>
+          {/* ── ปรับขนาดตำแหน่ง (แสดงเมื่อมีข้อมูล) ── */}
+          {title.trim() && (
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
+              <p className="text-xs font-semibold text-gold-700">ปรับขนาดตัวอักษรบรรทัดล่าง</p>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">แนวตั้ง</span>
-                <button onClick={() => setNameY(y => stepY(y, -2))} className={`${btnBase} ${btnActive}`}><ChevronUp className="w-3.5 h-3.5" /></button>
-                <button onClick={() => setNameY(y => stepY(y, 2))}  className={`${btnBase} ${btnActive}`}><ChevronDown className="w-3.5 h-3.5" /></button>
-                <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
-                <span className="text-[10px] text-gold-400 w-6 flex-shrink-0">ขนาด</span>
-                <button onClick={() => setNameZoom(z => stepZoom(z, -0.1))} className={`${btnBase} ${btnActive}`}><Minus className="w-3.5 h-3.5" /></button>
+                <span className="text-[10px] text-gold-400 w-14 flex-shrink-0">ขนาด</span>
+                <button onClick={() => setTitleZoom(z => stepZoom(z, -0.1))} className={`${btnBase} ${btnActive}`}><Minus className="w-3.5 h-3.5" /></button>
                 <span className="text-xs text-gold-700 font-medium w-8 text-center">
-                  {nameAtCap ? "100" : Math.round(nameZoom * 100)}%
+                  {titleAtCap ? "100" : Math.round(titleZoom * 100)}%
                 </span>
                 <button
-                  onClick={() => !nameAtCap && setNameZoom(z => stepZoom(z, 0.1))}
-                  disabled={nameAtCap}
-                  className={`${btnBase} ${nameAtCap ? btnDisabled : btnActive}`}
+                  onClick={() => !titleAtCap && setTitleZoom(z => stepZoom(z, 0.1))}
+                  disabled={titleAtCap}
+                  className={`${btnBase} ${titleAtCap ? btnDisabled : btnActive}`}
                 ><Plus className="w-3.5 h-3.5" /></button>
               </div>
             </div>
-
-            {/* ตำแหน่ง — แสดงเฉพาะเมื่อมีข้อมูล, ปรับได้เฉพาะขนาด */}
-            {title.trim() && (
-              <div className="space-y-1.5">
-                <span className="text-xs text-gold-600 font-medium">ตำแหน่ง <span className="text-gold-400 font-normal">(แสดงล่างป้าย)</span></span>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ขนาด</span>
-                  <button onClick={() => setTitleZoom(z => stepZoom(z, -0.1))} className={`${btnBase} ${btnActive}`}><Minus className="w-3.5 h-3.5" /></button>
-                  <span className="text-xs text-gold-700 font-medium w-8 text-center">
-                    {titleAtCap ? "100" : Math.round(titleZoom * 100)}%
-                  </span>
-                  <button
-                    onClick={() => !titleAtCap && setTitleZoom(z => stepZoom(z, 0.1))}
-                    disabled={titleAtCap}
-                    className={`${btnBase} ${titleAtCap ? btnDisabled : btnActive}`}
-                  ><Plus className="w-3.5 h-3.5" /></button>
-                </div>
-              </div>
-            )}
-          </div>
+          )}
 
           {/* ── ยืนยัน ── */}
           <button
@@ -199,19 +164,14 @@ export default function PrintNamePage() {
 /* ── Sign card constants ── */
 const CARD_W = 288;
 const CARD_H = 80;
-const NAME_AVAILABLE = CARD_W - 24;   // ชื่อ: margin 12px แต่ละด้าน
-const TITLE_AVAILABLE = 220;          // ตำแหน่ง: margin 34px แต่ละด้าน (แคบกว่า)
+const NAME_AVAILABLE = CARD_W - 24;
+const TITLE_AVAILABLE = 220;
 
 function SignPreview({
-  name, title,
-  nameZoom, titleZoom,
-  nameY,
-  onNameAtCap, onTitleAtCap,
+  name, title, titleZoom, onTitleAtCap,
 }: {
   name: string; title: string;
-  nameZoom: number; titleZoom: number;
-  nameY: number;
-  onNameAtCap: (v: boolean) => void;
+  titleZoom: number;
   onTitleAtCap: (v: boolean) => void;
 }) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
@@ -222,19 +182,13 @@ function SignPreview({
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26 * nameZoom;
+    const MAX = 26;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) {
-      const ratio = NAME_AVAILABLE / tw;
-      onNameAtCap(ratio < 1);
-      el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
-    } else {
-      onNameAtCap(false);
-    }
-  }, [displayName, nameZoom, onNameAtCap]);
+    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
+  }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
@@ -270,22 +224,21 @@ function SignPreview({
         <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
-        <div className="relative h-full">
-          {/* ชื่อ — ปรับ Y ได้ */}
-          <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
-            <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
-              {displayName}
+        {/* ชื่อ — กึ่งกลางป้ายทั้ง X และ Y */}
+        <div className="absolute inset-0 left-3 right-3 flex items-center justify-center">
+          <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
+            {displayName}
+          </p>
+        </div>
+
+        {/* ตำแหน่ง — ล่างป้าย, margin แคบกว่าชื่อ */}
+        {displayTitle && (
+          <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
+            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+              {displayTitle}
             </p>
           </div>
-          {/* ตำแหน่ง — ยึดล่างป้ายเสมอ, margin 34px แต่ละด้าน */}
-          {displayTitle && (
-            <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
-              <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-                {displayTitle}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

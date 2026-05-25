@@ -18,18 +18,11 @@ function PrintConfirmInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
-  const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
   const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
-  const nameY = parseInt(params.get("nameY") ?? "6");
   const router = useRouter();
 
   function handlePrint() {
-    const q = new URLSearchParams({
-      name, title,
-      nameZoom: String(nameZoom),
-      titleZoom: String(titleZoom),
-      nameY: String(nameY),
-    });
+    const q = new URLSearchParams({ name, title, titleZoom: String(titleZoom) });
     router.push(`/ecard?${q.toString()}`);
   }
 
@@ -38,7 +31,6 @@ function PrintConfirmInner() {
       className="min-h-dvh flex flex-col"
       style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
     >
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <div className="w-8" />
@@ -57,7 +49,6 @@ function PrintConfirmInner() {
       <main className="flex-1 overflow-y-auto print:overflow-visible">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-          {/* Page title */}
           <div className="text-center print:hidden">
             <h2 className="text-2xl font-bold text-gold-800">ยืนยันการพิมพ์</h2>
             <div className="flex items-center justify-center gap-2 mt-1">
@@ -67,14 +58,8 @@ function PrintConfirmInner() {
             </div>
           </div>
 
-          {/* Sign preview */}
-          <SignCard
-            name={name} title={title}
-            nameZoom={nameZoom} titleZoom={titleZoom}
-            nameY={nameY}
-          />
+          <SignCard name={name} title={title} titleZoom={titleZoom} />
 
-          {/* Print button */}
           <button
             onClick={handlePrint}
             className="w-full gold-gradient text-white font-semibold py-4 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 print:hidden"
@@ -83,7 +68,6 @@ function PrintConfirmInner() {
             พิมพ์ป้าย
           </button>
 
-          {/* Home button */}
           <Link
             href="/"
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors print:hidden"
@@ -95,7 +79,6 @@ function PrintConfirmInner() {
           <div className="h-2 print:hidden" />
         </div>
       </main>
-
     </div>
   );
 }
@@ -105,15 +88,7 @@ const CARD_H = 80;
 const NAME_AVAILABLE = CARD_W - 24;
 const TITLE_AVAILABLE = 220;
 
-function SignCard({
-  name, title,
-  nameZoom, titleZoom,
-  nameY,
-}: {
-  name: string; title: string;
-  nameZoom: number; titleZoom: number;
-  nameY: number;
-}) {
+function SignCard({ name, title, titleZoom }: { name: string; title: string; titleZoom: number }) {
   const displayName = name || "ชื่อผู้มอบ";
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
@@ -122,13 +97,13 @@ function SignCard({
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26 * nameZoom;
+    const MAX = 26;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayName, nameZoom]);
+  }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
@@ -158,20 +133,18 @@ function SignCard({
         <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
-        <div className="relative h-full">
-          <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
-            <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
-              {displayName}
+        <div className="absolute inset-0 left-3 right-3 flex items-center justify-center">
+          <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
+            {displayName}
+          </p>
+        </div>
+        {displayTitle && (
+          <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
+            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+              {displayTitle}
             </p>
           </div>
-          {displayTitle && (
-            <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
-              <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-                {displayTitle}
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );

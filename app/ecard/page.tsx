@@ -27,18 +27,12 @@ function ECardInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
-  const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
   const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
-  const nameY = parseInt(params.get("nameY") ?? "6");
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
 
-  const extraParams = new URLSearchParams({
-    name, title,
-    nameZoom: String(nameZoom), titleZoom: String(titleZoom),
-    nameY: String(nameY),
-  }).toString();
+  const extraParams = new URLSearchParams({ name, title, titleZoom: String(titleZoom) }).toString();
 
   async function handleSave() {
     if (!cardRef.current) return;
@@ -77,7 +71,6 @@ function ECardInner() {
       className="min-h-dvh flex flex-col"
       style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
     >
-      {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <div className="w-8" />
@@ -96,7 +89,6 @@ function ECardInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-          {/* Page title */}
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gold-800">ภาพมอบหรีดร่วมบุญ</h2>
             <div className="flex items-center justify-center gap-2 mt-1">
@@ -116,14 +108,12 @@ function ECardInner() {
               boxShadow: "0 8px 32px rgba(184,134,11,0.22)",
             }}
           >
-            {/* Gold header strip */}
             <div className="gold-gradient px-4 py-2.5 flex items-center justify-center gap-2">
               <LotusIcon className="w-4 h-4 text-white/90" />
               <span className="text-white font-semibold text-xs tracking-[0.18em]">หรีดร่วมบุญ · Zero Waste</span>
               <LotusIcon className="w-4 h-4 text-white/90 scale-x-[-1]" />
             </div>
 
-            {/* ── เจ้าภาพขอขอบพระคุณ ── */}
             <div className="pt-5 pb-3 px-5 text-center">
               <div className="flex items-center justify-center gap-2 mb-3 select-none">
                 <div className="flex-1 h-px bg-gold-300/60" />
@@ -132,26 +122,16 @@ function ECardInner() {
                 <LotusIcon className="w-3.5 h-3.5 text-gold-400 scale-x-[-1]" />
                 <div className="flex-1 h-px bg-gold-300/60" />
               </div>
-
               <p className="text-[11px] text-gold-500 tracking-[0.30em] uppercase mb-1">— ด้วยความซาบซึ้งใจ —</p>
-              <h3
-                className="font-bold text-gold-800 leading-snug"
-                style={{ fontSize: "22px" }}
-              >
+              <h3 className="font-bold text-gold-800 leading-snug" style={{ fontSize: "22px" }}>
                 เจ้าภาพขอขอบพระคุณ
               </h3>
             </div>
 
-            {/* ── ป้ายชื่อหรีด ── */}
             <div className="flex justify-center pb-4 px-3">
-              <DonorSign
-                name={name} title={title}
-                nameZoom={nameZoom} titleZoom={titleZoom}
-                nameY={nameY}
-              />
+              <DonorSign name={name} title={title} titleZoom={titleZoom} />
             </div>
 
-            {/* ── divider ── */}
             <div className="mx-5">
               <div className="flex items-center gap-2">
                 <div className="flex-1 h-px bg-gold-300/50" />
@@ -160,7 +140,6 @@ function ECardInner() {
               </div>
             </div>
 
-            {/* ── ข้อมูลผู้วายชนม์ ── */}
             <div className="px-5 py-4 text-center space-y-1">
               <p className="text-xs text-gold-700 leading-relaxed">เป็นอย่างสูงที่ร่วม</p>
               <p className="font-bold text-gold-600 text-sm tracking-wide">หรีดร่วมบุญ Zero Waste</p>
@@ -170,16 +149,13 @@ function ECardInner() {
               <p className="text-[10px] text-gold-500">{CEREMONY_LOCATION}</p>
             </div>
 
-            {/* Bottom ornament */}
             <div className="pb-4 flex items-center justify-center gap-1 select-none">
               <LotusIcon className="w-3 h-3 text-gold-300" />
               <span className="text-gold-300 text-[7px]">◆</span>
               <LotusIcon className="w-3 h-3 text-gold-300 scale-x-[-1]" />
             </div>
-
           </div>
 
-          {/* Save + Share buttons */}
           <div className="flex gap-3">
             <button
               onClick={handleSave}
@@ -198,7 +174,6 @@ function ECardInner() {
             </button>
           </div>
 
-          {/* Extra menu buttons */}
           <div className="flex gap-3">
             <Link
               href={`/mock-wreath?${extraParams}`}
@@ -216,7 +191,6 @@ function ECardInner() {
             </Link>
           </div>
 
-          {/* Home button */}
           <Link
             href="/"
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
@@ -232,15 +206,7 @@ function ECardInner() {
   );
 }
 
-function DonorSign({
-  name, title,
-  nameZoom, titleZoom,
-  nameY,
-}: {
-  name: string; title: string;
-  nameZoom: number; titleZoom: number;
-  nameY: number;
-}) {
+function DonorSign({ name, title, titleZoom }: { name: string; title: string; titleZoom: number }) {
   const displayName = name || "ผู้ร่วมบุญ";
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
@@ -249,13 +215,13 @@ function DonorSign({
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26 * nameZoom;
+    const MAX = 26;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayName, nameZoom]);
+  }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
@@ -284,20 +250,18 @@ function DonorSign({
       <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
       <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
-      <div className="relative h-full">
-        <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
-          <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
-            {displayName}
+      <div className="absolute inset-0 left-3 right-3 flex items-center justify-center">
+        <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
+          {displayName}
+        </p>
+      </div>
+      {displayTitle && (
+        <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
+          <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
+            {displayTitle}
           </p>
         </div>
-        {displayTitle && (
-          <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
-            <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
-              {displayTitle}
-            </p>
-          </div>
-        )}
-      </div>
+      )}
     </div>
   );
 }
