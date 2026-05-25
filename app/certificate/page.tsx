@@ -22,7 +22,12 @@ function CertificateInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
+  const amount = params.get("amount") ?? "";
   const message = params.get("message") ?? "";
+
+  const amountDisplay = amount
+    ? Number(amount).toLocaleString("th-TH") + " บาท"
+    : "";
 
   return (
     <div
@@ -101,6 +106,9 @@ function CertificateInner() {
               <div className="space-y-2 text-center">
                 <p className="text-xs text-gold-700 leading-relaxed">
                   ได้ร่วมมอบ <span className="font-semibold text-gold-800">หรีดร่วมบุญ Zero Waste</span>
+                  {amountDisplay && (
+                    <> เป็นจำนวนเงิน <span className="font-semibold text-gold-800">{amountDisplay}</span></>
+                  )}
                 </p>
                 <p className="text-xs text-gold-700">แสดงความอาลัยแด่</p>
                 <p className="font-bold text-gold-800 text-sm">{DECEASED_NAME}</p>
@@ -124,7 +132,7 @@ function CertificateInner() {
           </div>
 
           <Link
-            href={`/ecard?${new URLSearchParams({ name, title, message }).toString()}`}
+            href={`/ecard?${new URLSearchParams({ name, title, amount, message }).toString()}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
           >
             ย้อนกลับ

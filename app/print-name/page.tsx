@@ -3,17 +3,18 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase } from "lucide-react";
+import { User, Briefcase, Banknote } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
+  const [amount, setAmount] = useState("");
   const router = useRouter();
 
   function handleConfirm() {
     if (!name.trim()) return;
-    const q = new URLSearchParams({ name: name.trim(), title: title.trim() });
+    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount: amount.trim() });
     router.push(`/print-confirm?${q.toString()}`);
   }
 
@@ -89,6 +90,26 @@ export default function PrintNamePage() {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="กรอกตำแหน่ง/ข้อความ (ถ้ามี)"
+                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>
+              </div>
+            </div>
+
+            <div className="h-px bg-gold-200/50" />
+
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-gold-700">
+                <Banknote className="w-4 h-4" />
+                <span className="text-sm font-semibold">จำนวนเงินที่โอน (บาท)</span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="กรอกจำนวนเงิน (ถ้ามี)"
                   className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm pr-8"
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gold-300 text-xs">›</span>

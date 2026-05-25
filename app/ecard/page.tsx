@@ -27,11 +27,12 @@ function ECardInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
+  const amount = params.get("amount") ?? "";
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
 
-  const extraParams = new URLSearchParams({ name, title }).toString();
+  const extraParams = new URLSearchParams({ name, title, amount }).toString();
 
   async function handleSave() {
     if (!cardRef.current) return;

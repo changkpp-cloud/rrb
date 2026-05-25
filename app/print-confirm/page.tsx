@@ -18,10 +18,11 @@ function PrintConfirmInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
+  const amount = params.get("amount") ?? "";
   const router = useRouter();
 
   function handlePrint() {
-    const q = new URLSearchParams({ name, title });
+    const q = new URLSearchParams({ name, title, amount });
     router.push(`/ecard?${q.toString()}`);
   }
 
