@@ -66,8 +66,8 @@ export default function CeremonyInfo({ memorial }: Props) {
   const location = `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
 
   return (
-    <section className="px-4 mb-1 space-y-2">
-      <div className="max-w-lg mx-auto space-y-2">
+    <section className="px-4 pt-[5px] mb-1">
+      <div className="max-w-lg mx-auto space-y-[5px]">
 
         {/* กำหนดการสวดพระอภิธรรม */}
         <div style={glassCard} className="p-2.5 flex gap-3 items-start">

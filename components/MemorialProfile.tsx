@@ -19,7 +19,7 @@ function formatThaiDate(dateStr: string) {
 
 export default function MemorialProfile({ memorial }: Props) {
   return (
-    <section className="relative pt-2 pb-1">
+    <section className="relative pt-2 pb-0">
 
       {/* Portrait frame */}
       <div className="flex justify-center mb-2 px-3">
@@ -89,17 +89,6 @@ export default function MemorialProfile({ memorial }: Props) {
         </div>
       </div>
 
-      {/* Celestial lotus divider */}
-      <div className="flex items-center justify-center gap-2 mb-1.5 select-none px-8">
-        <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(201,152,60,0.45))" }} />
-        <LotusIcon className="w-3.5 h-3.5 text-gold-400" />
-        <span className="text-gold-400 text-[10px]">✦</span>
-        <span className="text-gold-300 text-[8px]">◆</span>
-        <span className="text-gold-400 text-[10px]">✦</span>
-        <LotusIcon className="w-3.5 h-3.5 text-gold-400 scale-x-[-1]" />
-        <div className="flex-1 h-px" style={{ background: "linear-gradient(to left, transparent, rgba(201,152,60,0.45))" }} />
-      </div>
-
       {/* Name & dates — glassmorphism backing */}
       <div className="px-4">
         <div className="max-w-lg mx-auto">
@@ -129,11 +118,6 @@ export default function MemorialProfile({ memorial }: Props) {
             <p className="text-xs text-gold-500 mt-0.5">อายุ {memorial.age} ปี</p>
           </div>
         </div>
-      </div>
-
-      {/* Bottom diamond ornament */}
-      <div className="flex justify-center mt-1">
-        <span className="text-gold-400 text-sm rotate-45 inline-block">◆</span>
       </div>
 
     </section>
