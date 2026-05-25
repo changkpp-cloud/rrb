@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Copy, Check, CloudUpload, Info } from "lucide-react";
+import { ArrowLeft, Copy, Check, CloudUpload, Info, Banknote } from "lucide-react";
 import LotusIcon from "./LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -17,6 +17,7 @@ interface Props {
 export default function PaymentPageClient({ memorial }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
   const [copied, setCopied] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
@@ -43,10 +44,11 @@ export default function PaymentPageClient({ memorial }: Props) {
     const form = new FormData();
     form.append("memorial_id", memorial.id);
     form.append("donor_name", "ผู้ร่วมบุญ");
-    form.append("amount", "0");
+    form.append("amount", amount || "0");
     form.append("slip", slipFile);
     fetch("/api/donations", { method: "POST", body: form }).catch(() => {});
-    router.push("/verifying");
+    const q = new URLSearchParams({ amount: amount.trim() });
+    router.push(`/verifying?${q.toString()}`);
   }
 
   return (
@@ -143,6 +145,23 @@ export default function PaymentPageClient({ memorial }: Props) {
                 </label>
               )}
             </div>
+
+            {slipPreview && (
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center gap-2 text-gold-700">
+                  <Banknote className="w-4 h-4" />
+                  <span className="text-sm font-semibold">จำนวนเงินที่โอน (บาท)</span>
+                </div>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  placeholder="กรอกจำนวนเงินตามสลิป"
+                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
+                />
+              </div>
+            )}
 
             <button
               onClick={handleVerify}

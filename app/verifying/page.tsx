@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import LotusIcon from "@/components/LotusIcon";
 
 const STEPS = [
@@ -11,9 +11,19 @@ const STEPS = [
 ];
 
 export default function VerifyingPage() {
+  return (
+    <Suspense>
+      <VerifyingInner />
+    </Suspense>
+  );
+}
+
+function VerifyingInner() {
   const [stepIndex, setStepIndex] = useState(0);
   const [done, setDone] = useState(false);
   const router = useRouter();
+  const params = useSearchParams();
+  const amount = params.get("amount") ?? "";
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -26,12 +36,13 @@ export default function VerifyingPage() {
     timers.push(
       setTimeout(() => {
         setDone(true);
-        router.push("/print-name");
+        const q = new URLSearchParams({ amount });
+        router.push(`/print-name?${q.toString()}`);
       }, STEPS.length * 1200 + 400)
     );
 
     return () => timers.forEach(clearTimeout);
-  }, [router]);
+  }, [router, amount]);
 
   return (
     <div
