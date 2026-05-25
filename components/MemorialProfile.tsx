@@ -102,13 +102,13 @@ export default function MemorialProfile({ memorial }: Props) {
 
       {/* Name & dates — glassmorphism backing */}
       <div
-        className="text-center mx-4 px-5 py-3 rounded-2xl"
+        className="text-center mx-4 px-5 py-3 rounded-xl"
         style={{
-          background: "rgba(255,252,248,0.72)",
+          background: "rgba(255,252,248,0.70)",
           backdropFilter: "blur(18px)",
           WebkitBackdropFilter: "blur(18px)",
-          border: "1px solid rgba(201,152,60,0.28)",
-          boxShadow: "0 4px 20px rgba(176,120,32,0.08), inset 0 1px 0 rgba(255,255,255,0.75)",
+          border: "1px solid rgba(222,184,110,0.36)",
+          boxShadow: "0 6px 28px rgba(176,120,32,0.09), 0 1px 4px rgba(176,120,32,0.05), inset 0 1px 0 rgba(255,255,255,0.75)",
         }}
       >
         <h2 className="text-xl font-bold text-gold-800 leading-snug">
