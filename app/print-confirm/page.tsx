@@ -104,7 +104,7 @@ function SignCard({ name, title, message }: { name: string; title: string; messa
   useEffect(() => {
     const nameEl = nameRef.current;
     if (!nameEl) return;
-    const MAX_PX = 26;
+    const MAX_PX = displayTitle ? 18 : 26;
     nameEl.style.fontSize = MAX_PX + "px";
     nameEl.style.width = "max-content";
     const textW = nameEl.getBoundingClientRect().width;
@@ -113,7 +113,7 @@ function SignCard({ name, title, message }: { name: string; title: string; messa
       const size = Math.max(8, Math.min(MAX_PX, (available / textW) * MAX_PX));
       nameEl.style.fontSize = size + "px";
     }
-  }, [displayName, available]);
+  }, [displayName, displayTitle, available]);
 
   useEffect(() => {
     const titleEl = titleRef.current;

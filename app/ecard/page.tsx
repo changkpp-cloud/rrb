@@ -3,7 +3,7 @@
 import { Suspense, useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Share2, Home, Download } from "lucide-react";
+import { Share2, Home, Download, Flower2, FileText } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const DECEASED_NAME = "นางสาว สุภาพร ปทุมานนท์";
@@ -184,6 +184,24 @@ function ECardInner() {
             </button>
           </div>
 
+          {/* Extra menu buttons */}
+          <div className="flex gap-3">
+            <Link
+              href={`/mock-wreath?${new URLSearchParams({ name, title, message }).toString()}`}
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+            >
+              <Flower2 className="w-4 h-4" />
+              จำลองภาพมอบหรีด
+            </Link>
+            <Link
+              href={`/certificate?${new URLSearchParams({ name, title, message }).toString()}`}
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+            >
+              <FileText className="w-4 h-4" />
+              ออกหลักฐานการมอบ
+            </Link>
+          </div>
+
           {/* Home button */}
           <Link
             href="/"
@@ -210,13 +228,13 @@ function DonorSign({ name, title, message }: { name: string; title: string; mess
   useEffect(() => {
     const el = nameRef.current;
     if (!el) return;
-    const MAX = 26;
+    const MAX = displayTitle ? 18 : 26;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(8, Math.min(MAX, (available / tw) * MAX)) + "px";
-  }, [displayName, available]);
+  }, [displayName, displayTitle, available]);
 
   useEffect(() => {
     const el = titleRef.current;
