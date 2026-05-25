@@ -21,7 +21,6 @@ function PrintConfirmInner() {
   const nameZoom = parseFloat(params.get("nameZoom") ?? "1");
   const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
   const nameY = parseInt(params.get("nameY") ?? "6");
-  const titleY = parseInt(params.get("titleY") ?? "28");
   const router = useRouter();
 
   function handlePrint() {
@@ -30,7 +29,6 @@ function PrintConfirmInner() {
       nameZoom: String(nameZoom),
       titleZoom: String(titleZoom),
       nameY: String(nameY),
-      titleY: String(titleY),
     });
     router.push(`/ecard?${q.toString()}`);
   }
@@ -73,7 +71,7 @@ function PrintConfirmInner() {
           <SignCard
             name={name} title={title}
             nameZoom={nameZoom} titleZoom={titleZoom}
-            nameY={nameY} titleY={titleY}
+            nameY={nameY}
           />
 
           {/* Print button */}
@@ -110,11 +108,11 @@ const TITLE_AVAILABLE = CARD_W - 48;
 function SignCard({
   name, title,
   nameZoom, titleZoom,
-  nameY, titleY,
+  nameY,
 }: {
   name: string; title: string;
   nameZoom: number; titleZoom: number;
-  nameY: number; titleY: number;
+  nameY: number;
 }) {
   const displayName = name || "ชื่อผู้มอบ";
   const displayTitle = title.trim();
@@ -167,7 +165,7 @@ function SignCard({
             </p>
           </div>
           {displayTitle && (
-            <div className="absolute left-6 right-6 flex justify-center" style={{ top: `${titleY}px` }}>
+            <div className="absolute left-6 right-6 bottom-[5px] flex justify-center">
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>

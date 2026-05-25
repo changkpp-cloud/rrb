@@ -12,7 +12,6 @@ export default function PrintNamePage() {
   const [nameZoom, setNameZoom] = useState(1.0);
   const [titleZoom, setTitleZoom] = useState(1.0);
   const [nameY, setNameY] = useState(6);
-  const [titleY, setTitleY] = useState(28);
   const [nameAtCap, setNameAtCap] = useState(false);
   const [titleAtCap, setTitleAtCap] = useState(false);
   const router = useRouter();
@@ -32,7 +31,6 @@ export default function PrintNamePage() {
       nameZoom: String(nameZoom),
       titleZoom: String(titleZoom),
       nameY: String(nameY),
-      titleY: String(titleY),
     });
     router.push(`/print-confirm?${q.toString()}`);
   }
@@ -126,7 +124,7 @@ export default function PrintNamePage() {
           <SignPreview
             name={name} title={title}
             nameZoom={nameZoom} titleZoom={titleZoom}
-            nameY={nameY} titleY={titleY}
+            nameY={nameY}
             onNameAtCap={setNameAtCap} onTitleAtCap={setTitleAtCap}
           />
 
@@ -155,16 +153,12 @@ export default function PrintNamePage() {
               </div>
             </div>
 
-            {/* ตำแหน่ง (แสดงเมื่อมีข้อมูล) */}
+            {/* ตำแหน่ง — แสดงเฉพาะเมื่อมีข้อมูล, ปรับได้เฉพาะขนาด */}
             {title.trim() && (
               <div className="space-y-1.5">
-                <span className="text-xs text-gold-600 font-medium">ตำแหน่ง</span>
+                <span className="text-xs text-gold-600 font-medium">ตำแหน่ง <span className="text-gold-400 font-normal">(แสดงล่างป้าย)</span></span>
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">แนวตั้ง</span>
-                  <button onClick={() => setTitleY(y => stepY(y, -2))} className={`${btnBase} ${btnActive}`}><ChevronUp className="w-3.5 h-3.5" /></button>
-                  <button onClick={() => setTitleY(y => stepY(y, 2))}  className={`${btnBase} ${btnActive}`}><ChevronDown className="w-3.5 h-3.5" /></button>
-                  <div className="w-px h-4 bg-gold-200 mx-1 flex-shrink-0" />
-                  <span className="text-[10px] text-gold-400 w-6 flex-shrink-0">ขนาด</span>
+                  <span className="text-[10px] text-gold-400 w-10 flex-shrink-0">ขนาด</span>
                   <button onClick={() => setTitleZoom(z => stepZoom(z, -0.1))} className={`${btnBase} ${btnActive}`}><Minus className="w-3.5 h-3.5" /></button>
                   <span className="text-xs text-gold-700 font-medium w-8 text-center">
                     {titleAtCap ? "100" : Math.round(titleZoom * 100)}%
@@ -205,19 +199,18 @@ export default function PrintNamePage() {
 /* ── Sign card constants ── */
 const CARD_W = 288;
 const CARD_H = 80;
-/* ชื่อ: margin 12px แต่ละด้าน | ตำแหน่ง: margin 24px แต่ละด้าน (แคบกว่า) */
-const NAME_AVAILABLE = CARD_W - 24;
-const TITLE_AVAILABLE = CARD_W - 48;
+const NAME_AVAILABLE = CARD_W - 24;   // ชื่อ: margin 12px แต่ละด้าน
+const TITLE_AVAILABLE = CARD_W - 48;  // ตำแหน่ง: margin 24px แต่ละด้าน (แคบกว่า)
 
 function SignPreview({
   name, title,
   nameZoom, titleZoom,
-  nameY, titleY,
+  nameY,
   onNameAtCap, onTitleAtCap,
 }: {
   name: string; title: string;
   nameZoom: number; titleZoom: number;
-  nameY: number; titleY: number;
+  nameY: number;
   onNameAtCap: (v: boolean) => void;
   onTitleAtCap: (v: boolean) => void;
 }) {
@@ -278,15 +271,15 @@ function SignPreview({
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
         <div className="relative h-full">
-          {/* ชื่อ — margin 12px */}
+          {/* ชื่อ — ปรับ Y ได้ */}
           <div className="absolute left-3 right-3 flex justify-center" style={{ top: `${nameY}px` }}>
             <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
               {displayName}
             </p>
           </div>
-          {/* ตำแหน่ง — margin 24px (แคบกว่าชื่อ) */}
+          {/* ตำแหน่ง — ยึดล่างป้ายเสมอ, margin แคบกว่าชื่อ */}
           {displayTitle && (
-            <div className="absolute left-6 right-6 flex justify-center" style={{ top: `${titleY}px` }}>
+            <div className="absolute left-6 right-6 bottom-[5px] flex justify-center">
               <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
                 {displayTitle}
               </p>

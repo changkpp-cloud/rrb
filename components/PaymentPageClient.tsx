@@ -119,19 +119,30 @@ export default function PaymentPageClient({ memorial }: Props) {
             <OrnamentTitle small>โอนแล้วแนบสลิป</OrnamentTitle>
 
             {/* Slip upload */}
-            <label className="mt-3 flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-gold-300 bg-cream-50 cursor-pointer hover:bg-cream-100 transition-colors">
+            <div className="mt-3">
               {slipPreview ? (
-                <div className="relative w-full h-full rounded-xl overflow-hidden">
-                  <Image src={slipPreview} alt="slip" fill className="object-contain p-1" />
-                </div>
+                <label className="block cursor-pointer">
+                  <div className="w-full rounded-xl overflow-hidden border border-gold-200 bg-cream-50 flex justify-center">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={slipPreview}
+                      alt="สลิปการโอน"
+                      style={{ maxWidth: "100%", maxHeight: "58dvh", width: "auto", height: "auto", display: "block" }}
+                    />
+                  </div>
+                  <p className="text-center text-[11px] text-gold-400 mt-1.5">แตะเพื่อเปลี่ยนรูป</p>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleSlipFile} className="hidden" />
+                </label>
               ) : (
-                <div className="flex flex-col items-center gap-1 text-gold-400">
-                  <CloudUpload className="w-7 h-7" />
-                  <span className="text-xs">แนบสลิปการโอน / รองรับไฟล์ JPG, PNG</span>
-                </div>
+                <label className="flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed border-gold-300 bg-cream-50 cursor-pointer hover:bg-cream-100 transition-colors">
+                  <div className="flex flex-col items-center gap-1 text-gold-400">
+                    <CloudUpload className="w-7 h-7" />
+                    <span className="text-xs">แนบสลิปการโอน / รองรับไฟล์ JPG, PNG</span>
+                  </div>
+                  <input ref={fileRef} type="file" accept="image/*" onChange={handleSlipFile} className="hidden" />
+                </label>
               )}
-              <input ref={fileRef} type="file" accept="image/*" onChange={handleSlipFile} className="hidden" />
-            </label>
+            </div>
 
             <button
               onClick={handleVerify}
