@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useRef, useEffect } from "react";
+import { Suspense, useRef, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { Printer, Home } from "lucide-react";
 import Link from "next/link";
@@ -18,11 +18,10 @@ function PrintConfirmInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
-  const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
   const router = useRouter();
 
   function handlePrint() {
-    const q = new URLSearchParams({ name, title, titleZoom: String(titleZoom) });
+    const q = new URLSearchParams({ name, title });
     router.push(`/ecard?${q.toString()}`);
   }
 
@@ -58,7 +57,7 @@ function PrintConfirmInner() {
             </div>
           </div>
 
-          <SignCard name={name} title={title} titleZoom={titleZoom} />
+          <SignCard name={name} title={title} />
 
           <button
             onClick={handlePrint}
@@ -88,11 +87,12 @@ const CARD_H = 80;
 const NAME_AVAILABLE = CARD_W - 24;
 const TITLE_AVAILABLE = 220;
 
-function SignCard({ name, title, titleZoom }: { name: string; title: string; titleZoom: number }) {
+function SignCard({ name, title }: { name: string; title: string }) {
   const displayName = name || "ชื่อผู้มอบ";
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
+  const [nameAtCap, setNameAtCap] = useState(false);
 
   useEffect(() => {
     const el = nameRef.current;
@@ -102,19 +102,25 @@ function SignCard({ name, title, titleZoom }: { name: string; title: string; tit
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
+    if (tw > 0) {
+      const ratio = NAME_AVAILABLE / tw;
+      setNameAtCap(ratio < 1);
+      el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
+    } else {
+      setNameAtCap(false);
+    }
   }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 14 * titleZoom;
+    const MAX = 14;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (TITLE_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayTitle, titleZoom]);
+  }, [displayTitle]);
 
   return (
     <div className="flex justify-center">
@@ -133,13 +139,17 @@ function SignCard({ name, title, titleZoom }: { name: string; title: string; tit
         <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
         <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
-        <div className="absolute inset-0 left-3 right-3 flex items-center justify-center">
+        <div
+          className="absolute left-3 right-3 flex justify-center"
+          style={{ top: nameAtCap ? "50%" : "40%", transform: "translateY(-50%)" }}
+        >
           <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
             {displayName}
           </p>
         </div>
+
         {displayTitle && (
-          <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
+          <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
             <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
               {displayTitle}
             </p>

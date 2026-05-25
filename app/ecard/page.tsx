@@ -27,12 +27,11 @@ function ECardInner() {
   const params = useSearchParams();
   const name = params.get("name") ?? "";
   const title = params.get("title") ?? "";
-  const titleZoom = parseFloat(params.get("titleZoom") ?? "1");
 
   const cardRef = useRef<HTMLDivElement>(null);
   const [saving, setSaving] = useState(false);
 
-  const extraParams = new URLSearchParams({ name, title, titleZoom: String(titleZoom) }).toString();
+  const extraParams = new URLSearchParams({ name, title }).toString();
 
   async function handleSave() {
     if (!cardRef.current) return;
@@ -129,7 +128,7 @@ function ECardInner() {
             </div>
 
             <div className="flex justify-center pb-4 px-3">
-              <DonorSign name={name} title={title} titleZoom={titleZoom} />
+              <DonorSign name={name} title={title} />
             </div>
 
             <div className="mx-5">
@@ -206,11 +205,12 @@ function ECardInner() {
   );
 }
 
-function DonorSign({ name, title, titleZoom }: { name: string; title: string; titleZoom: number }) {
+function DonorSign({ name, title }: { name: string; title: string }) {
   const displayName = name || "ผู้ร่วมบุญ";
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
   const titleRef = useRef<HTMLParagraphElement>(null);
+  const [nameAtCap, setNameAtCap] = useState(false);
 
   useEffect(() => {
     const el = nameRef.current;
@@ -220,19 +220,25 @@ function DonorSign({ name, title, titleZoom }: { name: string; title: string; ti
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6, Math.min(MAX, (NAME_AVAILABLE / tw) * MAX)) + "px";
+    if (tw > 0) {
+      const ratio = NAME_AVAILABLE / tw;
+      setNameAtCap(ratio < 1);
+      el.style.fontSize = Math.max(6, Math.min(MAX, ratio * MAX)) + "px";
+    } else {
+      setNameAtCap(false);
+    }
   }, [displayName]);
 
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
-    const MAX = 14 * titleZoom;
+    const MAX = 14;
     el.style.fontSize = MAX + "px";
     el.style.width = "max-content";
     const tw = el.getBoundingClientRect().width;
     el.style.width = "";
     if (tw > 0) el.style.fontSize = Math.max(5, Math.min(MAX, (TITLE_AVAILABLE / tw) * MAX)) + "px";
-  }, [displayTitle, titleZoom]);
+  }, [displayTitle]);
 
   return (
     <div
@@ -250,13 +256,17 @@ function DonorSign({ name, title, titleZoom }: { name: string; title: string; ti
       <span className="absolute bottom-1 left-1.5 text-gold-400 text-xs select-none leading-none scale-y-[-1] inline-block">❧</span>
       <span className="absolute bottom-1 right-1.5 text-gold-400 text-xs select-none leading-none rotate-180 inline-block">❧</span>
 
-      <div className="absolute inset-0 left-3 right-3 flex items-center justify-center">
+      <div
+        className="absolute left-3 right-3 flex justify-center"
+        style={{ top: nameAtCap ? "50%" : "40%", transform: "translateY(-50%)" }}
+      >
         <p ref={nameRef} className="font-bold text-gold-800 whitespace-nowrap leading-tight text-center">
           {displayName}
         </p>
       </div>
+
       {displayTitle && (
-        <div className="absolute bottom-[5px] flex justify-center" style={{ left: '34px', right: '34px' }}>
+        <div className="absolute bottom-[5px] flex justify-center" style={{ left: "34px", right: "34px" }}>
           <p ref={titleRef} className="text-gold-600 whitespace-nowrap leading-tight text-center">
             {displayTitle}
           </p>
