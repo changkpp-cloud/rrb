@@ -31,17 +31,21 @@ export default function SiteHeader() {
 
         <Link
           href="/dashboard"
-          className="w-8 h-8 rounded-full flex items-center justify-center text-gold-600 active:scale-95 transition-all duration-150"
-          style={{
-            background: "rgba(255,252,248,0.75)",
-            backdropFilter: "blur(12px)",
-            WebkitBackdropFilter: "blur(12px)",
-            border: "1px solid rgba(201,152,60,0.38)",
-            boxShadow: "0 2px 12px rgba(176,120,32,0.12), inset 0 1px 0 rgba(255,255,255,0.7)",
-          }}
+          className="flex items-center justify-center w-[54px] h-[54px] -mr-2 active:scale-95 transition-all duration-150"
           title="แดชบอร์ดเจ้าภาพ"
         >
-          <span className="text-lg leading-none font-light">+</span>
+          <span
+            className="w-9 h-9 rounded-full flex items-center justify-center text-gold-600"
+            style={{
+              background: "rgba(255,252,248,0.85)",
+              backdropFilter: "blur(12px)",
+              WebkitBackdropFilter: "blur(12px)",
+              border: "1.5px solid rgba(201,152,60,0.50)",
+              boxShadow: "0 2px 12px rgba(176,120,32,0.15), inset 0 1px 0 rgba(255,255,255,0.8)",
+            }}
+          >
+            <span className="text-xl leading-none font-light select-none">+</span>
+          </span>
         </Link>
       </div>
     </header>

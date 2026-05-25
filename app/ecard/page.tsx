@@ -167,7 +167,7 @@ function ECardInner() {
             </button>
             <button
               onClick={handleShare}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Share2 className="w-4 h-4" />
               แชร์
@@ -177,14 +177,14 @@ function ECardInner() {
           <div className="flex gap-3">
             <Link
               href={`/mock-wreath?${extraParams}`}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Flower2 className="w-4 h-4" />
               จำลองภาพมอบหรีด
             </Link>
             <Link
               href={`/certificate?${extraParams}`}
-              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+              className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <FileText className="w-4 h-4" />
               ออกหลักฐานการมอบ
@@ -193,7 +193,7 @@ function ECardInner() {
 
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             <Home className="w-4 h-4" />
             กลับหน้าหลัก

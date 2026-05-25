@@ -103,7 +103,7 @@ export default function PaymentPageClient({ memorial }: Props) {
                 </p>
                 <button
                   onClick={copyAccount}
-                  className="mt-1 flex items-center gap-1.5 px-3 py-1.5 rounded-lg gold-border bg-cream-50 hover:bg-cream-100 transition-colors text-xs text-gold-700 font-medium"
+                  className="mt-1 flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
@@ -192,7 +192,7 @@ export default function PaymentPageClient({ memorial }: Props) {
           {/* ─── Back button ─── */}
           <Link
             href="/"
-            className="flex items-center justify-center gap-2 w-full py-3 rounded-2xl border border-gold-300 bg-cream-50 text-gold-700 font-medium text-sm hover:bg-cream-100 transition-colors"
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             ย้อนกลับ

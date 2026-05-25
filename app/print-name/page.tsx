@@ -46,9 +46,11 @@ function PrintNameInner() {
           </div>
           <Link
             href="/dashboard"
-            className="w-8 h-8 rounded-full border border-gold-400 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 active:scale-95 transition-all card-shadow"
+            className="flex items-center justify-center w-[54px] h-[54px] -mr-2 active:scale-95 transition-all"
           >
-            <span className="text-lg leading-none font-light">+</span>
+            <span className="w-9 h-9 rounded-full border-[1.5px] border-gold-400 bg-cream-50 flex items-center justify-center text-gold-600 card-shadow">
+              <span className="text-xl leading-none font-light select-none">+</span>
+            </span>
           </Link>
         </div>
       </header>
@@ -105,7 +107,7 @@ function PrintNameInner() {
 
           <Link
             href="/payment"
-            className="flex items-center justify-center w-full py-3 rounded-2xl border border-gold-300 bg-cream-50 text-gold-600 font-medium text-sm hover:bg-cream-100 transition-colors"
+            className="flex items-center justify-center w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             ย้อนกลับ
           </Link>
