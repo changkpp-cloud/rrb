@@ -19,11 +19,11 @@ function formatThaiDate(dateStr: string) {
 
 export default function MemorialProfile({ memorial }: Props) {
   return (
-    <section className="relative pt-4 pb-2">
+    <section className="relative pt-2 pb-1">
 
       {/* Portrait frame */}
-      <div className="flex justify-center mb-3 px-3">
-        <div className="relative w-[82vw] max-w-xs aspect-square">
+      <div className="flex justify-center mb-2 px-3">
+        <div className="relative w-[44vw] max-w-[185px] aspect-square">
 
           {/* Outer celestial halo — pulsing glow ring */}
           <div
@@ -90,7 +90,7 @@ export default function MemorialProfile({ memorial }: Props) {
       </div>
 
       {/* Celestial lotus divider */}
-      <div className="flex items-center justify-center gap-2 mb-2 select-none px-8">
+      <div className="flex items-center justify-center gap-2 mb-1.5 select-none px-8">
         <div className="flex-1 h-px" style={{ background: "linear-gradient(to right, transparent, rgba(201,152,60,0.45))" }} />
         <LotusIcon className="w-3.5 h-3.5 text-gold-400" />
         <span className="text-gold-400 text-[10px]">✦</span>
@@ -104,7 +104,7 @@ export default function MemorialProfile({ memorial }: Props) {
       <div className="px-4">
         <div className="max-w-lg mx-auto">
           <div
-            className="text-center px-5 py-3 rounded-xl"
+            className="text-center px-5 py-2 rounded-xl"
             style={{
               background: "rgba(255,252,248,0.70)",
               backdropFilter: "blur(18px)",
@@ -132,7 +132,7 @@ export default function MemorialProfile({ memorial }: Props) {
       </div>
 
       {/* Bottom diamond ornament */}
-      <div className="flex justify-center mt-2">
+      <div className="flex justify-center mt-1">
         <span className="text-gold-400 text-sm rotate-45 inline-block">◆</span>
       </div>
 

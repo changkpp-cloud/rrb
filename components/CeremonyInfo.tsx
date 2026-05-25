@@ -66,11 +66,11 @@ export default function CeremonyInfo({ memorial }: Props) {
   const location = `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
 
   return (
-    <section className="px-4 mb-2 space-y-2">
+    <section className="px-4 mb-1 space-y-2">
       <div className="max-w-lg mx-auto space-y-2">
 
         {/* กำหนดการสวดพระอภิธรรม */}
-        <div style={glassCard} className="p-3 flex gap-3 items-start">
+        <div style={glassCard} className="p-2.5 flex gap-3 items-start">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
             style={{
@@ -90,7 +90,7 @@ export default function CeremonyInfo({ memorial }: Props) {
         </div>
 
         {/* กำหนดการฌาปนกิจ */}
-        <div style={glassCard} className="p-3 flex gap-3 items-start">
+        <div style={glassCard} className="p-2.5 flex gap-3 items-start">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
             style={{
