@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { User, Briefcase, Check } from "lucide-react";
+import { User, Briefcase, Check, Minus, Plus } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const MESSAGES = [
@@ -15,7 +15,13 @@ export default function PrintNamePage() {
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState(MESSAGES[0]);
+  const [nameZoom, setNameZoom] = useState(1.0);
+  const [titleZoom, setTitleZoom] = useState(1.0);
   const router = useRouter();
+
+  function stepZoom(current: number, delta: number) {
+    return parseFloat(Math.min(2.0, Math.max(0.3, current + delta)).toFixed(1));
+  }
 
   function handleConfirm() {
     if (!name.trim()) return;
@@ -64,7 +70,38 @@ export default function PrintNamePage() {
           </div>
 
           {/* Preview card */}
-          <SignPreview name={name} title={title} message={message} />
+          <SignPreview name={name} title={title} message={message} nameZoom={nameZoom} titleZoom={titleZoom} />
+
+          {/* ── ปรับขนาดตัวอักษร ── */}
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2">
+            <p className="text-xs font-semibold text-gold-700">ปรับขนาดตัวอักษร</p>
+            <div className="flex items-center gap-3">
+              <span className="text-xs text-gold-600 w-10 flex-shrink-0">ชื่อ</span>
+              <button
+                onClick={() => setNameZoom(z => stepZoom(z, -0.1))}
+                className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
+              ><Minus className="w-3.5 h-3.5" /></button>
+              <span className="flex-1 text-center text-xs text-gold-700 font-medium">{Math.round(nameZoom * 100)}%</span>
+              <button
+                onClick={() => setNameZoom(z => stepZoom(z, 0.1))}
+                className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
+              ><Plus className="w-3.5 h-3.5" /></button>
+            </div>
+            {title.trim() && (
+              <div className="flex items-center gap-3">
+                <span className="text-xs text-gold-600 w-10 flex-shrink-0">ตำแหน่ง</span>
+                <button
+                  onClick={() => setTitleZoom(z => stepZoom(z, -0.1))}
+                  className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
+                ><Minus className="w-3.5 h-3.5" /></button>
+                <span className="flex-1 text-center text-xs text-gold-700 font-medium">{Math.round(titleZoom * 100)}%</span>
+                <button
+                  onClick={() => setTitleZoom(z => stepZoom(z, 0.1))}
+                  className="w-8 h-8 rounded-lg border border-gold-300 bg-white text-gold-700 font-bold flex items-center justify-center hover:bg-gold-50 active:scale-95 transition-all"
+                ><Plus className="w-3.5 h-3.5" /></button>
+              </div>
+            )}
+          </div>
 
           {/* ── ชื่อผู้มอบ ── */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2">
@@ -182,7 +219,9 @@ export default function PrintNamePage() {
 const CARD_W = 288;
 const CARD_H = 80;
 
-function SignPreview({ name, title, message }: { name: string; title: string; message: string }) {
+function SignPreview({ name, title, message, nameZoom, titleZoom }: {
+  name: string; title: string; message: string; nameZoom: number; titleZoom: number;
+}) {
   const displayName = name.trim() || "ชื่อผู้มอบ";
   const displayTitle = title.trim();
   const nameRef = useRef<HTMLParagraphElement>(null);
@@ -193,30 +232,30 @@ function SignPreview({ name, title, message }: { name: string; title: string; me
   useEffect(() => {
     const nameEl = nameRef.current;
     if (!nameEl) return;
-    const MAX_PX = 26;
+    const MAX_PX = 26 * nameZoom;
     nameEl.style.fontSize = MAX_PX + "px";
     nameEl.style.width = "max-content";
     const textW = nameEl.getBoundingClientRect().width;
     nameEl.style.width = "";
     if (textW > 0) {
-      const size = Math.max(8, Math.min(MAX_PX, (available / textW) * MAX_PX));
+      const size = Math.max(6, Math.min(MAX_PX, (available / textW) * MAX_PX));
       nameEl.style.fontSize = size + "px";
     }
-  }, [displayName, available]);
+  }, [displayName, available, nameZoom]);
 
   useEffect(() => {
     const titleEl = titleRef.current;
     if (!titleEl) return;
-    const MAX_PX = 11;
+    const MAX_PX = 11 * titleZoom;
     titleEl.style.fontSize = MAX_PX + "px";
     titleEl.style.width = "max-content";
     const textW = titleEl.getBoundingClientRect().width;
     titleEl.style.width = "";
     if (textW > 0) {
-      const size = Math.max(6, Math.min(MAX_PX, (available / textW) * MAX_PX));
+      const size = Math.max(5, Math.min(MAX_PX, (available / textW) * MAX_PX));
       titleEl.style.fontSize = size + "px";
     }
-  }, [displayTitle, available]);
+  }, [displayTitle, available, titleZoom]);
 
   return (
     <div className="flex justify-center">
