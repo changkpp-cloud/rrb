@@ -305,8 +305,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 overflow: "hidden",
               }}
             >
-              {/* Header — 200px saved = 67px element (padding 24*s×2 + icon 20*s ≈ 68px) */}
-              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: `${Math.round(24*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
+              {/* Header — 50px element = 150px saved */}
+              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: `${Math.round(15*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full" /></span>
                 <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
@@ -374,14 +374,11 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
               </div>
 
-              {/* ── ล่างสุด ~90px element (~270px saved) — ลายจางๆ ไม่มีข้อความสำคัญ ── */}
-              {/* ── ล่างสุด 200px saved = 67px element ── */}
-              <div style={{ height: Math.round(67*s), flexShrink: 0, background: "linear-gradient(180deg,transparent 0%,rgba(245,228,181,0.18) 60%,rgba(245,228,181,0.35) 100%)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(14*s) }}>
-                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.22)" }}><LotusIcon className="w-full h-full" /></span>
-                <span style={{ display: "inline-flex", width: Math.round(24*s), height: Math.round(24*s), color: "rgba(201,168,76,0.18)" }}><LotusIcon className="w-full h-full" /></span>
-                <span style={{ color: "rgba(201,168,76,0.2)", fontSize: Math.round(10*s), letterSpacing: "0.3em" }}>❖ ❖ ❖</span>
-                <span style={{ display: "inline-flex", width: Math.round(24*s), height: Math.round(24*s), color: "rgba(201,168,76,0.18)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
-                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.22)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+              {/* ── Bottom zone — 50px element = 150px saved, ทองเข้มเหมือน header ── */}
+              <div style={{ height: Math.round(50*s), flexShrink: 0, background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(10*s) }}>
+                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full" /></span>
+                <span style={{ color: "rgba(255,255,255,0.45)", fontSize: Math.round(10*s), letterSpacing: "0.35em" }}>❖ ❖ ❖</span>
+                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
               </div>
             </div>
 
