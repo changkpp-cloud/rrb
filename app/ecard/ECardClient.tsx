@@ -294,14 +294,13 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               ref={cardRef}
               style={{
                 width: "100%",
-                aspectRatio: "3/4",
+                minHeight: Math.round(cardWidth * 4 / 3),
                 background: "linear-gradient(170deg,#fdf8ee 0%,#f5e4b5 35%,#fdf8ee 65%,#eedfa8 100%)",
                 border: "2px solid #c9a84c",
                 borderRadius: 20,
                 boxShadow: "0 12px 40px rgba(184,134,11,0.28)",
                 display: "flex",
                 flexDirection: "column",
-                overflow: "hidden",
               }}
             >
               {/* Header */}
@@ -312,7 +311,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </div>
 
               {/* Body */}
-              <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(6*s)}px ${Math.round(16*s)}px` }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(6*s)}px ${Math.round(16*s)}px` }}>
 
                 {/* Deceased photo + info */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s) }}>
