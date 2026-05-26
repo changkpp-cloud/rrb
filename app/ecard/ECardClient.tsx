@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Share2, Download, FileText, Sparkles, ChevronRight } from "lucide-react";
+import { Download, Sparkles } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -85,8 +85,6 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   const [savingMock, setSavingMock]   = useState(false);
   const [genError, setGenError]       = useState("");
 
-  const extraParams = new URLSearchParams({ name, title, amount, message }).toString();
-
   const deceasedName = memorial.name;
   const birthDate    = memorial.birth_date ? thaiDate(memorial.birth_date) : "";
   const deathDate    = memorial.death_date ? thaiDate(memorial.death_date) : "";
@@ -105,18 +103,6 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
       link.click();
     } catch {}
     setSaving(false);
-  }
-
-  async function handleShare() {
-    if (navigator.share) {
-      await navigator.share({
-        title: "หรีดร่วมบุญ Zero Waste — ขอบคุณ",
-        text: `${name || "ผู้ร่วมบุญ"} ขอร่วมแสดงความอาลัยแด่ ${deceasedName}`,
-        url: window.location.href,
-      }).catch(() => {});
-    } else {
-      await navigator.clipboard.writeText(window.location.href).catch(() => {});
-    }
   }
 
   function handleFaceChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -330,13 +316,6 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
                 <Download className="w-4 h-4" />
                 {saving ? "กำลังบันทึก..." : "บันทึก E-card"}
               </button>
-              <button
-                onClick={handleShare}
-                className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-all"
-              >
-                <Share2 className="w-4 h-4" />
-                แชร์
-              </button>
             </div>
           </div>
 
@@ -435,24 +414,9 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
             )}
           </div>
 
-          {/* ── SECTION 3: Certificate link ── */}
-          <Link
-            href={`/certificate?${extraParams}`}
-            className="flex items-center gap-3 bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 hover:bg-cream-100 active:scale-[0.98] transition-all"
-          >
-            <div className="w-12 h-12 rounded-xl bg-gold-100 border border-gold-200 flex items-center justify-center shrink-0">
-              <FileText className="w-6 h-6 text-gold-600" />
-            </div>
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-gold-800">ใบเสร็จ / ใบอนุโมทนาบุญ</p>
-              <p className="text-xs text-gold-500 mt-0.5">สำหรับผู้ที่ต้องการเอกสารยืนยันการร่วมบุญ</p>
-            </div>
-            <ChevronRight className="w-5 h-5 text-gold-400" />
-          </Link>
-
           {/* Back */}
           <Link
-            href={`/print-name?${extraParams}`}
+            href={`/print-name?${new URLSearchParams({ name, title, amount, message }).toString()}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             ← ย้อนกลับ
