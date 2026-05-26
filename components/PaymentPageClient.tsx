@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Copy, Check, CloudUpload, Info } from "lucide-react";
+import { ArrowLeft, Copy, Check, CloudUpload } from "lucide-react";
 import LotusIcon from "./LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -153,13 +153,6 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
               {verifying ? "กำลังส่ง..." : "ตรวจสอบสลิป"}
             </button>
 
-            {/* Fee info — แสดงหลังปุ่มตรวจสอบสลิป */}
-            <div className="mt-2 bg-cream-100 border border-gold-200 rounded-xl px-3 py-2.5 flex gap-2">
-              <Info className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
-              <p className="text-xs text-gold-600 leading-relaxed">
-                ทุกยอดการทำรายการ หัก {SYSTEM_FEE} บาท เป็นกระดาษ หมึก บำรุงรักษาอุปกรณ์ และจิตอาสา ที่เหลือส่งถึงเจ้าภาพ
-              </p>
-            </div>
           </Card>
 
 
