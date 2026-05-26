@@ -303,12 +303,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
+                fontFamily: "'Sarabun', sans-serif",
               }}
             >
               {/* Header — 50px element = 150px saved */}
               <div style={{ background: "linear-gradient(90deg,#c4a052,#e0c070,#eacf80,#e0c070,#c4a052)", padding: `${Math.round(15*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full" /></span>
-                <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
+                <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "'Sarabun', sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
               </div>
 
