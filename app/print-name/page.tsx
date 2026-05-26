@@ -65,7 +65,7 @@ function PrintNameInner() {
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="กรอกชื่อ-นามสกุล"
+                placeholder=""
                 className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
               />
             </div>
