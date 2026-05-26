@@ -28,7 +28,7 @@ export const DEMO_MEMORIAL: Memorial = {
   created_at: new Date().toISOString(),
 };
 
-export async function getMemorial(): Promise<Memorial> {
+export async function getMemorial(): Promise<Memorial | null> {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -38,9 +38,9 @@ export async function getMemorial(): Promise<Memorial> {
       .order("created_at", { ascending: false })
       .limit(1)
       .single();
-    return (data as Memorial | null) ?? DEMO_MEMORIAL;
+    return (data as Memorial | null);
   } catch {
-    return DEMO_MEMORIAL;
+    return null;
   }
 }
 
@@ -51,9 +51,9 @@ export async function getMemorials(): Promise<Memorial[]> {
       .from("memorials")
       .select("*")
       .order("created_at", { ascending: false });
-    return (data as Memorial[] | null) ?? [DEMO_MEMORIAL];
+    return (data as Memorial[] | null) ?? [];
   } catch {
-    return [DEMO_MEMORIAL];
+    return [];
   }
 }
 

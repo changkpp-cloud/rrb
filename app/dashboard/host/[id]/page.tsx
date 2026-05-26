@@ -1,25 +1,18 @@
 import Link from "next/link";
 import { ArrowLeft, Users, Banknote, Printer, MapPin, QrCode, Download } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
 import { getMemorialById, DEMO_MEMORIAL, formatThaiDate } from "@/lib/memorial";
 
 export const revalidate = 30;
 
-const DEMO_DONATIONS: Donation[] = [
-  { id: "1", memorial_id: "demo", donor_name: "นายสมชาย ใจดี", donor_title: "ผู้อำนวยการ", amount: 500, message: "ขอแสดงความเสียใจ", slip_url: null, status: "confirmed", nameplate_status: "posted", created_at: new Date(Date.now()-3600000).toISOString() },
-  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", donor_title: null, amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "confirmed", nameplate_status: "printed", created_at: new Date(Date.now()-7200000).toISOString() },
-  { id: "3", memorial_id: "demo", donor_name: "นายวิชัย เจริญ", donor_title: "นายกเทศมนตรี", amount: 1000, message: null, slip_url: null, status: "pending", nameplate_status: "pending", created_at: new Date(Date.now()-86400000).toISOString() },
-  { id: "4", memorial_id: "demo", donor_name: "นางประไพ สุขใส", donor_title: null, amount: 200, message: null, slip_url: null, status: "confirmed", nameplate_status: "queued", created_at: new Date(Date.now()-172800000).toISOString() },
-];
-
 async function getDonations(memorialId: string): Promise<Donation[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase.from("donations").select("*").eq("memorial_id", memorialId).order("created_at", { ascending: false });
-    return (data as Donation[] | null) ?? DEMO_DONATIONS;
-  } catch { return DEMO_DONATIONS; }
+    return (data as Donation[] | null) ?? [];
+  } catch { return []; }
 }
 
 const NAMEPLATE_LABELS: Record<string, string> = {
@@ -32,7 +25,7 @@ const NAMEPLATE_COLORS: Record<string, string> = {
 
 export default async function HostFuneralPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const memorial = (await getMemorialById(id)) ?? DEMO_MEMORIAL;
+  const memorial = await getMemorialById(id) ?? DEMO_MEMORIAL;
   const donations = await getDonations(memorial.id);
 
   const confirmed = donations.filter(d => d.status === "confirmed");

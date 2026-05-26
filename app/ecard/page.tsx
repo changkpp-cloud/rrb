@@ -7,6 +7,7 @@ export const revalidate = 60;
 
 export default async function ECardPage() {
   const memorial = await getMemorial();
+  if (!memorial) return null;
   return (
     <Suspense>
       <ECardClient memorial={memorial} />

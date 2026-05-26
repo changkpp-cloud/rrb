@@ -7,19 +7,12 @@ import { getMemorialById, DEMO_MEMORIAL, formatThaiDate } from "@/lib/memorial";
 
 export const revalidate = 30;
 
-const DEMO_DONATIONS: Donation[] = [
-  { id: "1", memorial_id: "demo", donor_name: "นายสมชาย ใจดี", donor_title: "ผู้อำนวยการ", amount: 500, message: "ขอแสดงความเสียใจ", slip_url: null, status: "confirmed", nameplate_status: "posted", created_at: new Date(Date.now()-3600000).toISOString() },
-  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", donor_title: null, amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "confirmed", nameplate_status: "printed", created_at: new Date(Date.now()-7200000).toISOString() },
-  { id: "3", memorial_id: "demo", donor_name: "นายวิชัย เจริญ", donor_title: "นายกเทศมนตรี", amount: 1000, message: null, slip_url: null, status: "pending", nameplate_status: "pending", created_at: new Date(Date.now()-86400000).toISOString() },
-  { id: "4", memorial_id: "demo", donor_name: "นางประไพ สุขใส", donor_title: null, amount: 200, message: null, slip_url: null, status: "confirmed", nameplate_status: "queued", created_at: new Date(Date.now()-172800000).toISOString() },
-];
-
 async function getDonations(memorialId: string): Promise<Donation[]> {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase.from("donations").select("*").eq("memorial_id", memorialId).order("created_at", { ascending: false });
-    return (data as Donation[] | null) ?? DEMO_DONATIONS;
-  } catch { return DEMO_DONATIONS; }
+    return (data as Donation[] | null) ?? [];
+  } catch { return []; }
 }
 
 const NAMEPLATE_COLORS: Record<string, string> = {
@@ -68,7 +61,6 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
-        {/* Summary bar */}
         <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gold-500" />
@@ -80,7 +72,6 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
           <p className="text-sm font-bold text-gold-800">{total.toLocaleString()} ฿</p>
         </div>
 
-        {/* Donor list */}
         <div className="space-y-2">
           {donations.length === 0 && (
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-10 text-center">
