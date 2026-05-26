@@ -347,74 +347,69 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </div>
 
               {/* Body */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(6*s)}px ${Math.round(16*s)}px` }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(10*s)}px ${Math.round(16*s)}px`, gap: Math.round(8*s) }}>
 
-                {/* Deceased photo + info */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s) }}>
-                  <div style={{ width: Math.round(72*s), height: Math.round(86*s), borderRadius: "50% / 45%", overflow: "hidden", border: "2.5px solid #c9a84c", boxShadow: "0 6px 20px rgba(184,134,11,0.35), 0 0 0 4px rgba(253,248,238,0.8), 0 0 0 6px rgba(201,168,76,0.3)" }}>
-                    {memorial.photo_url ? (
-                      <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
-                    ) : (
-                      <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ display: "inline-flex", width: Math.round(36*s), height: Math.round(36*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
-                      </div>
-                    )}
+                {/* ── ส่วนที่ 1: ผู้มอบ ── */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s), width: "100%" }}>
+                  {/* เจ้าภาพขอขอบพระคุณ */}
+                  <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
+                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
+                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", letterSpacing: "0.1em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
+                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                   </div>
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(18*s), lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
-                    {(birthDate || deathDate) && (
-                      <p style={{ fontSize: Math.round(11*s), color: "#92400e", marginTop: Math.round(4*s), lineHeight: 1.6 }}>
-                        {birthDate && <>ชาตะ {birthDate}<br /></>}
-                        {deathDate && <>มรณะ {deathDate}</>}
-                      </p>
-                    )}
-                    {memorial.age ? <p style={{ fontSize: Math.round(11*s), color: "#a16207", marginTop: Math.round(2*s) }}>อายุ {memorial.age} ปี</p> : null}
-                  </div>
+
+                  {/* ชื่อผู้มอบ */}
+                  <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>
+                    {name || "ชื่อ หรือ องค์กร"}
+                  </p>
+
+                  {/* ตำแหน่ง */}
+                  {title && (
+                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", margin: 0, textAlign: "center", lineHeight: 1.4 }}>
+                      {title}
+                    </p>
+                  )}
+
+                  {/* ที่ร่วมอาลัย... */}
+                  <p style={{ fontSize: Math.round(12*s), color: "#92400e", textAlign: "center", lineHeight: 1.6, margin: 0 }}>
+                    {showAmount
+                      ? <>ที่ร่วมอาลัย และร่วมทำบุญ <span style={{ fontWeight: 700, color: "#78350f" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span> ในครั้งนี้</>
+                      : "ที่ร่วมอาลัย และร่วมทำบุญในครั้งนี้"
+                    }
+                  </p>
                 </div>
 
                 {/* Divider */}
                 <div style={{ display: "flex", alignItems: "center", gap: Math.round(8*s), width: "100%" }}>
                   <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #c9a84c)" }} />
-                  <span style={{ color: "#c9a84c", fontSize: Math.round(14*s) }}>❖</span>
+                  <span style={{ color: "#c9a84c", fontSize: Math.round(13*s) }}>❖</span>
                   <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #c9a84c)" }} />
                 </div>
 
-                {/* Donor section */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(5*s), width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
-                    <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
-                    <p style={{ fontSize: Math.round(13*s), color: "#92400e", letterSpacing: "0.12em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
-                    <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
-                  </div>
+                {/* ── ส่วนที่ 2: ผู้วายชนม์ ── */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(5*s) }}>
+                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.12em", margin: 0 }}>แด่ผู้วายชนม์</p>
 
-                  {/* ป้ายชื่อ — สัดส่วน 288:80 ตรงกับ SignPreview */}
-                  <div style={{ width: "100%", aspectRatio: "288 / 80", position: "relative", background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)", border: "1.5px solid #c9a84c", borderRadius: Math.round(12*s), boxShadow: `0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 ${Math.round(3*s)}px #fdf8ee, inset 0 0 0 ${Math.round(4*s)}px rgba(201,168,76,0.27)`, overflow: "hidden" }}>
-                    <div style={{ position: "absolute", left: Math.round(12*s), right: Math.round(12*s), top: "40%", transform: "translateY(-50%)", display: "flex", justifyContent: "center" }}>
-                      <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(26*sf), whiteSpace: "nowrap", lineHeight: 1.3, margin: 0, textAlign: "center" }}>{name || "ชื่อ หรือ องค์กร"}</p>
-                    </div>
-                    {title && (
-                      <div style={{ position: "absolute", bottom: Math.round(5*sf), left: Math.round(34*sf), right: Math.round(34*sf), display: "flex", justifyContent: "center" }}>
-                        <p style={{ color: "#92400e", fontSize: Math.round(16*sf), whiteSpace: "nowrap", lineHeight: 1.3, margin: 0, textAlign: "center" }}>{title}</p>
+                  {/* รูปผู้วายชนม์ */}
+                  <div style={{ width: Math.round(64*s), height: Math.round(76*s), borderRadius: "50% / 45%", overflow: "hidden", border: "2px solid #c9a84c", boxShadow: "0 4px 16px rgba(184,134,11,0.30), 0 0 0 3px rgba(253,248,238,0.8), 0 0 0 5px rgba(201,168,76,0.25)" }}>
+                    {memorial.photo_url ? (
+                      <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                    ) : (
+                      <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ display: "inline-flex", width: Math.round(30*s), height: Math.round(30*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
                       </div>
                     )}
                   </div>
 
-                  {showAmount && (
-                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: Math.round(8*s), padding: `${Math.round(3*s)}px ${Math.round(16*s)}px` }}>
-                      <p style={{ fontSize: Math.round(14*s), fontWeight: 700, color: "#78350f", margin: 0 }}>มอบหรีดร่วมบุญ {amount ? parseInt(amount).toLocaleString() : "500"} บาท</p>
-                    </div>
-                  )}
-
-                  <p style={{ fontSize: Math.round(13*s), color: "#92400e", textAlign: "center", lineHeight: 1.7, margin: 0 }}>
-                    ที่ร่วมอาลัย และร่วมทำบุญในครั้งนี้
-                  </p>
-                </div>
-
-                {/* Lotus row */}
-                <div style={{ display: "flex", gap: Math.round(8*s), alignItems: "center" }}>
-                  <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-full h-full" /></span>
-                  <span style={{ display: "inline-flex", width: Math.round(24*s), height: Math.round(24*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
-                  <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+                  {/* ข้อมูลผู้วายชนม์ */}
+                  <div style={{ textAlign: "center" }}>
+                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(16*s), lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
+                    {(birthDate || deathDate) && (
+                      <p style={{ fontSize: Math.round(10*s), color: "#92400e", marginTop: Math.round(3*s), lineHeight: 1.7, margin: `${Math.round(3*s)}px 0 0` }}>
+                        {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
+                      </p>
+                    )}
+                  </div>
                 </div>
 
               </div>
