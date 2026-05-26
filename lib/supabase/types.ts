@@ -77,6 +77,14 @@ export interface Database {
           bank_account_image_url: string | null;
           is_active: boolean;
           created_at: string;
+          event_code: string | null;
+          consent_confirmed: boolean;
+          host_relationship: string | null;
+          host_bank_name: string | null;
+          host_bank_account_number: string | null;
+          host_bank_account_name: string | null;
+          death_certificate_url: string | null;
+          host_id_card_url: string | null;
         };
         Insert: {
           id?: string;
@@ -103,6 +111,14 @@ export interface Database {
           bank_account_image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
+          event_code?: string | null;
+          consent_confirmed?: boolean;
+          host_relationship?: string | null;
+          host_bank_name?: string | null;
+          host_bank_account_number?: string | null;
+          host_bank_account_name?: string | null;
+          death_certificate_url?: string | null;
+          host_id_card_url?: string | null;
         };
         Update: {
           id?: string;
@@ -129,6 +145,14 @@ export interface Database {
           bank_account_image_url?: string | null;
           is_active?: boolean;
           created_at?: string;
+          event_code?: string | null;
+          consent_confirmed?: boolean;
+          host_relationship?: string | null;
+          host_bank_name?: string | null;
+          host_bank_account_number?: string | null;
+          host_bank_account_name?: string | null;
+          death_certificate_url?: string | null;
+          host_id_card_url?: string | null;
         };
         Relationships: [
           { foreignKeyName: "memorials_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] }
