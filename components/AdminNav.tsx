@@ -25,36 +25,44 @@ export default function AdminNav() {
 
   return (
     <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
+      {/* Logo row */}
       <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <LotusIcon className="w-5 h-5 text-gold-600" />
+          <LotusIcon style={{ width: "clamp(14px,2vw,20px)", height: "clamp(14px,2vw,20px)" }} className="text-gold-600" />
           <div>
-            <p className="text-sm font-bold gold-gradient-text">ESG Admin</p>
-            <p className="text-[9px] text-gold-500 -mt-0.5">หรีดร่วมบุญ · ส่วนกลาง</p>
+            <p style={{ fontSize: "clamp(11px,1.6vw,14px)" }} className="font-bold gold-gradient-text leading-tight">ESG Admin</p>
+            <p style={{ fontSize: "clamp(8px,1vw,9px)" }} className="text-gold-500 -mt-0.5">หรีดร่วมบุญ · ส่วนกลาง</p>
           </div>
         </div>
         <button
           onClick={logout}
-          className="flex items-center gap-1 text-[11px] text-gold-400 hover:text-gold-600 transition-colors px-2 py-1"
+          className="flex items-center gap-1 text-gold-400 hover:text-gold-600 transition-colors px-2 py-1"
+          style={{ fontSize: "clamp(9px,1.2vw,11px)" }}
         >
-          <LogOut className="w-3.5 h-3.5" />
+          <LogOut style={{ width: "clamp(11px,1.4vw,14px)", height: "clamp(11px,1.4vw,14px)" }} />
           ออก
         </button>
       </div>
-      <div className="max-w-4xl mx-auto px-2 flex overflow-x-auto">
+
+      {/* Nav tab row — proportionally scales, no wrapping, no horizontal scroll */}
+      <div className="max-w-4xl mx-auto px-1 flex">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
           return (
             <Link
               key={href}
               href={href}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-1 border-b-2 transition-colors whitespace-nowrap ${
                 active
                   ? "border-gold-600 text-gold-700"
                   : "border-transparent text-gold-400 hover:text-gold-600"
               }`}
+              style={{
+                fontSize: "clamp(9px,1.4vw,12px)",
+                padding: "clamp(6px,0.8vw,10px) clamp(4px,0.6vw,8px)",
+              }}
             >
-              <Icon className="w-3.5 h-3.5" />
+              <Icon style={{ width: "clamp(11px,1.4vw,14px)", height: "clamp(11px,1.4vw,14px)", flexShrink: 0 }} />
               {label}
             </Link>
           );
