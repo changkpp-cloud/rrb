@@ -309,7 +309,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </div>
 
               {/* Body */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(8*s)}px ${Math.round(16*s)}px` }}>
+              <div style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(6*s)}px ${Math.round(16*s)}px` }}>
 
                 {/* Deceased photo + info */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s) }}>
@@ -342,7 +342,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
                 </div>
 
                 {/* Donor section */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(6*s), width: "100%" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(5*s), width: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
                     <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
                     <p style={{ fontSize: Math.round(13*s), color: "#92400e", letterSpacing: "0.12em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
@@ -355,9 +355,9 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
                   </div>
 
                   {showAmount && (
-                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: Math.round(8*s), padding: `${Math.round(5*s)}px ${Math.round(20*s)}px` }}>
-                      <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
-                      <p style={{ fontSize: Math.round(22*s), fontWeight: 700, color: "#78350f", margin: 0 }}>฿{amount ? parseInt(amount).toLocaleString() : "500"}</p>
+                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: Math.round(8*s), padding: `${Math.round(3*s)}px ${Math.round(16*s)}px` }}>
+                      <p style={{ fontSize: Math.round(10*s), color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
+                      <p style={{ fontSize: Math.round(20*s), fontWeight: 700, color: "#78350f", margin: 0 }}>฿{amount ? parseInt(amount).toLocaleString() : "500"}</p>
                     </div>
                   )}
 
