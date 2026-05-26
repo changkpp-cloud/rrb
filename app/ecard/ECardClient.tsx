@@ -359,6 +359,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
                   <div style={{ textAlign: "center" }}>
                     <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(16*s), lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
+                    {memorial.age > 0 && (
+                      <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(2*s)}px 0 0` }}>อายุ {memorial.age} ปี</p>
+                    )}
                     {(birthDate || deathDate) && (
                       <p style={{ fontSize: Math.round(10*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.7 }}>
                         {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
