@@ -83,9 +83,9 @@ export default function PaymentPageClient({ memorial }: Props) {
 
             {/* QR + bank info */}
             <div className="mt-3 flex gap-3 items-start">
-              <div className="shrink-0 w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
+              <div className="relative shrink-0 w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
                 {memorial.bank_account_image_url ? (
-                  <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain" />
+                  <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
                 ) : (
                   <QRPlaceholder />
                 )}
