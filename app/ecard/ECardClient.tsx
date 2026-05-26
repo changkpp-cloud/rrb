@@ -104,11 +104,15 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
     if (!cardRef.current) return;
     setSaving(true);
     try {
-      const html2canvas = (await import("html2canvas")).default;
-      const canvas = await html2canvas(cardRef.current, { scale: 3, useCORS: true, backgroundColor: "#fdf8ee" });
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(cardRef.current, {
+        pixelRatio: 3,
+        cacheBust: true,
+        fetchRequestInit: { mode: "cors" },
+      });
       const link = document.createElement("a");
       link.download = `E-card-ขอบคุณ-${name || "ecard"}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.href = dataUrl;
       link.click();
     } catch {}
     setSaving(false);
