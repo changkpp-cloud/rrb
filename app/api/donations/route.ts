@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const memorial_id = searchParams.get("memorial_id");
 
-  const supabase = getSupabase();
+  const supabase = createAdminClient();
   let query = supabase.from("donations").select("*").order("created_at", { ascending: false });
 
   if (memorial_id) {
