@@ -45,7 +45,7 @@ export default function HostSummaryPage() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}>
+    <div className="min-h-screen" style={{ background: "#ffffff" }}>
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <Link href={`/dashboard/host/${id}`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">

@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -25,7 +25,7 @@ function PrintDoneInner() {
   return (
     <div
       className="min-h-dvh flex flex-col"
-      style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
+      style={{ background: "#ffffff" }}
     >
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-center gap-2">

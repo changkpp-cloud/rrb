@@ -13,11 +13,11 @@
   --color-gold-800: #4D3318;
   --color-gold-900: #321E0A;
 
-  --color-cream-50:  #FFFCF8;
-  --color-cream-100: #FFF8F1;
-  --color-cream-200: #F7F3EA;
-  --color-cream-300: #F1E6DC;
-  --color-cream-400: #E8D8C8;
+  --color-cream-50:  #ffffff;
+  --color-cream-100: #ffffff;
+  --color-cream-200: #f9f9f9;
+  --color-cream-300: #f5f5f5;
+  --color-cream-400: #eeeeee;
 
   --font-sans: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
 }

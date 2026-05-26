@@ -14,7 +14,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
   if (!memorial) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 100%)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#ffffff" }}>
         <p className="text-gold-400 text-sm">ไม่พบข้อมูลงานศพ</p>
       </div>
     );

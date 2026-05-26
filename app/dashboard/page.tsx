@@ -1,4 +1,4 @@
-import Link from "next/link";
+﻿import Link from "next/link";
 import { Building2, KeyRound, BarChart3 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
@@ -6,7 +6,7 @@ export default function DashboardPage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
+      style={{ background: "#ffffff" }}
     >
       <div className="w-full max-w-sm space-y-6">
 

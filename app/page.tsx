@@ -1,4 +1,4 @@
-import Image from "next/image";
+﻿import Image from "next/image";
 import SiteHeader from "@/components/SiteHeader";
 import MemorialProfile from "@/components/MemorialProfile";
 import CeremonyInfo from "@/components/CeremonyInfo";
@@ -13,7 +13,7 @@ export default async function Home() {
 
   if (!memorial) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 100%)" }}>
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "#ffffff" }}>
         <p className="text-gold-400 text-sm">ไม่พบข้อมูลงานศพ</p>
       </div>
     );
