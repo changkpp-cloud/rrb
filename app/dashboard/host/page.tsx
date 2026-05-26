@@ -33,7 +33,7 @@ export default function HostLoginPage() {
     >
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href="/dashboard" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
+          <Link href="/" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <div className="flex items-center gap-2">
