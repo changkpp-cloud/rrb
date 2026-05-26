@@ -5,10 +5,10 @@ import { createClient } from "@/lib/supabase/server";
 import type { Donation } from "@/lib/supabase/types";
 
 const DEMO_DONATIONS: Donation[] = [
-  { id: "1", memorial_id: "demo", donor_name: "นายสมชาย ใจดี", amount: 500, message: "ขอแสดงความเสียใจอย่างสุดซึ้ง", slip_url: null, status: "confirmed", created_at: new Date(Date.now() - 3600000).toISOString() },
-  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "pending", created_at: new Date(Date.now() - 7200000).toISOString() },
-  { id: "3", memorial_id: "demo", donor_name: "นายวิชัย เจริญ", amount: 1000, message: null, slip_url: null, status: "confirmed", created_at: new Date(Date.now() - 86400000).toISOString() },
-  { id: "4", memorial_id: "demo", donor_name: "นางประไพ สุขใส", amount: 200, message: "ด้วยความอาลัย", slip_url: null, status: "rejected", created_at: new Date(Date.now() - 172800000).toISOString() },
+  { id: "1", memorial_id: "demo", donor_name: "นายสมชาย ใจดี", donor_title: "ผู้อำนวยการ", amount: 500, message: "ขอแสดงความเสียใจอย่างสุดซึ้ง", slip_url: null, status: "confirmed", nameplate_status: "posted", created_at: new Date(Date.now() - 3600000).toISOString() },
+  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", donor_title: null, amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "pending", nameplate_status: "pending", created_at: new Date(Date.now() - 7200000).toISOString() },
+  { id: "3", memorial_id: "demo", donor_name: "นายวิชัย เจริญ", donor_title: null, amount: 1000, message: null, slip_url: null, status: "confirmed", nameplate_status: "printed", created_at: new Date(Date.now() - 86400000).toISOString() },
+  { id: "4", memorial_id: "demo", donor_name: "นางประไพ สุขใส", donor_title: null, amount: 200, message: "ด้วยความอาลัย", slip_url: null, status: "rejected", nameplate_status: "pending", created_at: new Date(Date.now() - 172800000).toISOString() },
 ];
 
 async function getDonations(): Promise<Donation[]> {

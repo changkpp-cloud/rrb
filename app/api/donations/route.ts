@@ -76,21 +76,18 @@ export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const memorial_id = searchParams.get("memorial_id");
 
-  if (!memorial_id) {
-    return NextResponse.json({ error: "memorial_id required" }, { status: 400 });
+  const supabase = getSupabase();
+  let query = supabase.from("donations").select("*").order("created_at", { ascending: false });
+
+  if (memorial_id) {
+    query = query.eq("memorial_id", memorial_id);
   }
 
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from("donations")
-    .select("*")
-    .eq("memorial_id", memorial_id)
-    .eq("status", "confirmed")
-    .order("created_at", { ascending: false });
+  const { data, error } = await query;
 
   if (error) {
     return NextResponse.json({ error: "Failed to fetch" }, { status: 500 });
   }
 
-  return NextResponse.json({ donations: data });
+  return NextResponse.json(data ?? []);
 }

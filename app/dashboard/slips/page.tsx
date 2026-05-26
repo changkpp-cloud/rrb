@@ -7,8 +7,8 @@ import { useState } from "react";
 import type { Donation } from "@/lib/supabase/types";
 
 const DEMO_PENDING: Donation[] = [
-  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "pending", created_at: new Date(Date.now() - 7200000).toISOString() },
-  { id: "5", memorial_id: "demo", donor_name: "นายอนุชา สมบัติ", amount: 500, message: "ขอแสดงความเสียใจอย่างสุดซึ้ง", slip_url: null, status: "pending", created_at: new Date(Date.now() - 1800000).toISOString() },
+  { id: "2", memorial_id: "demo", donor_name: "นางสาวมาลี รักดี", donor_title: null, amount: 300, message: "ด้วยความอาลัย", slip_url: null, status: "pending", nameplate_status: "pending", created_at: new Date(Date.now() - 7200000).toISOString() },
+  { id: "5", memorial_id: "demo", donor_name: "นายอนุชา สมบัติ", donor_title: null, amount: 500, message: "ขอแสดงความเสียใจอย่างสุดซึ้ง", slip_url: null, status: "pending", nameplate_status: "pending", created_at: new Date(Date.now() - 1800000).toISOString() },
 ];
 
 function formatDate(iso: string) {
