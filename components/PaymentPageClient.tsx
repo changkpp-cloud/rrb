@@ -93,7 +93,7 @@ export default function PaymentPageClient({ memorial }: Props) {
 
               <div className="flex-1 space-y-1">
                 <p className="text-xs font-semibold text-gold-800 leading-snug">
-                  มูลนิธิหรีดร่วมบุญ ESG Zero Waste
+                  มูลนิธิ หรีดร่วมบุญ ESG Zero Waste
                 </p>
                 <p className="text-xs text-gold-600">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
                 <p className="text-sm font-bold text-gold-800 tracking-wider">
@@ -156,7 +156,7 @@ export default function PaymentPageClient({ memorial }: Props) {
             <div className="mt-2 bg-cream-100 border border-gold-200 rounded-xl px-3 py-2.5 flex gap-2">
               <Info className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
               <p className="text-xs text-gold-600 leading-relaxed">
-                ทุกยอดการทำรายการ หัก {SYSTEM_FEE} บาท ที่เหลือส่งถึงเจ้าภาพ
+                ทุกยอดการทำรายการ หัก {SYSTEM_FEE} บาท เป็นกระดาษ หมึก บำรุงรักษาอุปกรณ์ และจิตอาสา ที่เหลือส่งถึงเจ้าภาพ
               </p>
             </div>
           </Card>
