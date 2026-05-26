@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Memorial } from "@/lib/supabase/types";
 
 export const DEMO_MEMORIAL: Memorial = {
@@ -30,7 +30,7 @@ export const DEMO_MEMORIAL: Memorial = {
 
 export async function getMemorial(): Promise<Memorial> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("memorials")
       .select("*")
@@ -46,7 +46,7 @@ export async function getMemorial(): Promise<Memorial> {
 
 export async function getMemorials(): Promise<Memorial[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("memorials")
       .select("*")
@@ -60,7 +60,7 @@ export async function getMemorials(): Promise<Memorial[]> {
 export async function getMemorialById(id: string): Promise<Memorial | null> {
   if (id === "demo") return DEMO_MEMORIAL;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("memorials")
       .select("*")
@@ -75,7 +75,7 @@ export async function getMemorialById(id: string): Promise<Memorial | null> {
 export async function getMemorialByHostCode(hostCode: string): Promise<Memorial | null> {
   if (hostCode === "DEMO001") return DEMO_MEMORIAL;
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase
       .from("memorials")
       .select("*")

@@ -1,15 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { getMemorial } from "@/lib/memorial";
-
-// Untyped client used only for the admin PATCH to avoid a Supabase generic
-// resolution bug where `.update()` infers its parameter as `never`.
-function adminClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export async function GET() {
   const memorial = await getMemorial();
@@ -35,7 +26,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const supabase = adminClient();
+    const supabase = createAdminClient();
 
     const { data: existing } = await supabase
       .from("memorials")

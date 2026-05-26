@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Users, Download } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
 import { getMemorialById, DEMO_MEMORIAL, formatThaiDate } from "@/lib/memorial";
 
@@ -16,7 +16,7 @@ const DEMO_DONATIONS: Donation[] = [
 
 async function getDonations(memorialId: string): Promise<Donation[]> {
   try {
-    const supabase = await createClient();
+    const supabase = createAdminClient();
     const { data } = await supabase.from("donations").select("*").eq("memorial_id", memorialId).order("created_at", { ascending: false });
     return (data as Donation[] | null) ?? DEMO_DONATIONS;
   } catch { return DEMO_DONATIONS; }
