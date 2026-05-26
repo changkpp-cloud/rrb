@@ -59,7 +59,7 @@ function PrintNameInner() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-gold-700">
                 <User className="w-4 h-4" />
-                <span className="text-sm font-semibold">ชื่อผู้มอบ</span>
+                <span className="text-sm font-semibold">ชื่อ หรือ องค์กร ผู้มอบหรีดร่วมบุญ</span>
               </div>
               <input
                 type="text"
