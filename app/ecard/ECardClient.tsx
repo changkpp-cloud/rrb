@@ -365,8 +365,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
 
                   {showAmount && (
                     <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: Math.round(8*s), padding: `${Math.round(3*s)}px ${Math.round(16*s)}px` }}>
-                      <p style={{ fontSize: Math.round(10*s), color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
-                      <p style={{ fontSize: Math.round(20*s), fontWeight: 700, color: "#78350f", margin: 0 }}>฿{amount ? parseInt(amount).toLocaleString() : "500"}</p>
+                      <p style={{ fontSize: Math.round(14*s), fontWeight: 700, color: "#78350f", margin: 0 }}>มอบหรีดร่วมบุญ {amount ? parseInt(amount).toLocaleString() : "500"} บาท</p>
                     </div>
                   )}
 
