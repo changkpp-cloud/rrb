@@ -295,7 +295,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               ref={cardRef}
               style={{
                 width: "100%",
-                minHeight: Math.round(cardWidth * 4 / 3),
+                minHeight: Math.round(cardWidth * 4 / 3 * 0.8),
                 background: "linear-gradient(170deg,#fdf8ee 0%,#f5e4b5 35%,#fdf8ee 65%,#eedfa8 100%)",
                 border: "2px solid #c9a84c",
                 borderRadius: 0,
