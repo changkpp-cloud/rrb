@@ -87,7 +87,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const [savingMock, setSavingMock]   = useState(false);
   const [genError, setGenError]       = useState("");
   const [cardWidth, setCardWidth]     = useState(360);
-  const [previewUrl, setPreviewUrl]   = useState<string | null>(null);
 
   function handleStyleChange(withAmount: boolean) {
     setShowAmount(withAmount);
@@ -107,28 +106,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     try {
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
-
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      if (isMobile) {
-        // ลอง Web Share API ก่อน (Android Chrome, iOS Safari 15.1+)
-        try {
-          const blob = await (await fetch(dataUrl)).blob();
-          const file = new File([blob], `ecard-${name || "ecard"}.png`, { type: "image/png" });
-          if (navigator.share && navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: "E-card หรีดร่วมบุญ" });
-            setSaving(false);
-            return;
-          }
-        } catch {}
-        // fallback: แสดงรูปให้กดค้างเพื่อบันทึก
-        setPreviewUrl(dataUrl);
-      } else {
-        const link = document.createElement("a");
-        link.download = `E-card-ขอบคุณ-${name || "ecard"}.png`;
-        link.href = dataUrl;
-        link.click();
-      }
+      const link = document.createElement("a");
+      link.download = `E-card-ขอบคุณ-${name || "ecard"}.png`;
+      link.href = dataUrl;
+      link.click();
     } catch {}
     setSaving(false);
   }
@@ -250,22 +231,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   return (
     <>
-    {/* Overlay บนมือถือ: กดค้างที่รูปเพื่อบันทึก */}
-    {previewUrl && (
-      <div
-        className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-black/80 px-4"
-        onClick={() => setPreviewUrl(null)}
-      >
-        <p className="text-white text-sm font-semibold mb-3">กดค้างที่รูปเพื่อบันทึก</p>
-        <img
-          src={previewUrl}
-          alt="E-card"
-          className="max-w-full max-h-[80dvh] rounded-2xl shadow-2xl"
-          onClick={e => e.stopPropagation()}
-        />
-        <button className="mt-4 text-white/70 text-xs underline" onClick={() => setPreviewUrl(null)}>ปิด</button>
-      </div>
-    )}
     <div
       className="min-h-dvh flex flex-col"
       style={{ background: "radial-gradient(ellipse 110% 40% at 50% -5%,rgba(245,222,170,0.32) 0%,transparent 100%),linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 35%,#F1E6DC 65%,#F7F3EA 85%,#FFF8F1 100%)" }}
@@ -370,11 +335,11 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                     </p>
                   )}
 
-                  {/* ที่ร่วมอาลัย... */}
+                  {/* ร่วมมอบหรีดร่วมบุญ */}
                   <p style={{ fontSize: Math.round(12*s), color: "#92400e", textAlign: "center", lineHeight: 1.6, margin: 0 }}>
                     {showAmount
-                      ? <>ที่ร่วมอาลัย และร่วมทำบุญ <span style={{ fontWeight: 700, color: "#78350f" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span> ในครั้งนี้</>
-                      : "ที่ร่วมอาลัย และร่วมทำบุญในครั้งนี้"
+                      ? <>ร่วมมอบหรีดร่วมบุญ <span style={{ fontWeight: 700, color: "#78350f" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span></>
+                      : "ร่วมมอบหรีดร่วมบุญ"
                     }
                   </p>
                 </div>

@@ -80,7 +80,7 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
 
           {/* ─── กล่องรวม: จ่ายผ่านแอปธนาคาร + โอนแล้วแนบสลิป ─── */}
           <Card>
-            <OrnamentTitle small>ข้อมูลบัญชี มอบหรีดร่วมบุญ</OrnamentTitle>
+            <OrnamentTitle small>ร่วมมอบหรีดร่วมบุญ 500 บาท</OrnamentTitle>
 
             {/* QR + bank info */}
             <div className="mt-3 flex gap-3 items-start">
