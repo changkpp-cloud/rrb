@@ -86,6 +86,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   const [generatedImg, setGeneratedImg] = useState<string | null>(null);
   const [savingMock, setSavingMock]   = useState(false);
   const [genError, setGenError]       = useState("");
+  const [cardWidth, setCardWidth]     = useState(360);
 
   function handleStyleChange(withAmount: boolean) {
     setShowAmount(withAmount);
@@ -215,6 +216,16 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
     setSavingMock(false);
   }
 
+  useEffect(() => {
+    const el = cardRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setCardWidth(entry.contentRect.width));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const s = cardWidth / 360;
+
   return (
     <div
       className="min-h-dvh flex flex-col"
@@ -275,7 +286,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </button>
             </div>
 
-            {/* Portrait E-card 3:4 */}
+            {/* Portrait E-card 3:4 — all sizes scale with card width via s = cardWidth/360 */}
             <div
               ref={cardRef}
               style={{
@@ -291,83 +302,83 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               }}
             >
               {/* Header */}
-              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
-                <span style={{ color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-5 h-5" /></span>
-                <span style={{ color: "white", fontWeight: 700, fontSize: 17, letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
-                <span style={{ color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-5 h-5 scale-x-[-1]" /></span>
+              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: `${Math.round(10*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
+                <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full" /></span>
+                <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
+                <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
               </div>
 
               {/* Body */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: "10px 20px" }}>
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `${Math.round(8*s)}px ${Math.round(16*s)}px` }}>
 
                 {/* Deceased photo + info */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
-                  <div style={{ width: 96, height: 114, borderRadius: "50% / 45%", overflow: "hidden", border: "2.5px solid #c9a84c", boxShadow: "0 6px 20px rgba(184,134,11,0.35), 0 0 0 4px rgba(253,248,238,0.8), 0 0 0 6px rgba(201,168,76,0.3)" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s) }}>
+                  <div style={{ width: Math.round(72*s), height: Math.round(86*s), borderRadius: "50% / 45%", overflow: "hidden", border: "2.5px solid #c9a84c", boxShadow: "0 6px 20px rgba(184,134,11,0.35), 0 0 0 4px rgba(253,248,238,0.8), 0 0 0 6px rgba(201,168,76,0.3)" }}>
                     {memorial.photo_url ? (
                       <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ color: "#c9a84c" }}><LotusIcon className="w-12 h-12" /></span>
+                        <span style={{ display: "inline-flex", width: Math.round(36*s), height: Math.round(36*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
                       </div>
                     )}
                   </div>
                   <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: 22, lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
+                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(18*s), lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
                     {(birthDate || deathDate) && (
-                      <p style={{ fontSize: 14, color: "#92400e", marginTop: 4, lineHeight: 1.6 }}>
+                      <p style={{ fontSize: Math.round(11*s), color: "#92400e", marginTop: Math.round(4*s), lineHeight: 1.6 }}>
                         {birthDate && <>ชาตะ {birthDate}<br /></>}
                         {deathDate && <>มรณะ {deathDate}</>}
                       </p>
                     )}
-                    {memorial.age ? <p style={{ fontSize: 13, color: "#a16207", marginTop: 2 }}>อายุ {memorial.age} ปี</p> : null}
+                    {memorial.age ? <p style={{ fontSize: Math.round(11*s), color: "#a16207", marginTop: Math.round(2*s) }}>อายุ {memorial.age} ปี</p> : null}
                   </div>
                 </div>
 
                 {/* Divider */}
-                <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: Math.round(8*s), width: "100%" }}>
                   <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #c9a84c)" }} />
-                  <span style={{ color: "#c9a84c", fontSize: 16 }}>❖</span>
+                  <span style={{ color: "#c9a84c", fontSize: Math.round(14*s) }}>❖</span>
                   <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #c9a84c)" }} />
                 </div>
 
                 {/* Donor section */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                    <span style={{ color: "#c9a84c" }}><LotusIcon className="w-4 h-4" /></span>
-                    <p style={{ fontSize: 15, color: "#92400e", letterSpacing: "0.12em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
-                    <span style={{ color: "#c9a84c" }}><LotusIcon className="w-4 h-4 scale-x-[-1]" /></span>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(6*s), width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
+                    <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
+                    <p style={{ fontSize: Math.round(13*s), color: "#92400e", letterSpacing: "0.12em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
+                    <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                   </div>
 
-                  <div style={{ width: "100%", background: "linear-gradient(135deg,#fdf8ee,#f9f0d8)", border: "1.5px solid #c9a84c", borderRadius: 10, padding: "10px 14px", textAlign: "center", boxShadow: "0 2px 12px rgba(184,134,11,0.18), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px rgba(201,168,76,0.25)" }}>
-                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: 26, margin: 0, lineHeight: 1.25 }}>{name || "ผู้ร่วมบุญ"}</p>
-                    {title && <p style={{ color: "#92400e", fontSize: 17, marginTop: 4, lineHeight: 1.3 }}>{title}</p>}
+                  <div style={{ width: "100%", background: "linear-gradient(135deg,#fdf8ee,#f9f0d8)", border: "1.5px solid #c9a84c", borderRadius: Math.round(10*s), padding: `${Math.round(8*s)}px ${Math.round(12*s)}px`, textAlign: "center", boxShadow: "0 2px 12px rgba(184,134,11,0.18), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px rgba(201,168,76,0.25)" }}>
+                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), margin: 0, lineHeight: 1.25 }}>{name || "ผู้ร่วมบุญ"}</p>
+                    {title && <p style={{ color: "#92400e", fontSize: Math.round(13*s), marginTop: Math.round(4*s), lineHeight: 1.3 }}>{title}</p>}
                   </div>
 
                   {showAmount && amount && (
-                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: 8, padding: "6px 24px" }}>
-                      <p style={{ fontSize: 13, color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
-                      <p style={{ fontSize: 30, fontWeight: 700, color: "#78350f", margin: 0 }}>฿{parseInt(amount).toLocaleString()}</p>
+                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: Math.round(8*s), padding: `${Math.round(5*s)}px ${Math.round(20*s)}px` }}>
+                      <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
+                      <p style={{ fontSize: Math.round(22*s), fontWeight: 700, color: "#78350f", margin: 0 }}>฿{parseInt(amount).toLocaleString()}</p>
                     </div>
                   )}
 
-                  <p style={{ fontSize: 15, color: "#92400e", textAlign: "center", lineHeight: 1.7, margin: 0 }}>
+                  <p style={{ fontSize: Math.round(13*s), color: "#92400e", textAlign: "center", lineHeight: 1.7, margin: 0 }}>
                     ที่ร่วมอาลัย และร่วมทำบุญในครั้งนี้
                   </p>
                 </div>
 
                 {/* Lotus row */}
-                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                  <span style={{ color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-5 h-5" /></span>
-                  <span style={{ color: "#c9a84c" }}><LotusIcon className="w-7 h-7" /></span>
-                  <span style={{ color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-5 h-5 scale-x-[-1]" /></span>
+                <div style={{ display: "flex", gap: Math.round(8*s), alignItems: "center" }}>
+                  <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-full h-full" /></span>
+                  <span style={{ display: "inline-flex", width: Math.round(24*s), height: Math.round(24*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
+                  <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                 </div>
 
               </div>
 
               {/* Footer */}
-              <div style={{ borderTop: "1px solid rgba(201,168,76,0.35)", background: "rgba(253,248,238,0.85)", padding: "9px 16px", textAlign: "center", flexShrink: 0 }}>
-                <p style={{ fontSize: 15, color: "#92400e", fontWeight: 600, margin: 0 }}>ฌาปนกิจ {ceremonyDate}</p>
-                {ceremonyLocation && <p style={{ fontSize: 12, color: "#a16207", marginTop: 3 }}>{ceremonyLocation}</p>}
+              <div style={{ borderTop: "1px solid rgba(201,168,76,0.35)", background: "rgba(253,248,238,0.85)", padding: `${Math.round(8*s)}px ${Math.round(14*s)}px`, textAlign: "center", flexShrink: 0 }}>
+                <p style={{ fontSize: Math.round(13*s), color: "#92400e", fontWeight: 600, margin: 0 }}>ฌาปนกิจ {ceremonyDate}</p>
+                {ceremonyLocation && <p style={{ fontSize: Math.round(10*s), color: "#a16207", marginTop: Math.round(2*s) }}>{ceremonyLocation}</p>}
               </div>
             </div>
 
