@@ -275,73 +275,99 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </button>
             </div>
 
-            {/* New ecard design */}
+            {/* Portrait E-card 9:16 */}
             <div
               ref={cardRef}
-              className="rounded-2xl overflow-hidden"
               style={{
-                background: "linear-gradient(160deg,#fdf8ee 0%,#f0e0b8 50%,#fdf8ee 100%)",
+                width: "100%",
+                aspectRatio: "9/16",
+                background: "linear-gradient(170deg,#fdf8ee 0%,#f5e4b5 35%,#fdf8ee 65%,#eedfa8 100%)",
                 border: "2px solid #c9a84c",
-                boxShadow: "0 8px 32px rgba(184,134,11,0.22)",
+                borderRadius: 20,
+                boxShadow: "0 12px 40px rgba(184,134,11,0.28)",
+                display: "flex",
+                flexDirection: "column",
+                overflow: "hidden",
               }}
             >
-              {/* Header bar */}
-              <div className="gold-gradient px-4 py-2 flex items-center justify-center gap-2">
-                <LotusIcon className="w-3.5 h-3.5 text-white/90" />
-                <span className="text-white font-semibold text-[11px] tracking-[0.18em]">หรีดร่วมบุญ · Zero Waste</span>
-                <LotusIcon className="w-3.5 h-3.5 text-white/90 scale-x-[-1]" />
+              {/* Header */}
+              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: "11px 16px", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, flexShrink: 0 }}>
+                <span style={{ color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-4 h-4" /></span>
+                <span style={{ color: "white", fontWeight: 700, fontSize: 13, letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
+                <span style={{ color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-4 h-4 scale-x-[-1]" /></span>
               </div>
 
-              {/* Split layout */}
-              <div className="flex">
-                {/* Left: Deceased photo + info */}
-                <div className="flex-1 flex flex-col items-center justify-center px-3 py-5 border-r border-gold-200/60">
-                  <div
-                    className="overflow-hidden border-2 border-gold-400 shadow-md mb-2.5"
-                    style={{ width: 80, height: 96, borderRadius: "50% / 45%", flexShrink: 0 }}
-                  >
+              {/* Body */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: "16px 28px" }}>
+
+                {/* Deceased photo + info */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+                  <div style={{ width: 104, height: 124, borderRadius: "50% / 45%", overflow: "hidden", border: "2.5px solid #c9a84c", boxShadow: "0 6px 20px rgba(184,134,11,0.35), 0 0 0 4px rgba(253,248,238,0.8), 0 0 0 6px rgba(201,168,76,0.3)" }}>
                     {memorial.photo_url ? (
-                      <img src={memorial.photo_url} alt={deceasedName} className="w-full h-full object-cover" crossOrigin="anonymous" />
+                      <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     ) : (
-                      <div className="w-full h-full bg-gold-100 flex items-center justify-center">
-                        <LotusIcon className="w-9 h-9 text-gold-400" />
+                      <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <span style={{ color: "#c9a84c" }}><LotusIcon className="w-12 h-12" /></span>
                       </div>
                     )}
                   </div>
-                  <p className="font-bold text-gold-800 text-[13px] text-center leading-snug px-1">{deceasedName}</p>
-                  {birthDate && <p className="text-[9px] text-gold-600 mt-0.5">ชาตะ {birthDate}</p>}
-                  {deathDate && <p className="text-[9px] text-gold-600">มรณะ {deathDate}</p>}
-                  {memorial.age ? <p className="text-[9px] text-gold-600">อายุ {memorial.age} ปี</p> : null}
+                  <div style={{ textAlign: "center" }}>
+                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: 16, lineHeight: 1.35, margin: 0 }}>{deceasedName}</p>
+                    {(birthDate || deathDate) && (
+                      <p style={{ fontSize: 10.5, color: "#92400e", marginTop: 4, lineHeight: 1.6 }}>
+                        {birthDate && <>ชาตะ {birthDate}<br /></>}
+                        {deathDate && <>มรณะ {deathDate}</>}
+                      </p>
+                    )}
+                    {memorial.age ? <p style={{ fontSize: 10, color: "#a16207", marginTop: 2 }}>อายุ {memorial.age} ปี</p> : null}
+                  </div>
                 </div>
 
-                {/* Right: Donor info */}
-                <div className="flex-1 flex flex-col items-center justify-center px-3 py-5 gap-1">
-                  <LotusIcon className="w-5 h-5 text-gold-400 mb-0.5" />
-                  <p className="text-[10px] text-gold-500 text-center tracking-wide">เจ้าภาพขอขอบพระคุณ</p>
-                  <div className="my-1 w-full">
-                    <ECardDonorSign name={name} title={title} />
-                  </div>
-                  <div className="flex-1 h-px bg-gold-200/50 w-full my-1" />
-                  {showAmount && amount ? (
-                    <>
-                      <p className="text-[8px] text-gold-500 text-center">ยอดร่วมบุญ</p>
-                      <p className="text-sm font-bold text-gold-700">฿{parseInt(amount).toLocaleString()}</p>
-                      <p className="text-[9px] text-gold-600 text-center leading-relaxed mt-0.5">
-                        ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
-                      </p>
-                    </>
-                  ) : (
-                    <p className="text-[9px] text-gold-600 text-center leading-relaxed">
-                      ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
-                    </p>
-                  )}
-                  <LotusIcon className="w-3 h-3 text-gold-300 mt-1" />
+                {/* Divider */}
+                <div style={{ display: "flex", alignItems: "center", gap: 10, width: "100%" }}>
+                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #c9a84c)" }} />
+                  <span style={{ color: "#c9a84c", fontSize: 14 }}>❖</span>
+                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #c9a84c)" }} />
                 </div>
+
+                {/* Donor section */}
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 10, width: "100%" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                    <span style={{ color: "#c9a84c" }}><LotusIcon className="w-3.5 h-3.5" /></span>
+                    <p style={{ fontSize: 11, color: "#92400e", letterSpacing: "0.12em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
+                    <span style={{ color: "#c9a84c" }}><LotusIcon className="w-3.5 h-3.5 scale-x-[-1]" /></span>
+                  </div>
+
+                  <div style={{ width: "100%", background: "linear-gradient(135deg,#fdf8ee,#f9f0d8)", border: "1.5px solid #c9a84c", borderRadius: 10, padding: "10px 12px", textAlign: "center", boxShadow: "0 2px 12px rgba(184,134,11,0.18), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px rgba(201,168,76,0.25)" }}>
+                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: 17, margin: 0, lineHeight: 1.3 }}>{name || "ผู้ร่วมบุญ"}</p>
+                    {title && <p style={{ color: "#92400e", fontSize: 12, marginTop: 4, lineHeight: 1.3 }}>{title}</p>}
+                  </div>
+
+                  {showAmount && amount && (
+                    <div style={{ textAlign: "center", background: "rgba(253,248,238,0.7)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: 8, padding: "6px 20px" }}>
+                      <p style={{ fontSize: 10, color: "#a16207", margin: 0 }}>ยอดร่วมบุญ</p>
+                      <p style={{ fontSize: 22, fontWeight: 700, color: "#78350f", margin: 0 }}>฿{parseInt(amount).toLocaleString()}</p>
+                    </div>
+                  )}
+
+                  <p style={{ fontSize: 11, color: "#92400e", textAlign: "center", lineHeight: 1.8, margin: 0 }}>
+                    ที่ร่วมอาลัย และร่วมทำบุญในครั้งนี้
+                  </p>
+                </div>
+
+                {/* Lotus row */}
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                  <span style={{ color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-4 h-4" /></span>
+                  <span style={{ color: "#c9a84c" }}><LotusIcon className="w-6 h-6" /></span>
+                  <span style={{ color: "rgba(201,168,76,0.5)" }}><LotusIcon className="w-4 h-4 scale-x-[-1]" /></span>
+                </div>
+
               </div>
 
-              {/* Footer: ceremony info */}
-              <div className="px-4 py-2 border-t border-gold-200/60 text-center">
-                <p className="text-[9px] text-gold-500">ฌาปนกิจ {ceremonyDate} · {ceremonyLocation}</p>
+              {/* Footer */}
+              <div style={{ borderTop: "1px solid rgba(201,168,76,0.35)", background: "rgba(253,248,238,0.85)", padding: "10px 16px", textAlign: "center", flexShrink: 0 }}>
+                <p style={{ fontSize: 11, color: "#92400e", fontWeight: 600, margin: 0 }}>ฌาปนกิจ {ceremonyDate}</p>
+                {ceremonyLocation && <p style={{ fontSize: 9.5, color: "#a16207", marginTop: 3 }}>{ceremonyLocation}</p>}
               </div>
             </div>
 
