@@ -225,6 +225,9 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   }, []);
 
   const s = cardWidth / 360;
+  // sign proportions mirror SignPreview (BASE_W=288)
+  const signW = cardWidth - 2 * Math.round(16 * s);
+  const sf = signW / 288;
 
   return (
     <div
@@ -349,9 +352,16 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
                     <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                   </div>
 
-                  <div style={{ width: "100%", background: "linear-gradient(135deg,#fdf8ee,#f9f0d8)", border: "1.5px solid #c9a84c", borderRadius: Math.round(10*s), padding: `${Math.round(8*s)}px ${Math.round(12*s)}px`, textAlign: "center", boxShadow: "0 2px 12px rgba(184,134,11,0.18), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px rgba(201,168,76,0.25)" }}>
-                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), margin: 0, lineHeight: 1.25 }}>{name || "ผู้ร่วมบุญ"}</p>
-                    {title && <p style={{ color: "#92400e", fontSize: Math.round(13*s), marginTop: Math.round(4*s), lineHeight: 1.3 }}>{title}</p>}
+                  {/* ป้ายชื่อ — สัดส่วน 288:80 ตรงกับ SignPreview */}
+                  <div style={{ width: "100%", aspectRatio: "288 / 80", position: "relative", background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)", border: "1.5px solid #c9a84c", borderRadius: Math.round(12*s), boxShadow: `0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 ${Math.round(3*s)}px #fdf8ee, inset 0 0 0 ${Math.round(4*s)}px rgba(201,168,76,0.27)`, overflow: "hidden" }}>
+                    <div style={{ position: "absolute", left: Math.round(12*s), right: Math.round(12*s), top: "40%", transform: "translateY(-50%)", display: "flex", justifyContent: "center" }}>
+                      <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(26*sf), whiteSpace: "nowrap", lineHeight: 1.3, margin: 0, textAlign: "center" }}>{name || "ชื่อ หรือ องค์กร"}</p>
+                    </div>
+                    {title && (
+                      <div style={{ position: "absolute", bottom: Math.round(5*sf), left: Math.round(34*sf), right: Math.round(34*sf), display: "flex", justifyContent: "center" }}>
+                        <p style={{ color: "#92400e", fontSize: Math.round(16*sf), whiteSpace: "nowrap", lineHeight: 1.3, margin: 0, textAlign: "center" }}>{title}</p>
+                      </div>
+                    )}
                   </div>
 
                   {showAmount && (
