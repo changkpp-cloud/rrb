@@ -143,7 +143,7 @@ const BASE_H = 80;
 
 function SignPreview({ name, title }: { name: string; title: string }) {
   const displayName  = name.trim()  || "ชื่อ หรือ องค์กร";
-  const displayTitle = title.trim() || "ตำแหน่ง / ข้อความแสดงอาลัย";
+  const displayTitle = title.trim() || "ตำแหน่ง หรือ ข้อความแสดงอาลัย";
   const isNamePlaceholder  = !name.trim();
   const isTitlePlaceholder = !title.trim();
 
