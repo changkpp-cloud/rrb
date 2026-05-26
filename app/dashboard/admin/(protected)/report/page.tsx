@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { ChevronRight, Leaf, Banknote, Users, ScrollText, Building2, Map } from "lucide-react";
+import { ChevronRight, Leaf, Banknote, Users, ScrollText, Building2, Map as MapIcon } from "lucide-react";
 
 export const revalidate = 300;
 
@@ -251,7 +251,7 @@ export default async function ReportPage({
       <div className="space-y-2">
         {rows.length === 0 ? (
           <div className="bg-cream-50 rounded-2xl gold-border px-4 py-10 text-center">
-            <Map className="w-10 h-10 text-gold-300 mx-auto mb-2" />
+            <MapIcon className="w-10 h-10 text-gold-300 mx-auto mb-2" />
             <p className="text-sm text-gold-400">ไม่มีข้อมูลในระดับนี้</p>
           </div>
         ) : rows.map((r, i) => {
