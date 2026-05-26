@@ -78,12 +78,20 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
   const faceInputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving]           = useState(false);
+  const [showAmount, setShowAmount]   = useState(false);
+  const [blinking, setBlinking]       = useState(false);
   const [pose, setPose]               = useState<Pose>("stand");
   const [faceUrl, setFaceUrl]         = useState<string | null>(null);
   const [generating, setGenerating]   = useState(false);
   const [generatedImg, setGeneratedImg] = useState<string | null>(null);
   const [savingMock, setSavingMock]   = useState(false);
   const [genError, setGenError]       = useState("");
+
+  function handleStyleChange(withAmount: boolean) {
+    setShowAmount(withAmount);
+    setBlinking(true);
+    setTimeout(() => setBlinking(false), 1000);
+  }
 
   const deceasedName = memorial.name;
   const birthDate    = memorial.birth_date ? thaiDate(memorial.birth_date) : "";
@@ -247,6 +255,26 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               <span className="text-sm font-semibold text-gold-700">E-card ขอบคุณ</span>
             </div>
 
+            {/* Style toggle */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleStyleChange(false)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
+                  !showAmount ? "gold-gradient text-white border-transparent shadow-sm" : "bg-white border-gold-200 text-gold-600 hover:border-gold-300"
+                }`}
+              >
+                ไม่แสดงยอดเงิน
+              </button>
+              <button
+                onClick={() => handleStyleChange(true)}
+                className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
+                  showAmount ? "gold-gradient text-white border-transparent shadow-sm" : "bg-white border-gold-200 text-gold-600 hover:border-gold-300"
+                }`}
+              >
+                แสดงยอดเงิน
+              </button>
+            </div>
+
             {/* New ecard design */}
             <div
               ref={cardRef}
@@ -294,9 +322,19 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
                     <ECardDonorSign name={name} title={title} />
                   </div>
                   <div className="flex-1 h-px bg-gold-200/50 w-full my-1" />
-                  <p className="text-[9px] text-gold-600 text-center leading-relaxed">
-                    ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
-                  </p>
+                  {showAmount && amount ? (
+                    <>
+                      <p className="text-[8px] text-gold-500 text-center">ยอดร่วมบุญ</p>
+                      <p className="text-sm font-bold text-gold-700">฿{parseInt(amount).toLocaleString()}</p>
+                      <p className="text-[9px] text-gold-600 text-center leading-relaxed mt-0.5">
+                        ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-[9px] text-gold-600 text-center leading-relaxed">
+                      ที่ร่วมอาลัย<br />และร่วมทำบุญในครั้งนี้
+                    </p>
+                  )}
                   <LotusIcon className="w-3 h-3 text-gold-300 mt-1" />
                 </div>
               </div>
@@ -307,16 +345,14 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <button
-                onClick={handleSaveCard}
-                disabled={saving}
-                className="flex-1 gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                <Download className="w-4 h-4" />
-                {saving ? "กำลังบันทึก..." : "บันทึก E-card"}
-              </button>
-            </div>
+            <button
+              onClick={handleSaveCard}
+              disabled={saving}
+              className={`w-full gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${blinking ? "animate-pulse ring-4 ring-gold-400 ring-offset-1" : ""}`}
+            >
+              <Download className="w-4 h-4" />
+              {saving ? "กำลังบันทึก..." : "บันทึก E-card"}
+            </button>
           </div>
 
           {/* ── SECTION 2: Mock wreath AI ── */}
