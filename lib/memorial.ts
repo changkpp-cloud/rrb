@@ -44,6 +44,20 @@ export async function getMemorialById(id: string): Promise<Memorial | null> {
   }
 }
 
+export async function getMemorialBySlug(slug: string): Promise<Memorial | null> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("memorials")
+      .select("*")
+      .eq("slug", slug)
+      .single();
+    return (data as Memorial | null);
+  } catch {
+    return null;
+  }
+}
+
 export async function getMemorialByHostCode(hostCode: string): Promise<Memorial | null> {
   try {
     const supabase = createAdminClient();

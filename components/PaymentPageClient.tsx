@@ -12,9 +12,10 @@ const SYSTEM_FEE = 100;
 
 interface Props {
   memorial: Memorial;
+  basePath?: string;
 }
 
-export default function PaymentPageClient({ memorial }: Props) {
+export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -46,7 +47,7 @@ export default function PaymentPageClient({ memorial }: Props) {
     form.append("amount", "0");
     form.append("slip", slipFile);
     fetch("/api/donations", { method: "POST", body: form }).catch(() => {});
-    router.push("/verifying");
+    router.push(`${basePath}/verifying`);
   }
 
   return (
@@ -164,7 +165,7 @@ export default function PaymentPageClient({ memorial }: Props) {
 
           {/* ─── Back button ─── */}
           <Link
-            href="/"
+            href={basePath || "/"}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />

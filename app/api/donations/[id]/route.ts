@@ -1,12 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/types";
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+type DonationUpdate = Database["public"]["Tables"]["donations"]["Update"];
 
 export async function PATCH(
   request: NextRequest,
@@ -23,16 +19,16 @@ export async function PATCH(
   }
 
   const allowed = ["status", "nameplate_status", "donor_title", "message"];
-  const update: Record<string, unknown> = {};
+  const update: DonationUpdate = {};
   for (const key of allowed) {
-    if (key in body) update[key] = body[key];
+    if (key in body) (update as Record<string, unknown>)[key] = body[key];
   }
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
-  const supabase = getSupabase();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from("donations")
     .update(update)

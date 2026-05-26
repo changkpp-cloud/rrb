@@ -1,0 +1,43 @@
+import Image from "next/image";
+import SiteHeader from "@/components/SiteHeader";
+import MemorialProfile from "@/components/MemorialProfile";
+import CeremonyInfo from "@/components/CeremonyInfo";
+import HomeScrollClient from "@/components/HomeScrollClient";
+import SiteFooter from "@/components/SiteFooter";
+import { getMemorialBySlug } from "@/lib/memorial";
+
+export const revalidate = 60;
+
+export default async function SlugPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const memorial = await getMemorialBySlug(slug);
+
+  if (!memorial) {
+    return (
+      <div className="min-h-screen flex items-center justify-center" style={{ background: "linear-gradient(180deg,#FFF8F1 0%,#F7F3EA 100%)" }}>
+        <p className="text-gold-400 text-sm">ไม่พบข้อมูลงานศพ</p>
+      </div>
+    );
+  }
+
+  const basePath = `/${slug}`;
+
+  return (
+    <div className="relative min-h-screen">
+      <div className="fixed inset-0 z-0">
+        <Image src="/img/bg-heaven.png" alt="" fill priority quality={100} style={{ objectFit: "cover", objectPosition: "center top" }} />
+      </div>
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <SiteHeader />
+        <main className="flex-1">
+          <MemorialProfile memorial={memorial} />
+          <CeremonyInfo memorial={memorial} />
+          <div className="mt-[5px]">
+            <HomeScrollClient basePath={basePath} />
+          </div>
+        </main>
+        <SiteFooter />
+      </div>
+    </div>
+  );
+}

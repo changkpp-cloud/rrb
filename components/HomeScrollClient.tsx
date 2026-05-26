@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import WreathBoard from "./WreathBoard";
 import PaymentSection from "./PaymentSection";
 
-export default function HomeScrollClient() {
+export default function HomeScrollClient({ basePath = "" }: { basePath?: string }) {
   const wreathRef = useRef<HTMLDivElement>(null);
   const [paymentVisible, setPaymentVisible] = useState(false);
 
@@ -34,7 +34,7 @@ export default function HomeScrollClient() {
           pointerEvents: paymentVisible ? "auto" : "none",
         }}
       >
-        <PaymentSection />
+        <PaymentSection basePath={basePath} />
       </div>
     </>
   );

@@ -67,7 +67,7 @@ const POSES: { id: Pose; label: string; icon: React.ReactNode }[] = [
   },
 ];
 
-export default function ECardClient({ memorial }: { memorial: Memorial }) {
+export default function ECardClient({ memorial, basePath = "" }: { memorial: Memorial; basePath?: string }) {
   const params = useSearchParams();
   const name    = params.get("name")    ?? "";
   const title   = params.get("title")   ?? "";
@@ -528,7 +528,7 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
 
           {/* Back */}
           <Link
-            href={`/print-name?${new URLSearchParams({ name, title, amount, message }).toString()}`}
+            href={`${basePath}/print-name?${new URLSearchParams({ name, title, amount, message }).toString()}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             ← ย้อนกลับ

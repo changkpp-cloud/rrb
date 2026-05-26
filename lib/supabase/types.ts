@@ -13,6 +13,7 @@ export interface Database {
         Row: {
           id: string;
           name: string;
+          center_code: string | null;
           municipality: string | null;
           tambon: string | null;
           amphoe: string | null;
@@ -25,6 +26,7 @@ export interface Database {
         Insert: {
           id?: string;
           name: string;
+          center_code?: string | null;
           municipality?: string | null;
           tambon?: string | null;
           amphoe?: string | null;
@@ -37,6 +39,7 @@ export interface Database {
         Update: {
           id?: string;
           name?: string;
+          center_code?: string | null;
           municipality?: string | null;
           tambon?: string | null;
           amphoe?: string | null;
