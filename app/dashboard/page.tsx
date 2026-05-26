@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Building2, KeyRound } from "lucide-react";
+import { Building2, KeyRound, BarChart3 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function DashboardPage() {
@@ -51,6 +51,22 @@ export default function DashboardPage() {
             <div>
               <p className="text-base font-bold text-gold-800">เจ้าภาพ</p>
               <p className="text-xs text-gold-500 mt-0.5 leading-relaxed">ดูรายชื่อผู้ร่วมบุญ · ยอดเงิน · สถานะป้าย</p>
+            </div>
+          </div>
+        </Link>
+
+        {/* ESG Admin login */}
+        <Link
+          href="/dashboard/admin"
+          className="block bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 hover:bg-cream-100 transition-colors active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-xl bg-gold-100 border border-gold-300 flex items-center justify-center shrink-0">
+              <BarChart3 className="w-6 h-6 text-gold-600" />
+            </div>
+            <div>
+              <p className="text-base font-bold text-gold-800">ESG Admin</p>
+              <p className="text-xs text-gold-500 mt-0.5 leading-relaxed">ภาพรวมระบบ · ศูนย์ · งานศพ · รายงาน ESG</p>
             </div>
           </div>
         </Link>
