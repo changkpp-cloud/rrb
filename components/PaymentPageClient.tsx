@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Copy, Check, CloudUpload } from "lucide-react";
+import { ArrowLeft, Copy, Check, CloudUpload, Download } from "lucide-react";
 import LotusIcon from "./LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -19,7 +19,7 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [copiedQR, setCopiedQR] = useState(false);
+  const [savedQR, setSavedQR] = useState(false);
   const [verifying, setVerifying] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
@@ -39,17 +39,22 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
     setTimeout(() => setCopied(false), 2000);
   }
 
-  async function copyQR() {
+  async function saveQR() {
     if (!memorial.bank_account_image_url) return;
     try {
       const res = await fetch(memorial.bank_account_image_url);
       const blob = await res.blob();
-      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "QR-code.png";
+      link.click();
+      URL.revokeObjectURL(url);
     } catch {
       window.open(memorial.bank_account_image_url, "_blank");
     }
-    setCopiedQR(true);
-    setTimeout(() => setCopiedQR(false), 2000);
+    setSavedQR(true);
+    setTimeout(() => setSavedQR(false), 2000);
   }
 
   async function handleVerify() {
@@ -91,15 +96,26 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
 
           {/* ─── กล่องรวม: จ่ายผ่านแอปธนาคาร + โอนแล้วแนบสลิป ─── */}
           <Card>
-            <OrnamentTitle small>ร่วมมอบหรีดร่วมบุญ 500 บาท</OrnamentTitle>
+            <OrnamentTitle small>ร่วมมอบ หรีดร่วมบุญ</OrnamentTitle>
 
             {/* QR + bank info */}
             <div className="mt-3 flex gap-3 items-start">
-              <div className="relative shrink-0 w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
-                {memorial.bank_account_image_url ? (
-                  <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
-                ) : (
-                  <QRPlaceholder />
+              <div className="flex flex-col items-center gap-2 shrink-0">
+                <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
+                  {memorial.bank_account_image_url ? (
+                    <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
+                  ) : (
+                    <QRPlaceholder />
+                  )}
+                </div>
+                {memorial.bank_account_image_url && (
+                  <button
+                    onClick={saveQR}
+                    className="flex items-center justify-center gap-1.5 w-28 py-2 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-xs text-gold-700 font-semibold shadow-sm"
+                  >
+                    {savedQR ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Download className="w-3.5 h-3.5" />}
+                    {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
+                  </button>
                 )}
               </div>
 
@@ -111,24 +127,13 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
                 <p className="text-sm font-bold text-gold-800 tracking-wider">
                   {memorial.bank_account_number}
                 </p>
-                <div className="mt-1 flex gap-2 flex-wrap">
-                  <button
-                    onClick={copyAccount}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
-                  >
-                    {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
-                  </button>
-                  {memorial.bank_account_image_url && (
-                    <button
-                      onClick={copyQR}
-                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
-                    >
-                      {copiedQR ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
-                      {copiedQR ? "คัดลอกแล้ว" : "คัดลอก QR โค้ด"}
-                    </button>
-                  )}
-                </div>
+                <button
+                  onClick={copyAccount}
+                  className="mt-1 flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
+                </button>
               </div>
             </div>
 
