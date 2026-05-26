@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Share2, Download, FileText, ImagePlus, Sparkles, ChevronRight } from "lucide-react";
+import { Share2, Download, FileText, Sparkles, ChevronRight } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -346,104 +346,93 @@ export default function ECardClient({ memorial }: { memorial: Memorial }) {
               <Sparkles className="w-4 h-4 text-gold-500" />
               <span className="text-sm font-semibold text-gold-700">จำลองภาพมอบหรีดร่วมบุญ</span>
             </div>
-            <p className="text-xs text-gold-500 -mt-1">สร้างภาพที่ระลึกด้วย AI เพื่อเก็บไว้เป็นความทรงจำ</p>
+            <p className="text-xs text-gold-500 -mt-1">เลือกท่าทาง แล้วกดแนบรูปเพื่อสร้างภาพที่ระลึก</p>
 
-            <div className="flex gap-3">
-              {/* Preview */}
-              <div
-                className="relative rounded-xl overflow-hidden bg-gold-100 border border-gold-200 flex-shrink-0"
-                style={{ width: "52%", aspectRatio: "3/4" }}
-              >
-                {generatedImg ? (
-                  <img src={generatedImg} alt="AI generated" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-gold-300 gap-2 p-3">
-                    <Sparkles className="w-8 h-8" />
-                    <span className="text-[10px] text-center leading-relaxed text-gold-400">
-                      เลือกท่าทางและ<br />กดสร้างภาพ →
-                    </span>
-                  </div>
-                )}
-
-                {/* Sign card overlay */}
-                {generatedImg && (
-                  <div className="absolute bottom-2 left-1.5 right-1.5">
+            {/* 3 pose boxes */}
+            <div className="grid grid-cols-3 gap-2">
+              {POSES.map(p => {
+                const isSelected = pose === p.id;
+                const hasResult = isSelected && generatedImg;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => { setPose(p.id); faceInputRef.current?.click(); }}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-95 ${
+                      isSelected ? "border-gold-500" : "border-gold-200 hover:border-gold-300"
+                    }`}
+                    style={{ aspectRatio: "3/4" }}
+                  >
+                    {/* Background */}
                     <div
-                      className="text-center px-2 py-1.5 rounded-lg"
+                      className="absolute inset-0"
                       style={{
-                        background: "rgba(253,248,238,0.93)",
-                        border: "1.5px solid #c9a84c",
+                        background: isSelected
+                          ? "linear-gradient(160deg,#fdf4dd 0%,#f5e0a0 50%,#fdf4dd 100%)"
+                          : "linear-gradient(160deg,#fdf8ee 0%,#f5edd8 100%)",
                       }}
-                    >
-                      <p className="text-[10px] font-bold text-gold-800 leading-tight">{name || "ผู้ร่วมบุญ"}</p>
-                      {title && <p className="text-[8px] text-gold-600 leading-tight mt-0.5">{title}</p>}
+                    />
+
+                    {/* Generated image */}
+                    {hasResult && (
+                      <img src={generatedImg!} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                    )}
+
+                    {/* Content overlay */}
+                    <div className="relative flex flex-col items-center justify-between h-full py-3 px-1">
+                      {/* Pose illustration */}
+                      <div className={`flex flex-col items-center gap-1 flex-1 justify-center ${hasResult ? "opacity-0" : ""}`}>
+                        <div className={isSelected ? "text-gold-600" : "text-gold-300"}>{p.icon}</div>
+                        <span className="text-[9px] font-medium text-gold-500 text-center leading-tight">{p.label}</span>
+                      </div>
+
+                      {/* CTA */}
+                      {!hasResult && (
+                        <div className="flex flex-col items-center gap-0.5">
+                          <div className="w-6 h-6 rounded-full bg-white border border-gold-300 flex items-center justify-center shadow-sm">
+                            <span className="text-gold-500 text-base leading-none font-light">+</span>
+                          </div>
+                          <p className="text-[8px] text-gold-400 text-center leading-tight mt-0.5">กดแนบรูป<br/>เพื่อสร้างภาพนี้</p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                )}
 
-                {/* Face preview badge */}
-                {faceUrl && (
-                  <div className="absolute top-2 right-2 w-8 h-8 rounded-full overflow-hidden border-2 border-gold-400 shadow">
-                    <img src={faceUrl} alt="face" className="w-full h-full object-cover" />
-                  </div>
-                )}
-              </div>
-
-              {/* Controls */}
-              <div className="flex-1 flex flex-col gap-2">
-                <p className="text-[11px] font-semibold text-gold-600">เลือกท่าทาง</p>
-
-                {/* Pose buttons */}
-                <div className="flex gap-1.5">
-                  {POSES.map(p => (
-                    <button
-                      key={p.id}
-                      onClick={() => setPose(p.id)}
-                      className={`flex-1 flex flex-col items-center gap-0.5 py-2 px-1 rounded-xl border-2 transition-all ${
-                        pose === p.id
-                          ? "border-gold-500 bg-gold-50 text-gold-700"
-                          : "border-gold-200 bg-white text-gold-400 hover:border-gold-300"
-                      }`}
-                    >
-                      {p.icon}
-                      <span className="text-[8px] font-medium leading-tight text-center">{p.label}</span>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Face upload */}
-                <input ref={faceInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaceChange} />
-                <button
-                  onClick={() => faceInputRef.current?.click()}
-                  className="flex items-center justify-center gap-1.5 py-2 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-[11px] font-medium hover:bg-gold-50 transition-colors"
-                >
-                  <ImagePlus className="w-3.5 h-3.5" />
-                  {faceUrl ? "เปลี่ยนรูปหน้า" : "แนบรูปหน้า"}
-                </button>
-
-                {/* Generate */}
-                <button
-                  onClick={handleGenerate}
-                  disabled={generating}
-                  className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl gold-gradient text-white text-[11px] font-semibold shadow-md hover:opacity-90 disabled:opacity-60 transition-all"
-                >
-                  <Sparkles className="w-3.5 h-3.5" />
-                  {generating ? "กำลังสร้าง..." : "สร้างภาพที่ระลึก"}
-                </button>
-
-                {genError && <p className="text-[9px] text-red-400 text-center">{genError}</p>}
-              </div>
+                    {/* Face badge */}
+                    {isSelected && faceUrl && !hasResult && (
+                      <div className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full overflow-hidden border-2 border-gold-400 shadow">
+                        <img src={faceUrl} alt="" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Save mock */}
-            <button
-              onClick={handleSaveMock}
-              disabled={!generatedImg || savingMock}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-medium hover:bg-gold-50 disabled:opacity-40 transition-all"
-            >
-              <Download className="w-4 h-4" />
-              {savingMock ? "กำลังบันทึก..." : "บันทึกภาพ"}
-            </button>
+            <input ref={faceInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaceChange} />
+
+            {/* Generate button — shows after face uploaded */}
+            {faceUrl && (
+              <button
+                onClick={handleGenerate}
+                disabled={generating}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 disabled:opacity-60 transition-all"
+              >
+                <Sparkles className="w-4 h-4" />
+                {generating ? "กำลังสร้างภาพ..." : "สร้างภาพที่ระลึก"}
+              </button>
+            )}
+
+            {genError && <p className="text-xs text-red-400 text-center">{genError}</p>}
+
+            {generatedImg && (
+              <button
+                onClick={handleSaveMock}
+                disabled={savingMock}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-medium hover:bg-gold-50 disabled:opacity-40 transition-all"
+              >
+                <Download className="w-4 h-4" />
+                {savingMock ? "กำลังบันทึก..." : "บันทึกภาพ"}
+              </button>
+            )}
           </div>
 
           {/* ── SECTION 3: Certificate link ── */}
