@@ -99,37 +99,40 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
             <OrnamentTitle small>ร่วมมอบ หรีดร่วมบุญ</OrnamentTitle>
 
             {/* QR + bank info */}
-            <div className="mt-3 flex gap-3 items-start">
-              <div className="flex flex-col items-center gap-2 shrink-0">
-                <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
+            <div className="mt-3 space-y-3">
+              <div className="flex gap-3 items-start">
+                <div className="relative shrink-0 w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
                   {memorial.bank_account_image_url ? (
                     <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
                   ) : (
                     <QRPlaceholder />
                   )}
                 </div>
+                <div className="flex-1 space-y-1">
+                  <p className="text-xs font-semibold text-gold-800 leading-snug">
+                    มูลนิธิ หรีดร่วมบุญ ESG Zero Waste
+                  </p>
+                  <p className="text-xs text-gold-600">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
+                  <p className="text-sm font-bold text-gold-800 tracking-wider">
+                    {memorial.bank_account_number}
+                  </p>
+                </div>
+              </div>
+
+              {/* Buttons row — aligned at same level */}
+              <div className="flex gap-2">
                 {memorial.bank_account_image_url && (
                   <button
                     onClick={saveQR}
-                    className="flex items-center justify-center gap-1.5 w-28 py-2 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-xs text-gold-700 font-semibold shadow-sm"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
                   >
                     {savedQR ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Download className="w-3.5 h-3.5" />}
                     {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
                   </button>
                 )}
-              </div>
-
-              <div className="flex-1 space-y-1">
-                <p className="text-xs font-semibold text-gold-800 leading-snug">
-                  มูลนิธิ หรีดร่วมบุญ ESG Zero Waste
-                </p>
-                <p className="text-xs text-gold-600">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
-                <p className="text-sm font-bold text-gold-800 tracking-wider">
-                  {memorial.bank_account_number}
-                </p>
                 <button
                   onClick={copyAccount}
-                  className="mt-1 flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
+                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                   {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
