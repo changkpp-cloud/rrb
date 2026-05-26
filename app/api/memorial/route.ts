@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMemorial } from "@/lib/memorial";
+import type { Database } from "@/lib/supabase/types";
+
+type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
 
 export async function GET() {
   const memorial = await getMemorial();
@@ -16,9 +19,9 @@ export async function PATCH(req: NextRequest) {
     "bank_name", "bank_account_number", "bank_account_name",
   ] as const;
 
-  const updates: Record<string, unknown> = {};
+  const updates: MemorialUpdate = {};
   for (const key of allowed) {
-    if (key in body) updates[key] = body[key];
+    if (key in body) (updates as Record<string, unknown>)[key] = body[key];
   }
 
   if (Object.keys(updates).length === 0) {
