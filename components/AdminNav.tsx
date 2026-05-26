@@ -2,15 +2,16 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Building2, ScrollText, Leaf, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, ScrollText, Leaf, Users, Map, LogOut } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const NAV = [
-  { href: "/dashboard/admin/overview", label: "ภาพรวม", icon: LayoutDashboard },
-  { href: "/dashboard/admin/centers", label: "ศูนย์", icon: Building2 },
-  { href: "/dashboard/admin/memorials", label: "งานศพ", icon: ScrollText },
-  { href: "/dashboard/admin/esg", label: "ESG", icon: Leaf },
-  { href: "/dashboard/admin/hosts", label: "เจ้าภาพ", icon: Users },
+  { href: "/dashboard/admin/overview",  label: "ภาพรวม",  icon: LayoutDashboard },
+  { href: "/dashboard/admin/report",    label: "รายภูมิภาค", icon: Map },
+  { href: "/dashboard/admin/centers",   label: "ศูนย์",    icon: Building2 },
+  { href: "/dashboard/admin/memorials", label: "งานศพ",   icon: ScrollText },
+  { href: "/dashboard/admin/esg",       label: "ESG",      icon: Leaf },
+  { href: "/dashboard/admin/hosts",     label: "เจ้าภาพ", icon: Users },
 ];
 
 export default function AdminNav() {
