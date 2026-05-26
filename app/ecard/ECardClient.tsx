@@ -107,7 +107,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
       const link = document.createElement("a");
-      link.download = `E-card-ขอบคุณ-${name || "ecard"}.png`;
+      link.download = `E-card-${name || "ecard"}-${showAmount ? "แสดงยอด" : "ไม่แสดงยอด"}.png`;
       link.href = dataUrl;
       link.click();
     } catch {}
@@ -252,16 +252,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
-
-          {/* Page title */}
-          <div className="text-center">
-            <h2 className="text-3xl font-bold text-gold-800">ขอบคุณ</h2>
-            <div className="flex items-center justify-center gap-2 mt-1">
-              <div className="h-px flex-1 bg-gradient-to-r from-transparent to-gold-300" />
-              <span className="text-gold-400 text-xs">❖</span>
-              <div className="h-px flex-1 bg-gradient-to-l from-transparent to-gold-300" />
-            </div>
-          </div>
 
           {/* ── SECTION 1: E-Card ── */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-3">
