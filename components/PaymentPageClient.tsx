@@ -99,9 +99,9 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
             <OrnamentTitle small>ร่วมมอบ หรีดร่วมบุญ</OrnamentTitle>
 
             {/* QR | divider | bank info */}
-            <div className="mt-3 flex items-stretch gap-0">
+            <div className="mt-3 flex items-stretch">
               {/* QR side */}
-              <div className="flex flex-col items-center gap-2 shrink-0 pr-3">
+              <div className="shrink-0 pr-4 flex items-center justify-center">
                 <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
                   {memorial.bank_account_image_url ? (
                     <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
@@ -111,17 +111,16 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
                 </div>
               </div>
 
-              {/* Vertical divider */}
-              <div className="flex flex-col items-center shrink-0">
-                <div className="w-px flex-1 bg-gradient-to-b from-transparent via-gold-300 to-transparent" />
-                <span className="text-gold-300 text-[10px] py-1">❖</span>
-                <div className="w-px flex-1 bg-gradient-to-b from-transparent via-gold-300 to-transparent" />
+              {/* Vertical divider — ❖ pinned at exact center */}
+              <div className="shrink-0 relative w-4 self-stretch">
+                <div className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 w-px bg-gradient-to-b from-transparent via-gold-300 to-transparent" />
+                <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gold-400 text-[10px] leading-none bg-cream-50 px-0.5">❖</span>
               </div>
 
               {/* Bank info side */}
-              <div className="flex-1 pl-3 flex flex-col justify-center space-y-1">
+              <div className="flex-1 pl-4 flex flex-col justify-center space-y-1.5">
                 <p className="text-[11px] font-semibold text-gold-800 leading-snug">
-                  มูลนิธิ หรีดร่วมบุญ ESG Zero Waste
+                  มูลนิธิ หรีดร่วมบุญ
                 </p>
                 <p className="text-[11px] text-gold-600">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
                 <p className="text-sm font-bold text-gold-800 tracking-widest pt-0.5">
