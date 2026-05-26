@@ -45,14 +45,7 @@ function PrintNameInner() {
             </div>
             <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
           </div>
-          <Link
-            href="/dashboard"
-            className="flex items-center justify-center w-[54px] h-[54px] -mr-2 active:scale-95 transition-all"
-          >
-            <span className="w-9 h-9 rounded-full border-[1.5px] border-gold-400 bg-cream-50 flex items-center justify-center text-gold-600 card-shadow">
-              <span className="text-xl leading-none font-light select-none">+</span>
-            </span>
-          </Link>
+          <div className="w-8" />
         </div>
       </header>
 
