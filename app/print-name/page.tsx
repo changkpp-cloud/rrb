@@ -82,13 +82,13 @@ function PrintNameInner() {
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-gold-700">
                 <Briefcase className="w-4 h-4" />
-                <span className="text-sm font-semibold">ตำแหน่ง / ข้อความแสดงอาลัย</span>
+                <span className="text-sm font-semibold">ตำแหน่ง / องค์กร</span>
               </div>
               <input
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                placeholder="ตำแหน่ง / ขอแสดงความอาลัย"
+                placeholder="ตำแหน่ง / องค์กร / ฝ่าย"
                 className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
               />
             </div>
