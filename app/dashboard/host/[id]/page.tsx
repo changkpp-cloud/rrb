@@ -3,7 +3,7 @@ import { ArrowLeft, Users, Banknote, Printer, MapPin, QrCode, Download } from "l
 import LotusIcon from "@/components/LotusIcon";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
-import { getMemorialById, DEMO_MEMORIAL, formatThaiDate } from "@/lib/memorial";
+import { getMemorialById, formatThaiDate } from "@/lib/memorial";
 
 export const revalidate = 30;
 
@@ -25,7 +25,8 @@ const NAMEPLATE_COLORS: Record<string, string> = {
 
 export default async function HostFuneralPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const memorial = await getMemorialById(id) ?? DEMO_MEMORIAL;
+  const memorial = await getMemorialById(id);
+  if (!memorial) return null;
   const donations = await getDonations(memorial.id);
 
   const confirmed = donations.filter(d => d.status === "confirmed");

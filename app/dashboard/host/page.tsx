@@ -88,14 +88,6 @@ export default function HostLoginPage() {
           <p className="text-center text-[11px] text-gold-400">
             ยังไม่มีรหัส? ติดต่อศูนย์บริหารหรีดร่วมบุญในพื้นที่ของท่าน
           </p>
-
-          {/* Demo shortcut */}
-          <button
-            onClick={() => { setCode("DEMO001"); }}
-            className="w-full text-[11px] text-gold-400 underline text-center"
-          >
-            ทดลองใช้ด้วยรหัสตัวอย่าง (DEMO001)
-          </button>
         </div>
       </main>
     </div>
