@@ -3,7 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Briefcase, MessageCircle } from "lucide-react";
+import { User, Briefcase } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
@@ -22,11 +22,10 @@ function PrintNameInner() {
   // Pre-fill from URL when navigating back from ecard
   const [name,    setName]    = useState(params.get("name")    ?? "");
   const [title,   setTitle]   = useState(params.get("title")   ?? "");
-  const [message, setMessage] = useState(params.get("message") ?? "");
   const [showModal, setShowModal] = useState(false);
 
   function handleSend() {
-    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount, message: message.trim() });
+    const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount });
     router.push(`/printing?${q.toString()}`);
   }
 
@@ -94,21 +93,6 @@ function PrintNameInner() {
               />
             </div>
 
-            <div className="h-px bg-gold-200/50" />
-
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-gold-700">
-                <MessageCircle className="w-4 h-4" />
-                <span className="text-sm font-semibold">ข้อความแสดงความอาลัย <span className="text-gold-400 font-normal">(ไม่บังคับ)</span></span>
-              </div>
-              <input
-                type="text"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="ขอแสดงความอาลัยและระลึกถึงตลอดไป..."
-                className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
-              />
-            </div>
 
           </div>
 
@@ -140,9 +124,6 @@ function PrintNameInner() {
           <div className="w-full max-w-lg space-y-5" onClick={(e) => e.stopPropagation()}>
             <p className="text-center text-white/80 text-sm tracking-wide">ตัวอย่างป้ายที่จะพิมพ์</p>
             <SignPreview name={name} title={title} />
-            {message.trim() && (
-              <p className="text-center text-white/70 text-xs italic">"{message.trim()}"</p>
-            )}
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
