@@ -297,16 +297,16 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 width: "100%",
                 height: Math.round(cardWidth * 5 / 4),
                 background: "linear-gradient(170deg,#fdf8ee 0%,#f5e4b5 35%,#fdf8ee 65%,#eedfa8 100%)",
-                border: "2px solid #c9a84c",
+                border: "1.5px solid #e8c97a",
                 borderRadius: 0,
-                boxShadow: "0 12px 40px rgba(184,134,11,0.28)",
+                boxShadow: "0 8px 32px rgba(184,134,11,0.10)",
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
               }}
             >
               {/* Header — 50px element = 150px saved */}
-              <div style={{ background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", padding: `${Math.round(15*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
+              <div style={{ background: "linear-gradient(90deg,#c4a052,#e0c070,#eacf80,#e0c070,#c4a052)", padding: `${Math.round(15*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full" /></span>
                 <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
                 <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
@@ -318,9 +318,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {/* ส่วนที่ 1: ผู้มอบ */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s), width: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
-                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
+                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
                     <p style={{ fontSize: Math.round(12*s), color: "#92400e", letterSpacing: "0.1em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
-                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                   </div>
                   <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>
                     {name || "ชื่อ หรือ องค์กร"}
@@ -338,21 +338,21 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
                 {/* Divider */}
                 <div style={{ display: "flex", alignItems: "center", gap: Math.round(8*s), width: "100%" }}>
-                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #c9a84c)" }} />
-                  <span style={{ color: "#c9a84c", fontSize: Math.round(13*s) }}>❖</span>
-                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #c9a84c)" }} />
+                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #e0c070)" }} />
+                  <span style={{ color: "#e0c070", fontSize: Math.round(13*s) }}>❖</span>
+                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #e0c070)" }} />
                 </div>
 
                 {/* ส่วนที่ 2: ผู้วายชนม์ */}
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(5*s) }}>
                   <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.12em", margin: 0 }}>แด่ผู้วายชนม์</p>
 
-                  <div style={{ width: Math.round(64*s), height: Math.round(76*s), borderRadius: "50% / 45%", overflow: "hidden", border: "2px solid #c9a84c", boxShadow: "0 4px 16px rgba(184,134,11,0.30), 0 0 0 3px rgba(253,248,238,0.8), 0 0 0 5px rgba(201,168,76,0.25)" }}>
+                  <div style={{ width: Math.round(64*s), height: Math.round(76*s), borderRadius: "50% / 45%", overflow: "hidden", border: "1.5px solid #e8c97a", boxShadow: "0 3px 10px rgba(184,134,11,0.10), 0 0 0 3px rgba(253,248,238,0.8), 0 0 0 5px rgba(201,168,76,0.10)" }}>
                     {memorial.photo_url ? (
                       <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ display: "inline-flex", width: Math.round(30*s), height: Math.round(30*s), color: "#c9a84c" }}><LotusIcon className="w-full h-full" /></span>
+                        <span style={{ display: "inline-flex", width: Math.round(30*s), height: Math.round(30*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
                       </div>
                     )}
                   </div>
@@ -375,7 +375,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
 
               {/* ── Bottom zone — 50px element = 150px saved, ทองเข้มเหมือน header ── */}
-              <div style={{ height: Math.round(50*s), flexShrink: 0, background: "linear-gradient(90deg,#8B6914,#c9a84c,#d4a832,#c9a84c,#8B6914)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(10*s) }}>
+              <div style={{ height: Math.round(50*s), flexShrink: 0, background: "linear-gradient(90deg,#c4a052,#e0c070,#eacf80,#e0c070,#c4a052)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(10*s) }}>
                 <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full" /></span>
                 <span style={{ color: "rgba(255,255,255,0.45)", fontSize: Math.round(10*s), letterSpacing: "0.35em" }}>❖ ❖ ❖</span>
                 <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
