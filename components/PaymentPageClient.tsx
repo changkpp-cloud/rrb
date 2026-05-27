@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Copy, Check, CloudUpload, Download } from "lucide-react";
 import LotusIcon from "./LotusIcon";
+import PromptPayQR from "./PromptPayQR";
 import type { Memorial } from "@/lib/supabase/types";
 
 const SYSTEM_FEE = 100;
@@ -13,9 +14,10 @@ const SYSTEM_FEE = 100;
 interface Props {
   memorial: Memorial;
   basePath?: string;
+  promptpayPhone?: string | null;
 }
 
-export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
+export default function PaymentPageClient({ memorial, basePath = "", promptpayPhone }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -116,8 +118,10 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
             <div className="mt-3 flex items-stretch">
               {/* QR side */}
               <div className="shrink-0 pr-4 flex items-center justify-center">
-                <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden">
-                  {memorial.bank_account_image_url ? (
+                <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden p-1.5">
+                  {promptpayPhone ? (
+                    <PromptPayQR phone={promptpayPhone} />
+                  ) : memorial.bank_account_image_url ? (
                     <Image src={memorial.bank_account_image_url} alt="QR" fill className="object-contain p-1" />
                   ) : (
                     <QRPlaceholder />

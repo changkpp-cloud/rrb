@@ -72,6 +72,20 @@ export async function getMemorialByHostCode(hostCode: string): Promise<Memorial 
   }
 }
 
+export async function getCenterById(centerId: string) {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("centers")
+      .select("*")
+      .eq("id", centerId)
+      .single();
+    return data;
+  } catch {
+    return null;
+  }
+}
+
 export function formatThaiDate(isoDate: string): string {
   const months = [
     "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
