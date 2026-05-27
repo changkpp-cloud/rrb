@@ -47,19 +47,18 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = createAdminClient();
-    const insertPayload: Record<string, unknown> = {
-      memorial_id,
-      donor_name,
-      amount,
-      message: message || null,
-      slip_url,
-      status: "confirmed",
-    };
-    if (donor_title) insertPayload.donor_title = donor_title;
 
     const { data, error } = await supabase
       .from("donations")
-      .insert(insertPayload)
+      .insert({
+        memorial_id,
+        donor_name,
+        donor_title: donor_title ?? null,
+        amount,
+        message: message ?? null,
+        slip_url: slip_url ?? null,
+        status: "confirmed" as const,
+      })
       .select()
       .single();
 
@@ -67,10 +66,16 @@ export async function POST(request: NextRequest) {
       console.error("Insert error:", error);
       // Fallback: retry without donor_title if column doesn't exist yet
       if (error.message.includes("Could not find") && donor_title) {
-        delete insertPayload.donor_title;
         const { data: data2, error: error2 } = await supabase
           .from("donations")
-          .insert(insertPayload)
+          .insert({
+            memorial_id,
+            donor_name,
+            amount,
+            message: message ?? null,
+            slip_url: slip_url ?? null,
+            status: "confirmed" as const,
+          })
           .select()
           .single();
         if (error2) {
