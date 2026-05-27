@@ -1,14 +1,18 @@
+import React from "react";
+
 interface LotusIconProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
-export default function LotusIcon({ className = "" }: LotusIconProps) {
+export default function LotusIcon({ className = "", style }: LotusIconProps) {
   return (
     <svg
       viewBox="0 0 64 64"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       className={className}
+      style={style}
     >
       <path
         d="M32 52C32 52 14 42 14 26C14 18 20 12 28 12C29.4 12 30.7 12.2 32 12.6C33.3 12.2 34.6 12 36 12C44 12 50 18 50 26C50 42 32 52 32 52Z"
