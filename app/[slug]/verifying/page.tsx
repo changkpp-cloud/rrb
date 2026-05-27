@@ -25,7 +25,8 @@ function VerifyingInner() {
   const params = useSearchParams();
   const { slug } = useParams<{ slug: string }>();
   const amount = params.get("amount") ?? "";
-  const donationId = params.get("donation_id") ?? "";
+  const memorial_id = params.get("memorial_id") ?? "";
+  const slip_url = params.get("slip_url") ?? "";
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -35,12 +36,12 @@ function VerifyingInner() {
     timers.push(
       setTimeout(() => {
         setDone(true);
-        const q = new URLSearchParams({ amount, donation_id: donationId });
+        const q = new URLSearchParams({ amount, memorial_id, slip_url });
         router.push(`/${slug}/print-name?${q.toString()}`);
       }, STEPS.length * 1200 + 400)
     );
     return () => timers.forEach(clearTimeout);
-  }, [router, amount, donationId, slug]);
+  }, [router, amount, memorial_id, slip_url, slug]);
 
   return (
     <div className="min-h-dvh flex flex-col" style={{ background: "#ffffff" }}>

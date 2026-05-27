@@ -63,19 +63,24 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
   async function handleVerify() {
     if (!slipFile || parsedAmount <= 0) return;
     setVerifying(true);
-    const form = new FormData();
-    form.append("memorial_id", memorial.id);
-    form.append("donor_name", "ผู้ร่วมบุญ");
-    form.append("amount", String(parsedAmount));
-    form.append("slip", slipFile);
+
+    // Upload slip first, defer donation creation until user enters name
+    let slipUrl = "";
     try {
-      const res = await fetch("/api/donations", { method: "POST", body: form });
+      const form = new FormData();
+      form.append("memorial_id", memorial.id);
+      form.append("slip", slipFile);
+      const res = await fetch("/api/upload-slip", { method: "POST", body: form });
       const data = await res.json();
-      const donationId: string = data?.donation?.id ?? "";
-      router.push(`${basePath}/verifying?donation_id=${encodeURIComponent(donationId)}&amount=${encodeURIComponent(String(parsedAmount))}`);
-    } catch {
-      router.push(`${basePath}/verifying`);
-    }
+      slipUrl = data?.slip_url ?? "";
+    } catch { /* slip upload failed — continue without URL */ }
+
+    const q = new URLSearchParams({
+      memorial_id: memorial.id,
+      amount: String(parsedAmount),
+      slip_url: slipUrl,
+    });
+    router.push(`${basePath}/verifying?${q.toString()}`);
   }
 
   return (

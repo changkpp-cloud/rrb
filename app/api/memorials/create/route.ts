@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
       host_phone: hostPhone,
       host_code: hostCode,
       host_relationship: hostRelationship,
-      funeral_status: "active",
+      funeral_status: "active" as const,
       bank_name: bankName,
       bank_account_number: bankAccountNumber,
       bank_account_name: bankAccountName,

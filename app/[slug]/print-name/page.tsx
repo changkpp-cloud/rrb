@@ -19,7 +19,8 @@ function PrintNameInner() {
   const params = useSearchParams();
   const { slug } = useParams<{ slug: string }>();
   const amount = params.get("amount") ?? "";
-  const donationId = params.get("donation_id") ?? "";
+  const memorial_id = params.get("memorial_id") ?? "";
+  const slip_url = params.get("slip_url") ?? "";
   const [name, setName] = useState(params.get("name") ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [showModal, setShowModal] = useState(false);
@@ -29,20 +30,28 @@ function PrintNameInner() {
     const trimmedName = name.trim();
     const trimmedTitle = title.trim();
     setSending(true);
-    if (donationId) {
-      const body: Record<string, unknown> = {
-        donor_name: trimmedName,
-        status: "confirmed",
-      };
-      if (trimmedTitle) body.donor_title = trimmedTitle;
+
+    // Create donation now with the real name (single INSERT, no PATCH needed)
+    let donationId = "";
+    if (memorial_id) {
       try {
-        await fetch(`/api/donations/${donationId}`, {
-          method: "PATCH",
+        const body: Record<string, unknown> = {
+          memorial_id,
+          donor_name: trimmedName,
+          amount: parseFloat(amount) || 0,
+          slip_url: slip_url || undefined,
+        };
+        if (trimmedTitle) body.donor_title = trimmedTitle;
+        const res = await fetch("/api/donations", {
+          method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
+        const data = await res.json();
+        donationId = data?.donation?.id ?? "";
       } catch {}
     }
+
     const q = new URLSearchParams({ name: trimmedName, title: trimmedTitle, amount, donation_id: donationId });
     router.push(`/${slug}/printing?${q.toString()}`);
   }
