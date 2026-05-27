@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { ArrowLeft, Users, Download } from "lucide-react";
 import LotusIcon from "./LotusIcon";
+import HostBankForm from "./HostBankForm";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 
 interface Props {
@@ -26,6 +27,7 @@ const TABS = [
   { id: "summary", label: "สรุปยอด" },
   { id: "donors",  label: "รายชื่อ" },
   { id: "report",  label: "รายงาน" },
+  { id: "bank",    label: "บัญชีรับเงิน" },
 ];
 
 export default function HostDashboardClient({ memorial, donations, id }: Props) {
@@ -275,6 +277,21 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
           <p className="text-center text-[10px] text-gold-400 pb-2">
             เอกสารนี้ออกโดยระบบหรีดร่วมบุญ · ใช้สำหรับพิธีกรอ่านรายชื่อ
           </p>
+        </section>
+
+        {/* ── Divider ── */}
+        <Divider />
+
+        {/* ════ Section 4: บัญชีรับเงิน ════ */}
+        <section
+          ref={setRef("bank")}
+          data-section="bank"
+          className="scroll-mt-28"
+        >
+          <p className="text-sm font-bold text-gold-700 px-1 mb-4">ข้อมูลบัญชีเจ้าภาพสำหรับรับเงิน</p>
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4">
+            <HostBankForm memorial={memorial} />
+          </div>
         </section>
 
         <div className="h-4" />
