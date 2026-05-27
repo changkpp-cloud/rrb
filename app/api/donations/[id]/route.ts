@@ -29,12 +29,24 @@ export async function PATCH(
   }
 
   const supabase = createAdminClient();
-  const { data, error } = await supabase
+  let { data, error } = await supabase
     .from("donations")
     .update(update)
     .eq("id", id)
     .select()
     .single();
+
+  // If migration columns (donor_title, nameplate_status) don't exist yet, retry with base columns only
+  if (error && error.message.includes("Could not find")) {
+    const baseAllowed = ["status", "donor_name", "message"];
+    const baseUpdate: DonationUpdate = {};
+    for (const key of baseAllowed) {
+      if (key in update) (baseUpdate as Record<string, unknown>)[key] = (update as Record<string, unknown>)[key];
+    }
+    if (Object.keys(baseUpdate).length > 0) {
+      ({ data, error } = await supabase.from("donations").update(baseUpdate).eq("id", id).select().single());
+    }
+  }
 
   if (error) {
     return NextResponse.json({ error: "Failed to update" }, { status: 500 });

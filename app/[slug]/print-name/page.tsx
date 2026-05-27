@@ -28,10 +28,15 @@ function PrintNameInner() {
     const trimmedName = name.trim();
     const trimmedTitle = title.trim();
     if (donationId) {
+      const body: Record<string, unknown> = {
+        donor_name: trimmedName,
+        status: "confirmed",
+      };
+      if (trimmedTitle) body.donor_title = trimmedTitle;
       fetch(`/api/donations/${donationId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ donor_name: trimmedName, donor_title: trimmedTitle || null }),
+        body: JSON.stringify(body),
       }).catch(() => {});
     }
     const q = new URLSearchParams({ name: trimmedName, title: trimmedTitle, amount, donation_id: donationId });
