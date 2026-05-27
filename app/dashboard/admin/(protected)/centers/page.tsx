@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { Building2, ChevronRight } from "lucide-react";
+import { Building2, ChevronRight, Plus } from "lucide-react";
 
 export const revalidate = 60;
 
@@ -33,9 +33,18 @@ export default async function AdminCentersPage() {
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-base font-bold text-gold-800">ศูนย์บริหารทั้งหมด</h2>
-        <p className="text-[11px] text-gold-500">{centers.length} ศูนย์ในระบบ</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-base font-bold text-gold-800">ศูนย์บริหารทั้งหมด</h2>
+          <p className="text-[11px] text-gold-500">{centers.length} ศูนย์ในระบบ</p>
+        </div>
+        <Link
+          href="/dashboard/admin/centers/new"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl gold-gradient text-white text-xs font-semibold shadow-sm hover:opacity-90 active:scale-95 transition-all"
+        >
+          <Plus className="w-3.5 h-3.5" />
+          เปิดศูนย์ใหม่
+        </Link>
       </div>
 
       {centers.length === 0 ? (
