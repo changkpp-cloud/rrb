@@ -68,15 +68,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น: ชื่อ วันเกิด วันเสียชีวิต วันฌาปนกิจ" }, { status: 400 });
     }
     // Upload files
-    const photoFile       = form.get("photo") as File | null;
-    const qrFile          = form.get("qr_image") as File | null;
-    const certFile        = form.get("death_certificate") as File | null;
-    const idCardFile      = form.get("host_id_card") as File | null;
+    const photoFile  = form.get("photo")    as File | null;
+    const qrFile     = form.get("qr_image") as File | null;
 
-    const photoUrl   = photoFile   ? await uploadFile(supabase, photoFile,  "photos")   : null;
-    const qrUrl      = qrFile      ? await uploadFile(supabase, qrFile,     "qrcodes")  : null;
-    const certUrl    = certFile    ? await uploadFile(supabase, certFile,   "documents") : null;
-    const idCardUrl  = idCardFile  ? await uploadFile(supabase, idCardFile, "documents") : null;
+    const photoUrl = photoFile ? await uploadFile(supabase, photoFile, "photos")  : null;
+    const qrUrl    = qrFile    ? await uploadFile(supabase, qrFile,    "qrcodes") : null;
 
     // Generate codes
     const ceYear   = parseInt(deathDate.split("-")[0]) || new Date().getFullYear();
@@ -122,8 +118,6 @@ export async function POST(req: NextRequest) {
         host_bank_name: hostBankName,
         host_bank_account_number: hostBankAccountNumber,
         host_bank_account_name: hostBankAccountName,
-        death_certificate_url: certUrl,
-        host_id_card_url: idCardUrl,
         is_active: true,
       })
       .select()
