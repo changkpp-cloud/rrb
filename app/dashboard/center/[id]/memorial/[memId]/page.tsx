@@ -1,10 +1,13 @@
 import Link from "next/link";
-import { ArrowLeft, Users, ExternalLink, Copy } from "lucide-react";
+import { ArrowLeft, Users, ExternalLink } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
 import VerifyDonationButton from "./VerifyDonationButton";
+import CloseMemorialButton from "./CloseMemorialButton";
+
+const SYSTEM_FEE = 100;
 
 export const revalidate = 30;
 
@@ -145,6 +148,17 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             </div>
           ))}
         </div>
+
+        {/* Close memorial / transfer money */}
+        <CloseMemorialButton
+          memorialId={memorial.id}
+          totalAmount={total}
+          hostBankName={memorial.host_bank_name ?? null}
+          hostBankAccount={memorial.host_bank_account_number ?? null}
+          hostBankAccountName={memorial.host_bank_account_name ?? null}
+          systemFee={SYSTEM_FEE}
+          isClosed={memorial.funeral_status === "closed"}
+        />
 
         <div className="h-2" />
       </main>
