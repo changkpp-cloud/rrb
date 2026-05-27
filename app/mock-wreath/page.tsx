@@ -1,33 +1,77 @@
-﻿"use client";
+"use client";
 
-import { Suspense, useState, useRef, useEffect, useCallback } from "react";
+import { Suspense, useState, useRef, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import {
-  Upload, ImagePlus, Type, Sparkles, Download, Share2,
-  Clock, Trash2, Loader2, Check,
-} from "lucide-react";
+import { Type, Sparkles, Download, Share2, Loader2, Check, Camera } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
-// ── Constants ──────────────────────────────────────────────
+// ── Style presets ──────────────────────────────────────────────────────────
+
+const STYLE_PRESETS = [
+  {
+    id: "temple",
+    label: "ห้องโถงวัด",
+    emoji: "🪔",
+    desc: "แสงเทียน ดอกเบญจมาศ แท่นบูชา",
+    preview: "linear-gradient(160deg,#1a0a02 0%,#3d1e00 50%,#1a0a02 100%)",
+  },
+  {
+    id: "garden",
+    label: "สวนดอกไม้",
+    emoji: "🌸",
+    desc: "ดอกไม้ขาว สวนสงบ แสงอ่อนยามเช้า",
+    preview: "linear-gradient(160deg,#0d2b0d 0%,#1e5c1e 55%,#0d2b0d 100%)",
+  },
+  {
+    id: "pavilion",
+    label: "ศาลาวัด",
+    emoji: "⛩️",
+    desc: "ศาลาไทย ท้องฟ้า ดอกไม้พวงมาลัย",
+    preview: "linear-gradient(180deg,#4a7fa0 0%,#2d6080 40%,#3a5a30 75%,#1a3a10 100%)",
+  },
+  {
+    id: "luxury",
+    label: "ห้องโถงหรู",
+    emoji: "✨",
+    desc: "ดอกไม้ขาวสูง แสงอบอุ่น ห้องหรู",
+    preview: "linear-gradient(180deg,#1a0a2e 0%,#2d1450 55%,#0a0412 100%)",
+  },
+  {
+    id: "river",
+    label: "ริมน้ำยามเย็น",
+    emoji: "🌅",
+    desc: "พระอาทิตย์ตก ริมน้ำ ดอกบัว",
+    preview: "linear-gradient(180deg,#b05828 0%,#7a3a18 40%,#2d1a08 100%)",
+  },
+  {
+    id: "royal",
+    label: "พระเมรุมาศ",
+    emoji: "🏯",
+    desc: "เจดีย์ทอง สถาปัตยกรรมไทย หรูหรา",
+    preview: "linear-gradient(160deg,#1a0800 0%,#4a2200 35%,#261000 100%)",
+  },
+] as const;
+
+type StyleId = (typeof STYLE_PRESETS)[number]["id"];
+
+// ── Text options ───────────────────────────────────────────────────────────
 
 const FONTS = [
-  { id: "sarabun",        name: "Sarabun",         sample: "สารบัญ" },
-  { id: "prompt",         name: "Prompt",          sample: "พรอมท์" },
-  { id: "kanit",          name: "Kanit",           sample: "กนิต" },
-  { id: "noto-serif-thai",name: "Noto Serif Thai", sample: "เซอริฟ" },
-  { id: "mitr",           name: "Mitr",            sample: "มิตร" },
+  { id: "sarabun",         name: "Sarabun" },
+  { id: "prompt",          name: "Prompt" },
+  { id: "kanit",           name: "Kanit" },
+  { id: "noto-serif-thai", name: "Noto Serif Thai" },
+  { id: "mitr",            name: "Mitr" },
 ];
 
 const TEXT_COLORS = [
-  { id: "dark-brown", hex: "#2a1508" },
-  { id: "brown",      hex: "#5C3D2E" },
-  { id: "gold-brown", hex: "#7C6341" },
-  { id: "gold",       hex: "#C8A96E" },
-  { id: "white",      hex: "#ffffff" },
-  { id: "cream",      hex: "#F5DEB3" },
-  { id: "navy",       hex: "#1a2c40" },
-  { id: "forest",     hex: "#1a3a1a" },
+  { id: "cream",   hex: "#F5DEB3" },
+  { id: "white",   hex: "#ffffff" },
+  { id: "gold",    hex: "#C8A96E" },
+  { id: "brown",   hex: "#7C6341" },
+  { id: "dark",    hex: "#2a1508" },
+  { id: "navy",    hex: "#1a2c40" },
 ];
 
 const FONT_SIZES = [
@@ -37,30 +81,7 @@ const FONT_SIZES = [
   { label: "XL", val: 1.6 },
 ];
 
-const SCENES = [
-  { id: "bokeh",   label: "บอเก้มืด",   css: "radial-gradient(ellipse at 50% 30%, #3a2010 0%, #180b05 100%)" },
-  { id: "garden",  label: "สวนดอกไม้", css: "linear-gradient(160deg,#143a10 0%,#2d6020 55%,#143a10 100%)" },
-  { id: "hall",    label: "ห้องโถง",    css: "linear-gradient(180deg,#261436 0%,#140820 60%,#0a0412 100%)" },
-  { id: "outdoor", label: "กลางแจ้ง",  css: "linear-gradient(180deg,#6ab0d4 0%,#4a8fba 35%,#5a8a4a 78%,#3a5a30 100%)" },
-];
-
-const DRAFT_KEY = "mock-wreath-drafts-v1";
-const DRAFT_EXPIRY = 7 * 24 * 60 * 60 * 1000;
-
-// ── Types ──────────────────────────────────────────────────
-
-interface Img { id: string; url: string }
-
-interface Draft {
-  id: string;
-  timestamp: number;
-  fontId: string;
-  fontSize: number;
-  textColor: string;
-  sceneId: string;
-}
-
-// ── Page ───────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────
 
 export default function MockWreathPage() {
   return (
@@ -71,55 +92,43 @@ export default function MockWreathPage() {
 }
 
 function MockWreathInner() {
-  const params = useSearchParams();
-  const name   = params.get("name")   ?? "";
-  const title  = params.get("title")  ?? "";
-  const amount = params.get("amount") ?? "";
+  const params     = useSearchParams();
+  const name       = params.get("name")   ?? "";
+  const title      = params.get("title")  ?? "";
+  const amount     = params.get("amount") ?? "";
   const extraParams = new URLSearchParams({ name, title, amount }).toString();
 
-  // Refs
-  const canvasRef  = useRef<HTMLDivElement>(null);
-  const fileRef    = useRef<HTMLInputElement>(null);
+  const canvasRef = useRef<HTMLDivElement>(null);
+  const faceInputRef = useRef<HTMLInputElement>(null);
 
   // Tab
-  const [tab, setTab] = useState<"image" | "font" | "ai">("image");
+  const [tab, setTab] = useState<"style" | "face" | "text">("style");
 
-  // Background
-  const [uploads, setUploads]         = useState<Img[]>([]);
-  const [aiImgs, setAiImgs]           = useState<Img[]>([]);
-  const [selectedId, setSelectedId]   = useState<string | null>(null);
-  const [sceneId, setSceneId]         = useState(SCENES[0].id);
+  // Style / AI
+  const [selectedStyle, setSelectedStyle] = useState<StyleId>("temple");
+  const [aiImg,     setAiImg]     = useState<string | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiError,   setAiError]   = useState("");
 
-  // Font / text
+  // Face
+  const [facePreview, setFacePreview] = useState<string | null>(null);
+
+  // Text
   const [fontId,    setFontId]    = useState(FONTS[0].id);
   const [fontSize,  setFontSize]  = useState(1.0);
   const [textColor, setTextColor] = useState(TEXT_COLORS[0].hex);
 
-  // AI
-  const [aiPrompt,    setAiPrompt]    = useState("");
-  const [aiLoading,   setAiLoading]   = useState(false);
-  const [aiError,     setAiError]     = useState("");
-
-  // Draft
-  const [drafts,       setDrafts]       = useState<Draft[]>([]);
-  const [lastSaved,    setLastSaved]    = useState<Date | null>(null);
-  const [showHistory,  setShowHistory]  = useState(false);
-
-  // Save
+  // Actions
   const [saving, setSaving] = useState(false);
+  const [shared, setShared] = useState(false);
 
-  // ── Computed ──────────────────────────────────────────────
-
-  const allImgs = [...uploads, ...aiImgs];
-  const selectedImg = allImgs.find(i => i.id === selectedId);
-  const currentScene = SCENES.find(s => s.id === sceneId) ?? SCENES[0];
+  // Derived
+  const currentStyle = STYLE_PRESETS.find(s => s.id === selectedStyle) ?? STYLE_PRESETS[0];
   const currentFont  = FONTS.find(f => f.id === fontId) ?? FONTS[0];
 
-  const bgStyle: React.CSSProperties = selectedImg
-    ? { backgroundImage: `url(${selectedImg.url})`, backgroundSize: "cover", backgroundPosition: "center" }
-    : { background: currentScene.css };
-
-  // ── Effects ───────────────────────────────────────────────
+  const bgStyle: React.CSSProperties = aiImg
+    ? { backgroundImage: `url(${aiImg})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : { background: currentStyle.preview };
 
   // Load Google Fonts once
   useEffect(() => {
@@ -132,97 +141,37 @@ function MockWreathInner() {
       "Mitr:wght@400;700",
     ].join("&family=");
     const link = document.createElement("link");
-    link.id = "mock-wreath-gfonts";
-    link.rel = "stylesheet";
+    link.id   = "mock-wreath-gfonts";
+    link.rel  = "stylesheet";
     link.href = `https://fonts.googleapis.com/css2?family=${families}&display=swap`;
     document.head.appendChild(link);
   }, []);
 
-  // Load + purge expired drafts on mount
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (!raw) return;
-      const all: Draft[] = JSON.parse(raw);
-      const now = Date.now();
-      const valid = all.filter(d => now - d.timestamp < DRAFT_EXPIRY);
-      setDrafts(valid);
-      if (valid.length > 0) applyDraft(valid[0]);
-      if (valid.length !== all.length)
-        localStorage.setItem(DRAFT_KEY, JSON.stringify(valid));
-    } catch {}
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // ── Handlers ──────────────────────────────────────────────────────────
 
-  // Auto-save every 30 s
-  const saveDraft = useCallback(() => {
-    const draft: Draft = {
-      id: Date.now().toString(),
-      timestamp: Date.now(),
-      fontId, fontSize, textColor, sceneId,
-    };
-    setDrafts(prev => {
-      const updated = [draft, ...prev.slice(0, 6)];
-      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(updated)); } catch {}
-      return updated;
-    });
-    setLastSaved(new Date());
-  }, [fontId, fontSize, textColor, sceneId]);
-
-  useEffect(() => {
-    const id = setInterval(saveDraft, 30_000);
-    return () => clearInterval(id);
-  }, [saveDraft]);
-
-  // ── Handlers ──────────────────────────────────────────────
-
-  function applyDraft(d: Draft) {
-    setFontId(d.fontId);
-    setFontSize(d.fontSize);
-    setTextColor(d.textColor);
-    setSceneId(d.sceneId);
-    setSelectedId(null);
-  }
-
-  function deleteDraft(id: string) {
-    setDrafts(prev => {
-      const updated = prev.filter(d => d.id !== id);
-      try { localStorage.setItem(DRAFT_KEY, JSON.stringify(updated)); } catch {}
-      return updated;
-    });
-  }
-
-  function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = Array.from(e.target.files ?? []).slice(0, 12);
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => {
-        const url = ev.target?.result as string;
-        const id  = `up-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-        setUploads(prev => [{ id, url }, ...prev].slice(0, 12));
-        setSelectedId(id);
-      };
-      reader.readAsDataURL(file);
-    });
+  function handleFaceUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => setFacePreview(ev.target?.result as string);
+    reader.readAsDataURL(file);
     e.target.value = "";
   }
 
   async function handleGenerate() {
-    if (!aiPrompt.trim()) return;
     setAiLoading(true);
     setAiError("");
+    setAiImg(null);
     try {
       const res  = await fetch("/api/generate-wreath", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: aiPrompt }),
+        body: JSON.stringify({ styleId: selectedStyle }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "ไม่สามารถสร้างภาพได้");
-      const id = `ai-${Date.now()}`;
-      setAiImgs(prev => [{ id, url: data.url }, ...prev].slice(0, 6));
-      setSelectedId(id);
-      setTab("image");
+      setAiImg(data.url);
+      setTab("face");
     } catch (err) {
       setAiError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
     }
@@ -235,11 +184,11 @@ function MockWreathInner() {
     try {
       const html2canvas = (await import("html2canvas")).default;
       const canvas = await html2canvas(canvasRef.current, {
-        scale: 3, useCORS: true, backgroundColor: "#180b05",
+        scale: 3, useCORS: true, backgroundColor: "#1a0a02",
       });
-      const link = document.createElement("a");
-      link.download = `หรีดร่วมบุญ-${name || "ภาพ"}.png`;
-      link.href = canvas.toDataURL("image/png");
+      const link      = document.createElement("a");
+      link.download   = `หรีดร่วมบุญ-${name || "ภาพ"}.png`;
+      link.href       = canvas.toDataURL("image/png");
       link.click();
     } catch {}
     setSaving(false);
@@ -250,16 +199,16 @@ function MockWreathInner() {
       await navigator.share({ title: "จำลองภาพมอบหรีดร่วมบุญ", url: window.location.href }).catch(() => {});
     } else {
       await navigator.clipboard.writeText(window.location.href).catch(() => {});
+      setShared(true);
+      setTimeout(() => setShared(false), 2000);
     }
   }
 
-  // ── Render ────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────
 
   return (
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{ background: "#ffffff" }}
-    >
+    <div className="min-h-dvh flex flex-col" style={{ background: "#ffffff" }}>
+
       {/* Header */}
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
@@ -279,14 +228,14 @@ function MockWreathInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
 
-          {/* ── Canvas Preview ──────────────────────────── */}
+          {/* ── Canvas preview ─────────────────────────────────────────── */}
           <div
             ref={canvasRef}
             className="relative w-full rounded-2xl overflow-hidden select-none"
-            style={{ aspectRatio: "4/3", ...bgStyle }}
+            style={{ aspectRatio: "3/4", ...bgStyle }}
           >
-            {/* Dim overlay */}
-            <div className="absolute inset-0 bg-black/25" />
+            {/* Dark overlay */}
+            <div className="absolute inset-0 bg-black/35" />
 
             {/* Top ornament */}
             <div className="absolute top-4 left-0 right-0 flex justify-center gap-1 opacity-60 pointer-events-none">
@@ -295,29 +244,41 @@ function MockWreathInner() {
               <LotusIcon className="w-5 h-5 text-gold-200 scale-x-[-1]" />
             </div>
 
-            {/* Hint when no image */}
-            {!selectedImg && (
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <p className="text-white/30 text-xs tracking-wide">อัปโหลดรูปหรือสร้างด้วย AI</p>
+            {/* Face photo — circular overlay */}
+            {facePreview ? (
+              <div className="absolute top-[20%] left-1/2 -translate-x-1/2">
+                <div
+                  className="w-32 h-32 rounded-full overflow-hidden shadow-2xl"
+                  style={{ border: "3px solid #c9a84c" }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={facePreview} alt="รูปหน้า" className="w-full h-full object-cover" />
+                </div>
               </div>
+            ) : (
+              !aiImg && (
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <p className="text-white/30 text-xs tracking-wide text-center px-8 leading-relaxed">
+                    เลือกสไตล์ → สร้างภาพ AI<br />จากนั้นแนบรูปหน้า
+                  </p>
+                </div>
+              )
             )}
 
-            {/* Bottom: label + sign card */}
+            {/* Bottom name plate */}
             <div className="absolute bottom-0 left-0 right-0 pb-5 px-5 flex flex-col items-center gap-2">
-              <p className="text-white/70 text-[10px] tracking-[0.25em] font-light">— หรีดร่วมบุญ Zero Waste —</p>
-
-              {/* Sign card */}
+              <p className="text-white/60 text-[10px] tracking-[0.25em] font-light">— หรีดร่วมบุญ Zero Waste —</p>
               <div
                 className="w-full rounded-xl overflow-hidden"
                 style={{
                   background: "linear-gradient(135deg,#fdf8ee 0%,#f5e8c4 100%)",
                   border: "1.5px solid #c9a84c",
-                  boxShadow: "0 6px 24px rgba(0,0,0,0.55), inset 0 0 0 2px #fdf8ee, inset 0 0 0 3px rgba(201,168,76,0.3)",
+                  boxShadow: "0 6px 24px rgba(0,0,0,0.55), inset 0 0 0 2px #fdf8ee",
                   padding: "10px 14px 8px",
                 }}
               >
                 <p
-                  className="text-center font-bold leading-snug whitespace-nowrap overflow-hidden text-ellipsis"
+                  className="text-center font-bold leading-snug"
                   style={{
                     fontFamily: `'${currentFont.name}', 'Sarabun', sans-serif`,
                     fontSize: `${Math.round(22 * fontSize)}px`,
@@ -328,7 +289,7 @@ function MockWreathInner() {
                 </p>
                 {title && (
                   <p
-                    className="text-center leading-snug whitespace-nowrap overflow-hidden text-ellipsis mt-0.5"
+                    className="text-center leading-snug mt-0.5"
                     style={{
                       fontFamily: `'${currentFont.name}', 'Sarabun', sans-serif`,
                       fontSize: `${Math.round(13 * fontSize)}px`,
@@ -343,61 +304,12 @@ function MockWreathInner() {
             </div>
           </div>
 
-          {/* ── Auto-save status ───────────────────────── */}
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-1.5 text-gold-400 text-xs">
-              <Clock className="w-3 h-3" />
-              {lastSaved
-                ? `บันทึกอัตโนมัติ ${lastSaved.toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}`
-                : "บันทึกอัตโนมัติทุก 30 วินาที"}
-            </div>
-            {drafts.length > 0 && (
-              <button
-                onClick={() => setShowHistory(v => !v)}
-                className="text-xs text-gold-600 font-semibold flex items-center gap-1 hover:text-gold-800 transition-colors"
-              >
-                <Clock className="w-3 h-3" />
-                ประวัติ ({drafts.length})
-              </button>
-            )}
-          </div>
-
-          {/* Draft history */}
-          {showHistory && (
-            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-1">
-              <p className="text-xs font-semibold text-gold-700 mb-2">ประวัติ Draft (เก็บ 7 วัน)</p>
-              {drafts.map(d => (
-                <div key={d.id} className="flex items-center gap-2 py-1.5 border-b border-gold-100 last:border-0">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gold-700 font-medium">
-                      {new Date(d.timestamp).toLocaleDateString("th-TH", { month: "short", day: "numeric" })}
-                      {" "}
-                      {new Date(d.timestamp).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" })}
-                    </p>
-                    <p className="text-[10px] text-gold-400 truncate">
-                      {FONTS.find(f => f.id === d.fontId)?.name} · ขนาด {FONT_SIZES.find(s => s.val === d.fontSize)?.label ?? d.fontSize}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => { applyDraft(d); setShowHistory(false); }}
-                    className="text-[11px] px-3 py-1 rounded-lg bg-gold-50 border border-gold-200 text-gold-700 font-semibold hover:bg-gold-100 transition-colors shrink-0"
-                  >
-                    โหลด
-                  </button>
-                  <button onClick={() => deleteDraft(d.id)} className="text-gold-300 hover:text-red-400 transition-colors shrink-0">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* ── Tabs ───────────────────────────────────── */}
+          {/* ── Tabs ───────────────────────────────────────────────────── */}
           <div className="flex rounded-2xl gold-border bg-cream-50 p-1 gap-1">
             {([
-              { id: "image", icon: ImagePlus, label: "ภาพ" },
-              { id: "font",  icon: Type,      label: "ฟอนต์" },
-              { id: "ai",    icon: Sparkles,  label: "AI" },
+              { id: "style", icon: Sparkles, label: "สไตล์" },
+              { id: "face",  icon: Camera,   label: "รูปหน้า" },
+              { id: "text",  icon: Type,     label: "ตัวอักษร" },
             ] as const).map(t => (
               <button
                 key={t.id}
@@ -414,97 +326,121 @@ function MockWreathInner() {
             ))}
           </div>
 
-          {/* ── Tab: Image ─────────────────────────────── */}
-          {tab === "image" && (
+          {/* ── Tab: สไตล์ ─────────────────────────────────────────────── */}
+          {tab === "style" && (
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-4">
+              <p className="text-xs font-semibold text-gold-700">เลือกสไตล์ฉากหลัง</p>
 
-              {/* Upload */}
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-dashed border-gold-300 bg-cream-50 hover:bg-cream-100 text-gold-600 font-semibold text-sm transition-colors"
-              >
-                <Upload className="w-4 h-4" />
-                อัปโหลดรูปภาพ (สูงสุด 12 รูป)
-              </button>
-              <input ref={fileRef} type="file" accept="image/*" multiple onChange={handleUpload} className="hidden" />
-
-              {/* Uploaded gallery */}
-              {uploads.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-gold-700 mb-2">รูปภาพของคุณ ({uploads.length})</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {uploads.map(img => (
-                      <button
-                        key={img.id}
-                        onClick={() => setSelectedId(img.id)}
-                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                          selectedId === img.id ? "border-gold-500 ring-2 ring-gold-300" : "border-transparent hover:border-gold-300"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* AI images in gallery */}
-              {aiImgs.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-gold-700 mb-2">ภาพจาก AI ({aiImgs.length})</p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {aiImgs.map(img => (
-                      <button
-                        key={img.id}
-                        onClick={() => setSelectedId(img.id)}
-                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-all relative ${
-                          selectedId === img.id ? "border-gold-500 ring-2 ring-gold-300" : "border-transparent hover:border-gold-300"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
-                        <div className="absolute top-1 right-1 bg-gold-500 rounded-full w-4 h-4 flex items-center justify-center">
-                          <Sparkles className="w-2.5 h-2.5 text-white" />
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {/* Default scenes */}
-              <div>
-                <p className="text-xs font-semibold text-gold-700 mb-2">ฉากพื้นหลัง</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {SCENES.map(scene => (
-                    <button
-                      key={scene.id}
-                      onClick={() => { setSceneId(scene.id); setSelectedId(null); }}
-                      className={`aspect-square rounded-xl border-2 flex flex-col items-center justify-end pb-1 transition-all overflow-hidden ${
-                        !selectedId && sceneId === scene.id
-                          ? "border-gold-500 ring-2 ring-gold-300"
-                          : "border-transparent hover:border-gold-300"
-                      }`}
-                      style={{ background: scene.css }}
-                    >
-                      <span className="text-white/90 text-[9px] font-semibold bg-black/35 px-1.5 py-0.5 rounded-full">
-                        {scene.label}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+              {/* Style cards grid */}
+              <div className="grid grid-cols-2 gap-3">
+                {STYLE_PRESETS.map(style => (
+                  <button
+                    key={style.id}
+                    onClick={() => {
+                      setSelectedStyle(style.id);
+                      setAiImg(null);
+                      setAiError("");
+                    }}
+                    className={`relative rounded-2xl overflow-hidden border-2 text-left transition-all ${
+                      selectedStyle === style.id
+                        ? "border-gold-500 ring-2 ring-gold-300 scale-[1.02]"
+                        : "border-transparent hover:border-gold-300"
+                    }`}
+                    style={{ background: style.preview, minHeight: "110px" }}
+                  >
+                    <div className="absolute inset-0 bg-black/30" />
+                    <div className="relative p-3 pb-2">
+                      <span className="text-2xl leading-none">{style.emoji}</span>
+                      <p className="text-white font-bold text-sm mt-1.5 leading-tight">{style.label}</p>
+                      <p className="text-white/70 text-[10px] leading-tight mt-0.5">{style.desc}</p>
+                    </div>
+                    {selectedStyle === style.id && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-gold-500 flex items-center justify-center">
+                        <Check className="w-3 h-3 text-white" />
+                      </div>
+                    )}
+                  </button>
+                ))}
               </div>
+
+              {/* Generate button */}
+              <button
+                onClick={handleGenerate}
+                disabled={aiLoading}
+                className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-50 transition-opacity"
+              >
+                {aiLoading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" /> กำลังสร้างภาพ AI...</>
+                  : <><Sparkles className="w-4 h-4" /> สร้างภาพ AI</>
+                }
+              </button>
+
+              {aiError && (
+                <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-xs text-red-600 leading-relaxed">
+                  {aiError}
+                </div>
+              )}
+
+              {aiImg && (
+                <div className="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl px-3 py-2">
+                  <Check className="w-4 h-4 text-green-500 shrink-0" />
+                  <p className="text-xs text-green-700 font-semibold">สร้างภาพแล้ว — ไปแนบรูปหน้าต่อได้เลย</p>
+                </div>
+              )}
+
+              <p className="text-[10px] text-gold-400 text-center leading-relaxed">
+                ใช้ DALL-E 3 · ต้องตั้งค่า OPENAI_API_KEY · ค่าใช้จ่ายประมาณ ~$0.04 ต่อภาพ
+              </p>
             </div>
           )}
 
-          {/* ── Tab: Font ──────────────────────────────── */}
-          {tab === "font" && (
+          {/* ── Tab: รูปหน้า ───────────────────────────────────────────── */}
+          {tab === "face" && (
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-3">
+              <div>
+                <p className="text-xs font-semibold text-gold-700">แนบรูปหน้า</p>
+                <p className="text-[11px] text-gold-500 mt-0.5">
+                  รูปหน้าจะแสดงเป็นวงกลมกลางภาพ เหนือป้ายชื่อ (ไม่บังคับ)
+                </p>
+              </div>
+
+              <label className="flex flex-col items-center justify-center w-full h-40 rounded-xl border-2 border-dashed border-gold-300 bg-white cursor-pointer hover:bg-cream-50 transition-colors">
+                {facePreview ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-gold-400 shadow-md">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={facePreview} alt="รูปหน้า" className="w-full h-full object-cover" />
+                    </div>
+                    <p className="text-xs text-gold-500">แตะเพื่อเปลี่ยนรูป</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2 text-gold-400">
+                    <Camera className="w-9 h-9" />
+                    <span className="text-sm font-semibold text-gold-600">แนบรูปหน้า / รูปถ่าย</span>
+                    <span className="text-[10px]">JPG, PNG</span>
+                  </div>
+                )}
+                <input ref={faceInputRef} type="file" accept="image/*" onChange={handleFaceUpload} className="hidden" />
+              </label>
+
+              {facePreview && (
+                <button
+                  onClick={() => setFacePreview(null)}
+                  className="w-full py-2.5 rounded-xl border border-red-200 text-red-400 text-xs font-semibold hover:bg-red-50 transition-colors"
+                >
+                  ลบรูปหน้า
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* ── Tab: ตัวอักษร ──────────────────────────────────────────── */}
+          {tab === "text" && (
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-4">
 
-              {/* Font list */}
+              {/* Font */}
               <div>
-                <p className="text-xs font-semibold text-gold-700 mb-2">ฟอนต์ (5 แบบ)</p>
+                <p className="text-xs font-semibold text-gold-700 mb-2">ฟอนต์ ({FONTS.length} แบบ)</p>
                 <div className="space-y-2">
                   {FONTS.map(font => (
                     <button
@@ -551,10 +487,10 @@ function MockWreathInner() {
                 </div>
               </div>
 
-              {/* Color palette */}
+              {/* Text color */}
               <div>
                 <p className="text-xs font-semibold text-gold-700 mb-2">สีตัวอักษร</p>
-                <div className="flex flex-wrap gap-2.5">
+                <div className="flex gap-3">
                   {TEXT_COLORS.map(c => (
                     <button
                       key={c.id}
@@ -605,75 +541,7 @@ function MockWreathInner() {
             </div>
           )}
 
-          {/* ── Tab: AI ────────────────────────────────── */}
-          {tab === "ai" && (
-            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-4">
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-gold-500" />
-                <p className="text-sm font-semibold text-gold-700">สร้างฉากด้วย DALL-E 3</p>
-              </div>
-
-              <div className="space-y-1.5">
-                <p className="text-xs text-gold-500 leading-relaxed">
-                  อธิบายฉากที่ต้องการ ระบบจะสร้างภาพพื้นหลังที่เหมาะกับงานศพไทย
-                </p>
-                <textarea
-                  value={aiPrompt}
-                  onChange={e => setAiPrompt(e.target.value)}
-                  rows={3}
-                  placeholder={"เช่น สวนดอกไม้ บรรยากาศงานศพไทย แสงเทียนนวล\nหรือ ห้องโถงวัด ดอกไม้ขาว แสงสลัว"}
-                  className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm resize-none"
-                />
-              </div>
-
-              <button
-                onClick={handleGenerate}
-                disabled={aiLoading || !aiPrompt.trim()}
-                className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm flex items-center justify-center gap-2 disabled:opacity-40 transition-opacity"
-              >
-                {aiLoading
-                  ? <><Loader2 className="w-4 h-4 animate-spin" /> กำลังสร้างภาพ...</>
-                  : <><Sparkles className="w-4 h-4" /> สร้างภาพ AI</>
-                }
-              </button>
-
-              {aiError && (
-                <div className="bg-red-50 border border-red-200 rounded-xl px-3 py-2.5 text-xs text-red-600 leading-relaxed">
-                  {aiError}
-                </div>
-              )}
-
-              {aiImgs.length > 0 && (
-                <div>
-                  <p className="text-xs font-semibold text-gold-700 mb-2">ภาพที่สร้างแล้ว</p>
-                  <div className="grid grid-cols-3 gap-2">
-                    {aiImgs.map(img => (
-                      <button
-                        key={img.id}
-                        onClick={() => { setSelectedId(img.id); setTab("image"); }}
-                        className={`aspect-square rounded-xl overflow-hidden border-2 transition-all ${
-                          selectedId === img.id ? "border-gold-500 ring-2 ring-gold-300" : "border-transparent hover:border-gold-300"
-                        }`}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={img.url} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div className="bg-cream-100 border border-gold-200 rounded-xl px-3 py-2.5 flex gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-gold-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-gold-500 leading-relaxed">
-                  ต้องตั้งค่า <span className="font-mono font-semibold text-gold-700">OPENAI_API_KEY</span> ใน{" "}
-                  <span className="font-mono">.env.local</span> — ใช้ DALL-E 3 (มีค่าใช้จ่าย ~$0.04 ต่อภาพ)
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* ── Action buttons ─────────────────────────── */}
+          {/* ── Save + Share ────────────────────────────────────────────── */}
           <div className="flex gap-3">
             <button
               onClick={handleSave}
@@ -688,7 +556,7 @@ function MockWreathInner() {
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Share2 className="w-4 h-4" />
-              แชร์
+              {shared ? "คัดลอกแล้ว" : "แชร์"}
             </button>
           </div>
 
