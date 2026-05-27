@@ -23,21 +23,26 @@ function PrintNameInner() {
   const [name, setName] = useState(params.get("name") ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [showModal, setShowModal] = useState(false);
+  const [sending, setSending] = useState(false);
 
   async function handleSend() {
     const trimmedName = name.trim();
     const trimmedTitle = title.trim();
+    setSending(true);
     if (donationId) {
       const body: Record<string, unknown> = {
         donor_name: trimmedName,
         status: "confirmed",
+        nameplate_status: "queued",
       };
       if (trimmedTitle) body.donor_title = trimmedTitle;
-      fetch(`/api/donations/${donationId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      }).catch(() => {});
+      try {
+        await fetch(`/api/donations/${donationId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+      } catch {}
     }
     const q = new URLSearchParams({ name: trimmedName, title: trimmedTitle, amount, donation_id: donationId });
     router.push(`/${slug}/printing?${q.toString()}`);
@@ -96,8 +101,10 @@ function PrintNameInner() {
             <p className="text-center text-white/80 text-sm tracking-wide">ตัวอย่างป้ายที่จะพิมพ์</p>
             <SignPreview name={name} title={title} />
             <div className="flex gap-3">
-              <button onClick={() => setShowModal(false)} className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all">แก้ไขข้อความ</button>
-              <button onClick={handleSend} className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all">ส่งพิมพ์</button>
+              <button onClick={() => setShowModal(false)} disabled={sending} className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-40">แก้ไขข้อความ</button>
+              <button onClick={handleSend} disabled={sending} className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-60">
+                {sending ? "กำลังบันทึก..." : "ส่งพิมพ์"}
+              </button>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
 
-export const revalidate = 30;
+export const revalidate = 10;
 
 async function getDonations(memorialId: string): Promise<Donation[]> {
   try {
