@@ -54,8 +54,6 @@ export async function POST(req: NextRequest) {
     const hostName         = (form.get("host_name") as string) || null;
     const hostPhone        = (form.get("host_phone") as string) || null;
     const hostRelationship = (form.get("host_relationship") as string) || null;
-    const consentConfirmed = form.get("consent_confirmed") === "true";
-
     // bank Level B (central account)
     const bankName          = (form.get("bank_name") as string) || "ธนาคารกรุงไทย\nKrungthai Bank";
     const bankAccountNumber = (form.get("bank_account_number") as string) || "";
@@ -69,10 +67,6 @@ export async function POST(req: NextRequest) {
     if (!name || !birthDate || !deathDate || !ceremonyDate || !bankAccountNumber) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น: ชื่อ วันเกิด วันเสียชีวิต วันฌาปนกิจ" }, { status: 400 });
     }
-    if (!consentConfirmed) {
-      return NextResponse.json({ error: "กรุณายืนยันว่าได้รับอนุญาตจากเจ้าภาพก่อนเปิดหน้างาน" }, { status: 400 });
-    }
-
     // Upload files
     const photoFile       = form.get("photo") as File | null;
     const qrFile          = form.get("qr_image") as File | null;
@@ -120,7 +114,6 @@ export async function POST(req: NextRequest) {
         host_phone: hostPhone,
         host_code: hostCode,
         host_relationship: hostRelationship,
-        consent_confirmed: consentConfirmed,
         funeral_status: "active",
         bank_name: bankName,
         bank_account_number: bankAccountNumber,
