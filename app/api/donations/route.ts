@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         amount,
         message: message || null,
         slip_url,
-        status: "pending" as const,
+        status: "confirmed" as const,
       })
       .select()
       .single();
