@@ -107,7 +107,7 @@ export default function HostSummaryPage() {
                 </div>
               </div>
               <div className="space-y-0">
-                {donations.map((d, i) => (
+                {[...donations].reverse().map((d, i) => (
                   <div key={d.id} className={`flex items-start gap-3 py-2.5 ${i < donations.length - 1 ? "border-b border-gold-100" : ""}`}>
                     <span className="text-[11px] font-semibold text-gold-400 w-6 shrink-0 mt-0.5">{i + 1}.</span>
                     <div className="flex-1 min-w-0">
