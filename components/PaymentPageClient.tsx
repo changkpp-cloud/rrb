@@ -63,10 +63,16 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
     const form = new FormData();
     form.append("memorial_id", memorial.id);
     form.append("donor_name", "ผู้ร่วมบุญ");
-    form.append("amount", "0");
+    form.append("amount", "500");
     form.append("slip", slipFile);
-    fetch("/api/donations", { method: "POST", body: form }).catch(() => {});
-    router.push(`${basePath}/verifying`);
+    try {
+      const res = await fetch("/api/donations", { method: "POST", body: form });
+      const data = await res.json();
+      const donationId: string = data?.donation?.id ?? "";
+      router.push(`${basePath}/verifying?donation_id=${encodeURIComponent(donationId)}`);
+    } catch {
+      router.push(`${basePath}/verifying`);
+    }
   }
 
   return (

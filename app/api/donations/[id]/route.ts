@@ -18,7 +18,7 @@ export async function PATCH(
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const allowed = ["status", "nameplate_status", "donor_title", "message"];
+  const allowed = ["status", "nameplate_status", "donor_name", "donor_title", "message"];
   const update: DonationUpdate = {};
   for (const key of allowed) {
     if (key in body) (update as Record<string, unknown>)[key] = body[key];
