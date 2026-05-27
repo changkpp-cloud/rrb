@@ -18,6 +18,7 @@ interface Props {
 export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
+  const [amount, setAmount] = useState("");
   const [copied, setCopied] = useState(false);
   const [savedQR, setSavedQR] = useState(false);
   const [verifying, setVerifying] = useState(false);
@@ -57,19 +58,21 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
     setTimeout(() => setSavedQR(false), 2000);
   }
 
+  const parsedAmount = parseFloat(amount) || 0;
+
   async function handleVerify() {
-    if (!slipFile) return;
+    if (!slipFile || parsedAmount <= 0) return;
     setVerifying(true);
     const form = new FormData();
     form.append("memorial_id", memorial.id);
     form.append("donor_name", "ผู้ร่วมบุญ");
-    form.append("amount", "500");
+    form.append("amount", String(parsedAmount));
     form.append("slip", slipFile);
     try {
       const res = await fetch("/api/donations", { method: "POST", body: form });
       const data = await res.json();
       const donationId: string = data?.donation?.id ?? "";
-      router.push(`${basePath}/verifying?donation_id=${encodeURIComponent(donationId)}`);
+      router.push(`${basePath}/verifying?donation_id=${encodeURIComponent(donationId)}&amount=${encodeURIComponent(String(parsedAmount))}`);
     } catch {
       router.push(`${basePath}/verifying`);
     }
@@ -186,9 +189,28 @@ export default function PaymentPageClient({ memorial, basePath = "" }: Props) {
               )}
             </div>
 
+            {/* Amount input — shows after slip is attached */}
+            {slipPreview && (
+              <div className="mt-3">
+                <p className="text-xs font-semibold text-gold-700 mb-1.5">ยอดเงินที่โอน</p>
+                <div className="relative">
+                  <input
+                    type="number"
+                    inputMode="numeric"
+                    min="1"
+                    value={amount}
+                    onChange={e => setAmount(e.target.value)}
+                    placeholder="กรอกจำนวนเงิน"
+                    className="w-full px-4 py-3 pr-10 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-lg font-bold text-center tracking-wide"
+                  />
+                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-gold-500 text-sm font-semibold pointer-events-none">฿</span>
+                </div>
+              </div>
+            )}
+
             <button
               onClick={handleVerify}
-              disabled={!slipFile || verifying}
+              disabled={!slipFile || parsedAmount <= 0 || verifying}
               className="mt-3 w-full gold-gradient text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-opacity"
             >
               {verifying ? "กำลังส่ง..." : "ตรวจสอบสลิป"}
