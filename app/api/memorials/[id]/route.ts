@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/lib/supabase/types";
 
+type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
 type Supabase = ReturnType<typeof import("@/lib/supabase/admin").createAdminClient>;
 
 async function uploadDoc(supabase: Supabase, file: File, path: string): Promise<string | null> {
@@ -26,16 +28,14 @@ export async function PATCH(
     const formData = await request.formData();
     const supabase = createAdminClient();
 
-    // Text fields
     const host_phone               = formData.get("host_phone") as string | null;
     const host_bank_name           = formData.get("host_bank_name") as string | null;
     const host_bank_account_number = formData.get("host_bank_account_number") as string | null;
     const host_bank_account_name   = formData.get("host_bank_account_name") as string | null;
 
-    // File uploads
-    const passkookFile  = formData.get("passbook")    as File | null;
-    const deathCertFile = formData.get("death_cert")  as File | null;
-    const idCardFile    = formData.get("id_card")     as File | null;
+    const passkookFile  = formData.get("passbook")   as File | null;
+    const deathCertFile = formData.get("death_cert") as File | null;
+    const idCardFile    = formData.get("id_card")    as File | null;
 
     const [passbook_url, death_cert_url, id_card_url] = await Promise.all([
       passkookFile?.size  ? uploadDoc(supabase, passkookFile,  `host-docs/${id}/passbook`)   : Promise.resolve(null),
@@ -43,30 +43,33 @@ export async function PATCH(
       idCardFile?.size    ? uploadDoc(supabase, idCardFile,    `host-docs/${id}/id-card`)    : Promise.resolve(null),
     ]);
 
-    // Build update payload (only send fields that were provided)
-    const update: Record<string, unknown> = {};
-    if (host_phone               !== null) update.host_phone = host_phone;
-    if (host_bank_name           !== null) update.host_bank_name = host_bank_name;
+    // Build typed update — only include fields that were provided
+    const update: MemorialUpdate = {};
+    if (host_phone               !== null) update.host_phone               = host_phone;
+    if (host_bank_name           !== null) update.host_bank_name           = host_bank_name;
     if (host_bank_account_number !== null) update.host_bank_account_number = host_bank_account_number;
-    if (host_bank_account_name   !== null) update.host_bank_account_name = host_bank_account_name;
-    if (passbook_url)   update.host_bank_passbook_url  = passbook_url;
-    if (death_cert_url) update.death_certificate_url   = death_cert_url;
-    if (id_card_url)    update.host_id_card_url        = id_card_url;
+    if (host_bank_account_name   !== null) update.host_bank_account_name   = host_bank_account_name;
+    if (death_cert_url) update.death_certificate_url = death_cert_url;
+    if (id_card_url)    update.host_id_card_url      = id_card_url;
 
-    if (Object.keys(update).length === 0) {
+    if (Object.keys(update).length === 0 && !passbook_url) {
       return NextResponse.json({ error: "No fields to update" }, { status: 400 });
     }
 
+    // Try with passbook (may not exist in DB yet)
+    const updateWithPassbook = passbook_url
+      ? { ...update, host_bank_passbook_url: passbook_url } as MemorialUpdate
+      : update;
+
     let { data, error } = await supabase
       .from("memorials")
-      .update(update)
+      .update(updateWithPassbook)
       .eq("id", id)
       .select()
       .single();
 
-    // Fallback: if passbook column not migrated yet, retry without it
-    if (error && error.message.includes("Could not find") && update.host_bank_passbook_url) {
-      delete update.host_bank_passbook_url;
+    // Fallback: retry without passbook if column doesn't exist
+    if (error && error.message.includes("Could not find") && passbook_url) {
       ({ data, error } = await supabase
         .from("memorials")
         .update(update)
