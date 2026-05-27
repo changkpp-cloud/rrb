@@ -2,16 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Building2, ScrollText, Leaf, Users, BarChart2, LogOut } from "lucide-react";
+import { LayoutDashboard, Building2, Users, ShieldAlert, FileBarChart2, LogOut } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 const NAV = [
-  { href: "/dashboard/admin/overview",  label: "ภาพรวม",     icon: LayoutDashboard },
-  { href: "/dashboard/admin/analytics", label: "ศูนย์รายงาน", icon: BarChart2 },
-  { href: "/dashboard/admin/centers",   label: "ศูนย์",       icon: Building2 },
-  { href: "/dashboard/admin/memorials", label: "งานศพ",      icon: ScrollText },
-  { href: "/dashboard/admin/esg",       label: "ESG",         icon: Leaf },
-  { href: "/dashboard/admin/hosts",     label: "เจ้าภาพ",    icon: Users },
+  { href: "/dashboard/admin/overview", label: "ภาพรวม",   icon: LayoutDashboard },
+  { href: "/dashboard/admin/centers",  label: "ศูนย์",     icon: Building2 },
+  { href: "/dashboard/admin/users",    label: "ผู้ใช้",    icon: Users },
+  { href: "/dashboard/admin/audit",    label: "ตรวจสอบ",  icon: ShieldAlert },
+  { href: "/dashboard/admin/report",   label: "รายงาน",   icon: FileBarChart2 },
 ];
 
 export default function AdminNav() {
@@ -44,7 +43,7 @@ export default function AdminNav() {
         </button>
       </div>
 
-      {/* Nav tab row — proportionally scales, no wrapping, no horizontal scroll */}
+      {/* Nav tab row */}
       <div className="max-w-4xl mx-auto px-1 flex">
         {NAV.map(({ href, label, icon: Icon }) => {
           const active = pathname.startsWith(href);
