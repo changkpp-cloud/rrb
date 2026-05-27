@@ -1,17 +1,12 @@
-﻿import Image from "next/image";
-import SiteHeader from "@/components/SiteHeader";
-import MemorialProfile from "@/components/MemorialProfile";
-import CeremonyInfo from "@/components/CeremonyInfo";
-import HomeScrollClient from "@/components/HomeScrollClient";
-import SiteFooter from "@/components/SiteFooter";
+﻿import { redirect } from "next/navigation";
 import { getMemorial } from "@/lib/memorial";
 
-export const revalidate = 60;
+export const dynamic = "force-dynamic";
 
 export default async function Home() {
   const memorial = await getMemorial();
 
-  if (!memorial) {
+  if (!memorial?.slug) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#ffffff" }}>
         <p className="text-gold-400 text-sm">ไม่พบข้อมูลงานศพ</p>
@@ -19,36 +14,5 @@ export default async function Home() {
     );
   }
 
-  return (
-    <div className="relative min-h-screen">
-
-      {/* ── Background image — วิมานสวรรค์ ── */}
-      <div className="fixed inset-0 z-0">
-        <Image
-          src="/img/bg-heaven.png"
-          alt=""
-          fill
-          priority
-          quality={100}
-          style={{ objectFit: "cover", objectPosition: "center top" }}
-        />
-      </div>
-
-      {/* ── Content ── */}
-      <div className="relative z-10 min-h-screen flex flex-col">
-        <SiteHeader />
-
-        <main className="flex-1">
-          <MemorialProfile memorial={memorial} />
-          <CeremonyInfo memorial={memorial} />
-          <div className="mt-[5px]">
-            <HomeScrollClient />
-          </div>
-        </main>
-
-        <SiteFooter />
-      </div>
-
-    </div>
-  );
+  redirect(`/${memorial.slug}`);
 }
