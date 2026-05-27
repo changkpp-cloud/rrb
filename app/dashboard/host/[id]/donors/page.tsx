@@ -73,7 +73,7 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
           {donations.map((d, i) => (
             <div key={d.id} className="bg-cream-50 rounded-2xl gold-border px-4 py-3 flex items-start gap-3">
               <div className="w-7 h-7 rounded-full bg-gold-100 border border-gold-200 flex items-center justify-center shrink-0 mt-0.5">
-                <span className="text-[10px] font-bold text-gold-600">{i + 1}</span>
+                <span className="text-[10px] font-bold text-gold-600">{donations.length - i}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gold-800 leading-tight">{d.donor_name}</p>
