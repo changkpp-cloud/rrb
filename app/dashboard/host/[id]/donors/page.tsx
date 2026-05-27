@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic";
 
 async function getDonations(memorialId: string): Promise<Donation[]> {
   try {
@@ -14,16 +14,6 @@ async function getDonations(memorialId: string): Promise<Donation[]> {
     return (data as Donation[] | null) ?? [];
   } catch { return []; }
 }
-
-const NAMEPLATE_COLORS: Record<string, string> = {
-  pending: "text-gray-500 bg-gray-100",
-  queued: "text-blue-600 bg-blue-50",
-  printed: "text-emerald-600 bg-emerald-50",
-  posted: "text-gold-700 bg-gold-100",
-};
-const NAMEPLATE_LABELS: Record<string, string> = {
-  pending: "รอกรอก", queued: "รอพิมพ์", printed: "พิมพ์แล้ว", posted: "ติดบอร์ด",
-};
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
@@ -36,7 +26,6 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
   const donations = await getDonations(memorial.id);
 
   const confirmed = donations.filter(d => d.status === "confirmed");
-  const pending = donations.filter(d => d.status === "pending");
   const total = confirmed.reduce((s, d) => s + d.amount, 0);
 
   return (
@@ -62,17 +51,18 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 
+        {/* Summary bar */}
         <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4 text-gold-500" />
             <span className="text-sm text-gold-700">
-              <span className="font-bold">{confirmed.length}</span> ยืนยัน
-              {pending.length > 0 && <span className="text-amber-600 ml-2"><span className="font-bold">{pending.length}</span> รอตรวจ</span>}
+              <span className="font-bold">{confirmed.length}</span> ราย
             </span>
           </div>
           <p className="text-sm font-bold text-gold-800">{total.toLocaleString()} ฿</p>
         </div>
 
+        {/* Donor list */}
         <div className="space-y-2">
           {donations.length === 0 && (
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-10 text-center">
@@ -91,17 +81,7 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
                 {d.message && <p className="text-[10px] text-gold-400 italic mt-0.5">"{d.message}"</p>}
                 <p className="text-[9px] text-gold-400 mt-0.5">{formatDate(d.created_at)}</p>
               </div>
-              <div className="text-right shrink-0">
-                <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
-                <div className="flex flex-col items-end gap-1 mt-0.5">
-                  <span className={`text-[8px] px-1.5 py-0.5 rounded-full ${NAMEPLATE_COLORS[d.nameplate_status]}`}>
-                    {NAMEPLATE_LABELS[d.nameplate_status]}
-                  </span>
-                  {d.status === "pending" && (
-                    <span className="text-[8px] px-1.5 py-0.5 rounded-full bg-amber-50 text-amber-600">รอตรวจ</span>
-                  )}
-                </div>
-              </div>
+              <p className="text-sm font-bold text-gold-700 shrink-0">{d.amount.toLocaleString()} ฿</p>
             </div>
           ))}
         </div>

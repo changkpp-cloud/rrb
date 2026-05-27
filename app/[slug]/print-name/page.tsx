@@ -33,7 +33,6 @@ function PrintNameInner() {
       const body: Record<string, unknown> = {
         donor_name: trimmedName,
         status: "confirmed",
-        nameplate_status: "queued",
       };
       if (trimmedTitle) body.donor_title = trimmedTitle;
       try {
