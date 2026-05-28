@@ -63,13 +63,17 @@ export default function CeremonyInfo({ memorial }: Props) {
     ? `${formatDay(chantStart)}–${chantEnd.getDate()} ${THAI_MONTHS[chantEnd.getMonth()]} ${chantEnd.getFullYear() + 543}`
     : `${formatDay(chantStart)} ${THAI_MONTHS[chantStart.getMonth()]} – ${formatDay(chantEnd)} ${THAI_MONTHS[chantEnd.getMonth()]} ${chantEnd.getFullYear() + 543}`;
 
-  const location = `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
+  const prayerLocation = memorial.prayer_location
+    ? `ณ ${memorial.prayer_location}`
+    : `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
+
+  const cremationLocation = `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
 
   return (
     <section className="px-4 pt-[5px] mb-1">
       <div className="max-w-lg mx-auto space-y-[5px]">
 
-        {/* กำหนดการสวดพระอภิธรรม */}
+        {/* กำหนดการ สวดพระอภิธรรม */}
         <div style={glassCard} className="p-2.5 flex gap-3 items-start">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
@@ -81,15 +85,15 @@ export default function CeremonyInfo({ memorial }: Props) {
             <LotusIcon className="w-5 h-5 text-gold-600" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการสวดพระอภิธรรม</p>
+            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการ <span className="font-bold">สวดพระอภิธรรม</span></p>
             <p className="text-gold-700 text-xs leading-snug mt-0.5">
               วัน{chantRange}
             </p>
-            <p className="text-gold-600 text-xs leading-snug">{location}</p>
+            <p className="text-gold-600 text-xs leading-snug">{prayerLocation}</p>
           </div>
         </div>
 
-        {/* กำหนดการฌาปนกิจ */}
+        {/* กำหนดการ ฌาปนกิจ */}
         <div style={glassCard} className="p-2.5 flex gap-3 items-start">
           <div
             className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
@@ -101,12 +105,12 @@ export default function CeremonyInfo({ memorial }: Props) {
             <CandleIcon className="w-5 h-5 text-gold-600" />
           </div>
           <div className="flex-1">
-            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการฌาปนกิจ</p>
+            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการ <span className="font-bold">ฌาปนกิจ</span></p>
             <p className="text-gold-700 text-xs leading-snug mt-0.5">
               {formatFull(cremationDate)}
               {memorial.ceremony_time ? ` เวลา ${memorial.ceremony_time} น.` : ""}
             </p>
-            <p className="text-gold-600 text-xs leading-snug">{location}</p>
+            <p className="text-gold-600 text-xs leading-snug">{cremationLocation}</p>
           </div>
         </div>
 

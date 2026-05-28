@@ -159,8 +159,19 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
 
           {/* กำหนดการ */}
           <Section title="กำหนดการ">
+            {/* สวดพระอภิธรรม */}
+            <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">กำหนดการ สวดพระอภิธรรม</p>
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-[11px] text-blue-700">
-              วันสวดจะแสดงอัตโนมัติ = วันฌาปนกิจ ลบ 3 วัน — ใส่วันฌาปนกิจให้ถูกต้องก็พอ
+              วันสวดคำนวณอัตโนมัติ = วันฌาปนกิจ ลบ 3 วัน
+            </div>
+            <Field label="สถานที่สวดพระอภิธรรม">
+              <input type="text" value={prayerSchedule} onChange={e => setPrayerSchedule(e.target.value)}
+                className={inputClass} placeholder="เช่น บ้านเลขที่ 123 หมู่ 5 ต.พรานกระต่าย / วัดวังเพชร" />
+              <p className="text-[10px] text-gold-400 mt-0.5">ถ้าว่างจะใช้สถานที่ฌาปนกิจแทน</p>
+            </Field>
+
+            <div className="border-t border-gold-100 pt-1">
+              <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide mb-2">กำหนดการ ฌาปนกิจ</p>
             </div>
             <Field label="วันฌาปนกิจ" required>
               <ThaiDateInput value={ceremonyDate} onChange={setCeremonyDate} required />
@@ -184,14 +195,14 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
                 <input type="text" value={ceremonyTime} onChange={e => setCeremonyTime(e.target.value)}
                   className={inputClass} placeholder="เช่น 16.00 น." />
               </Field>
-              <Field label="ชื่ออาคาร / ศาลา">
+              <Field label="อาคาร / ศาลา">
                 <input type="text" value={ceremonyHall} onChange={e => setCeremonyHall(e.target.value)}
                   className={inputClass} placeholder="เช่น ศาลา 1" />
               </Field>
             </div>
-            <Field label="สถานที่จัดงาน / วัด" required>
+            <Field label="สถานที่ฌาปนกิจ (วัด / สถานที่)" required>
               <input type="text" value={ceremonyLocation} onChange={e => setCeremonyLocation(e.target.value)} required
-                className={inputClass} placeholder="วัด / สถานที่" />
+                className={inputClass} placeholder="เช่น วัดวังเพชร ต.นิคมทุ่งโพธิ์ทะเล อ.เมือง จ.กำแพงเพชร" />
             </Field>
           </Section>
 
