@@ -99,6 +99,14 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const deathDate    = memorial.death_date ? thaiDate(memorial.death_date) : "";
   const ceremonyDate = thaiDate(memorial.ceremony_date);
   const ceremonyLocation = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
+  const mockWreathParams = new URLSearchParams({
+    name,
+    title,
+    amount,
+    message,
+    deceased_name: deceasedName,
+    funeral_place: ceremonyLocation,
+  }).toString();
 
   async function handleSaveCard() {
     if (!cardRef.current) return;
@@ -390,6 +398,14 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               <span className="text-sm font-semibold text-gold-700">จำลองภาพมอบหรีดร่วมบุญ</span>
             </div>
             <p className="text-xs text-gold-500 -mt-1">เลือกท่าทาง แล้วกดแนบรูปเพื่อสร้างภาพที่ระลึก</p>
+
+            <Link
+              href={`/mock-wreath?${mockWreathParams}`}
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-semibold hover:bg-gold-50 transition-all"
+            >
+              <Sparkles className="w-4 h-4" />
+              เปิดหน้าจำลองแบบ AI Photo Template
+            </Link>
 
             {/* 3 pose boxes */}
             <div className="grid grid-cols-3 gap-2">

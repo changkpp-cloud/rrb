@@ -1,4 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
+import {
+  buildAiPhotoPrompt,
+  getAiPhotoTemplate,
+  type AiPhotoTemplateKey,
+} from "@/lib/ai-photo-templates";
+
+const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
 
 const STYLE_PROMPTS: Record<string, string> = {
   temple:
@@ -6,53 +13,142 @@ const STYLE_PROMPTS: Record<string, string> = {
   garden:
     "Serene Thai memorial garden at dawn. White lotus and chrysanthemum flower arrangements lining a stone path, soft diffused morning light filtering through trees, traditional Thai garden lanterns, peaceful white and green tones, no people present. Ultra high detail, 4K quality.",
   pavilion:
-    "Traditional Thai open temple pavilion (sala), ornate carved wooden architecture painted red and gold, white floral garlands draped across beams, soft golden hour sunlight, blue sky with light clouds, no people present. Ultra high detail, 4K quality.",
+    "Traditional Thai open temple pavilion, ornate carved wooden architecture painted red and gold, white floral garlands draped across beams, soft golden hour sunlight, blue sky with light clouds, no people present. Ultra high detail, 4K quality.",
   luxury:
     "Grand luxurious Thai funeral reception hall. Towering white floral arrangements in marble vases, warm sophisticated amber lighting, dark polished teak wood walls, draped white silk curtains, crystal chandeliers casting golden light, no people present. Ultra high detail, 4K quality.",
   river:
     "Peaceful Thai riverside at golden sunset. White lotus flowers floating on still water, warm orange and gold reflections on river surface, traditional wooden boats, white jasmine garlands, serene memorial atmosphere, no people present. Ultra high detail, 4K quality.",
   royal:
-    "Majestic Thai royal crematorium architecture (Phra Meru Mas). Multi-tiered golden spires, intricate gilded floral ornamentation, white jasmine garlands draped across golden frames, dramatic cinematic lighting, sacred ceremonial atmosphere, no people present. Ultra high detail, 4K quality.",
+    "Majestic Thai royal crematorium architecture. Multi-tiered golden spires, intricate gilded floral ornamentation, white jasmine garlands draped across golden frames, dramatic cinematic lighting, sacred ceremonial atmosphere, no people present. Ultra high detail, 4K quality.",
 };
 
-export async function POST(req: NextRequest) {
-  const { styleId = "temple" } = await req.json();
-  const apiKey = process.env.OPENAI_API_KEY;
+const POSE_TO_TEMPLATE: Record<string, AiPhotoTemplateKey> = {
+  stand: "standing_with_label",
+  bow: "mourning_wai",
+  kneel: "host_receiving",
+};
 
-  if (!apiKey) {
+function imageResultToUrl(item: { b64_json?: string; url?: string }) {
+  if (item.b64_json) return `data:image/png;base64,${item.b64_json}`;
+  return item.url ?? "";
+}
+
+async function callOpenAIJson(prompt: string, n = 1) {
+  const res = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: OPENAI_IMAGE_MODEL,
+      prompt,
+      n,
+      size: "1024x1536",
+      quality: "medium",
+    }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message ?? "OpenAI image generation failed");
+  return ((data.data ?? []) as Array<{ b64_json?: string; url?: string }>)
+    .map(imageResultToUrl)
+    .filter(Boolean);
+}
+
+async function callOpenAIEdit(prompt: string, donorPhoto: File, n = 3) {
+  const body = new FormData();
+  body.append("model", OPENAI_IMAGE_MODEL);
+  body.append("prompt", prompt);
+  body.append("n", String(n));
+  body.append("size", "1024x1536");
+  body.append("quality", "medium");
+  body.append("image", donorPhoto, donorPhoto.name || "donor-photo.png");
+
+  const res = await fetch("https://api.openai.com/v1/images/edits", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+    },
+    body,
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error?.message ?? "OpenAI image edit failed");
+  return ((data.data ?? []) as Array<{ b64_json?: string; url?: string }>)
+    .map(imageResultToUrl)
+    .filter(Boolean);
+}
+
+async function handleTemplateForm(request: NextRequest) {
+  const form = await request.formData();
+  const donorPhoto = form.get("donor_photo") as File | null;
+  const templateKey = (form.get("template_key") as AiPhotoTemplateKey | null) ?? "standing_with_label";
+  const donorName = (form.get("donor_name") as string | null) ?? "ผู้ร่วมบุญ";
+  const donorPosition = (form.get("donor_position") as string | null) ?? "";
+  const condolenceText = (form.get("condolence_text") as string | null) ?? "";
+  const deceasedName = (form.get("deceased_name") as string | null) ?? "";
+  const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
+  const requestedCount = Number(form.get("count") ?? 3);
+  const count = Math.min(4, Math.max(1, Number.isFinite(requestedCount) ? requestedCount : 3));
+
+  if (!donorPhoto || donorPhoto.size === 0) {
+    return NextResponse.json({ error: "กรุณาแนบรูปผู้มอบก่อนสร้างภาพ" }, { status: 400 });
+  }
+
+  const template = getAiPhotoTemplate(templateKey);
+  const prompt = buildAiPhotoPrompt({
+    templateKey: template.templateKey,
+    donorName,
+    donorPosition,
+    condolenceText,
+    deceasedName,
+    funeralPlace,
+  });
+
+  const images = await callOpenAIEdit(prompt, donorPhoto, count);
+  return NextResponse.json({
+    images,
+    url: images[0] ?? "",
+    prompt,
+    templateKey: template.templateKey,
+  });
+}
+
+async function handleLegacyJson(request: NextRequest) {
+  const body = await request.json();
+  const styleId = body.styleId as string | undefined;
+  const pose = body.pose as string | undefined;
+
+  const prompt = styleId
+    ? STYLE_PROMPTS[styleId] ?? STYLE_PROMPTS.temple
+    : buildAiPhotoPrompt({
+        templateKey: POSE_TO_TEMPLATE[pose ?? "stand"] ?? "standing_with_label",
+        donorName: body.donorName ?? "ผู้ร่วมบุญ",
+        donorPosition: body.donorTitle ?? "",
+        condolenceText: body.message ?? "ร่วมอาลัยและร่วมทำบุญ",
+        deceasedName: body.deceasedName ?? "",
+        funeralPlace: body.funeralPlace ?? "",
+      });
+
+  const images = await callOpenAIJson(prompt, 1);
+  return NextResponse.json({ url: images[0] ?? "", images, prompt });
+}
+
+export async function POST(req: NextRequest) {
+  if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json(
-      { error: "ไม่มี OPENAI_API_KEY — กรุณาตั้งค่าใน .env.local" },
+      { error: "ไม่มี OPENAI_API_KEY กรุณาตั้งค่าใน .env.local" },
       { status: 503 }
     );
   }
 
-  const prompt = STYLE_PROMPTS[styleId] ?? STYLE_PROMPTS.temple;
-
   try {
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt,
-        n: 1,
-        size: "1024x1024",
-        quality: "standard",
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message ?? "OpenAI API error");
-
-    const imageUrl: string = data.data[0].url;
-    const imgRes = await fetch(imageUrl);
-    const imgBuf = await imgRes.arrayBuffer();
-    const base64 = Buffer.from(imgBuf).toString("base64");
-
-    return NextResponse.json({ url: `data:image/png;base64,${base64}` });
+    const contentType = req.headers.get("content-type") ?? "";
+    if (contentType.includes("multipart/form-data")) {
+      return await handleTemplateForm(req);
+    }
+    return await handleLegacyJson(req);
   } catch (err) {
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "เกิดข้อผิดพลาด" },
