@@ -56,6 +56,7 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
   const [ceremonyTime, setCeremonyTime]         = useState(memorial.ceremony_time);
   const [ceremonyLocation, setCeremonyLocation] = useState(memorial.ceremony_location);
   const [ceremonyHall, setCeremonyHall]         = useState(memorial.ceremony_hall ?? "");
+  const [prayerText, setPrayerText]             = useState(memorial.prayer_date ?? "");
   const [prayerSchedule, setPrayerSchedule]     = useState(memorial.prayer_location ?? "");
   const [hostName, setHostName]                 = useState(memorial.host_name ?? "");
   const [hostPhone, setHostPhone]               = useState(memorial.host_phone ?? "");
@@ -87,6 +88,7 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
         ceremony_time: ceremonyTime,
         ceremony_location: ceremonyLocation.trim(),
         ceremony_hall: ceremonyHall.trim() || null,
+        prayer_date: prayerText.trim() || null,
         prayer_location: prayerSchedule.trim() || null,
         host_name: hostName.trim() || null,
         host_phone: hostPhone.trim() || null,
@@ -161,9 +163,10 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
           <Section title="กำหนดการ">
             {/* สวดพระอภิธรรม */}
             <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">กำหนดการ สวดพระอภิธรรม</p>
-            <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-[11px] text-blue-700">
-              วันสวดคำนวณอัตโนมัติ = วันฌาปนกิจ ลบ 3 วัน
-            </div>
+            <Field label="กำหนดการสวดพระอภิธรรม (วัน/เวลา)">
+              <input type="text" value={prayerText} onChange={e => setPrayerText(e.target.value)}
+                className={inputClass} placeholder="เช่น 17–19 มีนาคม 2568 เวลา 19.00 น." />
+            </Field>
             <Field label="สถานที่สวดพระอภิธรรม">
               <input type="text" value={prayerSchedule} onChange={e => setPrayerSchedule(e.target.value)}
                 className={inputClass} placeholder="เช่น บ้านเลขที่ 123 หมู่ 5 ต.พรานกระต่าย / วัดวังเพชร" />

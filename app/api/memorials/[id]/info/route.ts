@@ -26,6 +26,7 @@ export async function PATCH(
     ceremony_time?: string;
     ceremony_location?: string;
     ceremony_hall?: string | null;
+    prayer_date?: string | null;
     prayer_location?: string | null;
     host_name?: string | null;
     host_phone?: string | null;
@@ -67,6 +68,7 @@ export async function PATCH(
   if (body.ceremony_time !== undefined)     update.ceremony_time      = body.ceremony_time;
   if (body.ceremony_location !== undefined) update.ceremony_location  = body.ceremony_location;
   if (body.ceremony_hall !== undefined)     update.ceremony_hall      = body.ceremony_hall;
+  if (body.prayer_date !== undefined)       update.prayer_date        = body.prayer_date;
   if (body.prayer_location !== undefined)   update.prayer_location    = body.prayer_location;
   if (body.host_name !== undefined)         update.host_name          = body.host_name;
   if (body.host_phone !== undefined)        update.host_phone         = body.host_phone;

@@ -68,6 +68,7 @@ export async function POST(req: NextRequest) {
     const ceremonyLocation = (form.get("ceremony_location") as string) || "";
     const ceremonyHall     = (form.get("ceremony_hall") as string) || null;
     const prayerSchedule   = (form.get("prayer_schedule") as string) || null;
+    const prayerText       = (form.get("prayer_text") as string) || null;
 
     const hostName         = (form.get("host_name") as string) || null;
     const hostPhone        = (form.get("host_phone") as string) || null;
@@ -109,7 +110,7 @@ export async function POST(req: NextRequest) {
       ceremony_time: ceremonyTime,
       ceremony_location: ceremonyLocation,
       ceremony_hall: ceremonyHall,
-      prayer_date: null,
+      prayer_date: prayerText,
       prayer_location: prayerSchedule,
       host_name: hostName,
       host_phone: hostPhone,

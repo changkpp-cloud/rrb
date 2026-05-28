@@ -272,7 +272,8 @@ export default function CreateMemorialClient({ centerId }: Props) {
   const [ceremonyHall, setCeremonyHall]         = useState("");
 
   // prayer
-  const [prayerSchedule, setPrayerSchedule] = useState("");
+  const [prayerSchedule, setPrayerSchedule] = useState("");   // สถานที่สวด → prayer_location
+  const [prayerText, setPrayerText]         = useState("");   // กำหนดการ/เวลา → prayer_date
 
   // Level A - host
   const [hostName, setHostName]               = useState("");
@@ -323,6 +324,7 @@ export default function CreateMemorialClient({ centerId }: Props) {
     form.append("ceremony_time", ceremonyTime);
     form.append("ceremony_location", ceremonyLocation);
     if (ceremonyHall) form.append("ceremony_hall", ceremonyHall);
+    if (prayerText)     form.append("prayer_text", prayerText);
     if (prayerSchedule) form.append("prayer_schedule", prayerSchedule);
     if (hostName) form.append("host_name", hostName);
     if (hostPhone) form.append("host_phone", hostPhone);
@@ -415,9 +417,11 @@ export default function CreateMemorialClient({ centerId }: Props) {
 
               {/* สวดพระอภิธรรม */}
               <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">กำหนดการ สวดพระอภิธรรม</p>
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-[11px] text-blue-700">
-                วันสวดคำนวณอัตโนมัติ = วันฌาปนกิจ ลบ 3 วัน ระบุเฉพาะสถานที่สวดได้เลย
-              </div>
+              <Field label="กำหนดการสวดพระอภิธรรม (วัน/เวลา)">
+                <input type="text" value={prayerText} onChange={e => setPrayerText(e.target.value)}
+                  placeholder="เช่น 17–19 มีนาคม 2568 เวลา 19.00 น."
+                  className={inputClass} />
+              </Field>
               <Field label="สถานที่สวดพระอภิธรรม">
                 <input type="text" value={prayerSchedule} onChange={e => setPrayerSchedule(e.target.value)}
                   placeholder="เช่น บ้านเลขที่ 123 หมู่ 5 ต.พรานกระต่าย / วัดวังเพชร"
