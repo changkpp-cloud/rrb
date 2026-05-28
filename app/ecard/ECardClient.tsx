@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Download, Sparkles } from "lucide-react";
+import { Download } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
 import type { Memorial } from "@/lib/supabase/types";
@@ -23,51 +23,6 @@ function thaiDate(iso: string) {
   return `${d.getDate()} ${THAI_MONTHS[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
-type Pose = "stand" | "bow" | "kneel";
-
-const POSES: { id: Pose; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "stand",
-    label: "ยืนถือป้าย",
-    icon: (
-      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
-        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
-        <rect x="10" y="18" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M16 12v6M16 26v8M10 30l-4 8M22 30l4 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M10 18l-3-3M22 18l3-3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    id: "bow",
-    label: "ไหว้อาลัย",
-    icon: (
-      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
-        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
-        <path d="M16 12v7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M10 19s2 2 6 2 6-2 6-2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M12 17l-5 2M20 17l5 2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M13 21v10M19 21v10M13 31l-3 6M19 31l3 6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M11 21l3-1.5M21 21l-3-1.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-  {
-    id: "kneel",
-    label: "นั่งคุกเข่า",
-    icon: (
-      <svg viewBox="0 0 32 40" fill="none" className="w-7 h-9">
-        <circle cx="16" cy="6" r="4.5" stroke="currentColor" strokeWidth="2" />
-        <path d="M16 12v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M10 16l6 4 6-4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M10 16l-3 4M22 16l3 4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        <path d="M16 20v8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-        <path d="M13 28l-5 3M19 28l5 3M8 31h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-  },
-];
-
 export default function ECardClient({ memorial, basePath = "" }: { memorial: Memorial; basePath?: string }) {
   const params = useSearchParams();
   const name    = params.get("name")    ?? "";
@@ -75,18 +30,11 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const amount  = params.get("amount")  ?? "";
   const message = params.get("message") ?? "";
 
-  const cardRef     = useRef<HTMLDivElement>(null);
-  const faceInputRef = useRef<HTMLInputElement>(null);
+  const cardRef = useRef<HTMLDivElement>(null);
 
   const [saving, setSaving]           = useState(false);
   const [showAmount, setShowAmount]   = useState(false);
   const [blinking, setBlinking]       = useState(false);
-  const [pose, setPose]               = useState<Pose>("stand");
-  const [faceUrl, setFaceUrl]         = useState<string | null>(null);
-  const [generating, setGenerating]   = useState(false);
-  const [generatedImg, setGeneratedImg] = useState<string | null>(null);
-  const [savingMock, setSavingMock]   = useState(false);
-  const [genError, setGenError]       = useState("");
   const [cardWidth, setCardWidth]     = useState(360);
 
   function handleStyleChange(withAmount: boolean) {
@@ -100,14 +48,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const deathDate    = memorial.death_date ? thaiDate(memorial.death_date) : "";
   const ceremonyDate = thaiDate(memorial.ceremony_date);
   const ceremonyLocation = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
-  const mockWreathParams = new URLSearchParams({
-    name,
-    title,
-    amount,
-    message,
-    deceased_name: deceasedName,
-    funeral_place: ceremonyLocation,
-  }).toString();
 
   async function handleSaveCard() {
     if (!cardRef.current) return;
@@ -121,108 +61,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       link.click();
     } catch {}
     setSaving(false);
-  }
-
-  function handleFaceChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => setFaceUrl(reader.result as string);
-    reader.readAsDataURL(file);
-  }
-
-  async function handleGenerate() {
-    setGenerating(true);
-    setGenError("");
-    try {
-      const res = await fetch("/api/generate-wreath", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ pose, donorName: name || "ผู้ร่วมบุญ", donorTitle: title }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "เกิดข้อผิดพลาด");
-      setGeneratedImg(data.url);
-    } catch (e) {
-      setGenError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
-    }
-    setGenerating(false);
-  }
-
-  async function handleSaveMock() {
-    if (!generatedImg) return;
-    setSavingMock(true);
-    try {
-      const canvas = document.createElement("canvas");
-      const W = 800, H = 1067; // 3:4
-      canvas.width = W; canvas.height = H;
-      const ctx = canvas.getContext("2d")!;
-
-      // Background image
-      const bgImg = new Image();
-      bgImg.crossOrigin = "anonymous";
-      bgImg.src = generatedImg;
-      await new Promise<void>((res, rej) => { bgImg.onload = () => res(); bgImg.onerror = rej; });
-      ctx.drawImage(bgImg, 0, 0, W, H);
-
-      // Face overlay if uploaded
-      if (faceUrl) {
-        const faceImg = new Image();
-        faceImg.src = faceUrl;
-        await new Promise<void>(res => { faceImg.onload = () => res(); });
-        const headY = pose === "stand" ? 0.13 : pose === "bow" ? 0.16 : 0.24;
-        const cx = W * 0.5, cy = H * headY;
-        const rx = W * 0.11, ry = W * 0.13;
-        ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2);
-        ctx.clip();
-        const fz = rx * 2.6;
-        ctx.drawImage(faceImg, cx - fz / 2, cy - ry, fz, fz * 1.2);
-        ctx.restore();
-      }
-
-      // Name card overlay
-      const cardH = H * 0.10;
-      const cardY = H - cardH - H * 0.04;
-      const cardX = W * 0.10;
-      const cardW = W * 0.80;
-      const r = 12;
-
-      ctx.beginPath();
-      ctx.moveTo(cardX + r, cardY);
-      ctx.lineTo(cardX + cardW - r, cardY);
-      ctx.quadraticCurveTo(cardX + cardW, cardY, cardX + cardW, cardY + r);
-      ctx.lineTo(cardX + cardW, cardY + cardH - r);
-      ctx.quadraticCurveTo(cardX + cardW, cardY + cardH, cardX + cardW - r, cardY + cardH);
-      ctx.lineTo(cardX + r, cardY + cardH);
-      ctx.quadraticCurveTo(cardX, cardY + cardH, cardX, cardY + cardH - r);
-      ctx.lineTo(cardX, cardY + r);
-      ctx.quadraticCurveTo(cardX, cardY, cardX + r, cardY);
-      ctx.closePath();
-      ctx.fillStyle = "rgba(253,248,238,0.94)";
-      ctx.fill();
-      ctx.strokeStyle = "#c9a84c";
-      ctx.lineWidth = 2.5;
-      ctx.stroke();
-
-      ctx.textAlign = "center";
-      const displayName = name || "ผู้ร่วมบุญ";
-      ctx.font = `bold 28px Sarabun, sans-serif`;
-      ctx.fillStyle = "#78350f";
-      ctx.fillText(displayName, W / 2, cardY + cardH * 0.48 + 12);
-      if (title) {
-        ctx.font = `18px Sarabun, sans-serif`;
-        ctx.fillStyle = "#92400e";
-        ctx.fillText(title, W / 2, cardY + cardH * 0.78 + 8);
-      }
-
-      const link = document.createElement("a");
-      link.download = `หรีดร่วมบุญ-จำลอง-${name || "image"}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    } catch {}
-    setSavingMock(false);
   }
 
   useEffect(() => {
@@ -392,110 +230,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             </button>
           </div>
 
-          {/* ── SECTION 2: Mock wreath AI ── */}
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-3">
-            <div className="flex items-center gap-1.5">
-              <Sparkles className="w-4 h-4 text-gold-500" />
-              <span className="text-sm font-semibold text-gold-700">จำลองภาพมอบหรีดร่วมบุญ</span>
-            </div>
-            <p className="text-xs text-gold-500 -mt-1">เลือกท่าทาง แล้วกดแนบรูปเพื่อสร้างภาพที่ระลึก</p>
-
-            <Link
-              href={`/mock-wreath?${mockWreathParams}`}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-semibold hover:bg-gold-50 transition-all"
-            >
-              <Sparkles className="w-4 h-4" />
-              เปิดหน้าจำลองแบบ AI Photo Template
-            </Link>
-
-            {/* 3 pose boxes */}
-            <div className="grid grid-cols-3 gap-2">
-              {POSES.map(p => {
-                const isSelected = pose === p.id;
-                const hasResult = isSelected && generatedImg;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => { setPose(p.id); faceInputRef.current?.click(); }}
-                    className={`relative rounded-xl overflow-hidden border-2 transition-all active:scale-95 ${
-                      isSelected ? "border-gold-500" : "border-gold-200 hover:border-gold-300"
-                    }`}
-                    style={{ aspectRatio: "3/4" }}
-                  >
-                    {/* Background */}
-                    <div
-                      className="absolute inset-0"
-                      style={{
-                        background: isSelected
-                          ? "linear-gradient(160deg,#fdf4dd 0%,#f5e0a0 50%,#fdf4dd 100%)"
-                          : "linear-gradient(160deg,#fdf8ee 0%,#f5edd8 100%)",
-                      }}
-                    />
-
-                    {/* Generated image */}
-                    {hasResult && (
-                      <img src={generatedImg!} alt="" className="absolute inset-0 w-full h-full object-cover" />
-                    )}
-
-                    {/* Content overlay */}
-                    <div className="relative flex flex-col items-center justify-between h-full py-3 px-1">
-                      {/* Pose illustration */}
-                      <div className={`flex flex-col items-center gap-1 flex-1 justify-center ${hasResult ? "opacity-0" : ""}`}>
-                        <div className={isSelected ? "text-gold-600" : "text-gold-300"}>{p.icon}</div>
-                        <span className="text-[9px] font-medium text-gold-500 text-center leading-tight">{p.label}</span>
-                      </div>
-
-                      {/* CTA */}
-                      {!hasResult && (
-                        <div className="flex flex-col items-center gap-0.5">
-                          <div className="w-6 h-6 rounded-full bg-white border border-gold-300 flex items-center justify-center shadow-sm">
-                            <span className="text-gold-500 text-base leading-none font-light">+</span>
-                          </div>
-                          <p className="text-[8px] text-gold-400 text-center leading-tight mt-0.5">กดแนบรูป<br/>เพื่อสร้างภาพนี้</p>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Face badge */}
-                    {isSelected && faceUrl && !hasResult && (
-                      <div className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full overflow-hidden border-2 border-gold-400 shadow">
-                        <img src={faceUrl} alt="" className="w-full h-full object-cover" />
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
-
-            <input ref={faceInputRef} type="file" accept="image/*" className="hidden" onChange={handleFaceChange} />
-
-            {/* Generate button — shows after face uploaded */}
-            {faceUrl && (
-              <button
-                onClick={handleGenerate}
-                disabled={generating}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 disabled:opacity-60 transition-all"
-              >
-                <Sparkles className="w-4 h-4" />
-                {generating ? "กำลังสร้างภาพ..." : "สร้างภาพที่ระลึก"}
-              </button>
-            )}
-
-            {genError && <p className="text-xs text-red-400 text-center">{genError}</p>}
-
-            {generatedImg && (
-              <button
-                onClick={handleSaveMock}
-                disabled={savingMock}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border-2 border-gold-300 bg-white text-gold-700 text-sm font-medium hover:bg-gold-50 disabled:opacity-40 transition-all"
-              >
-                <Download className="w-4 h-4" />
-                {savingMock ? "กำลังบันทึก..." : "บันทึกภาพ"}
-              </button>
-            )}
-          </div>
-
-          {/* ── SECTION 3: AI Photo Template System ── */}
+          {/* ── SECTION 2: AI Photo Template System ── */}
           <AiPhotoSection
             donorName={name}
             donorPosition={title}
