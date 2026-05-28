@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { ArrowLeft, Plus, Users, CheckCircle, Clock } from "lucide-react";
+import { ArrowLeft, Plus, Users } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
+import MemorialCardActions from "./MemorialCardActions";
 
 export const revalidate = 30;
 
@@ -118,8 +119,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           <div className="space-y-3">
             <p className="text-xs font-semibold text-gold-600 px-1">รายการงานศพ</p>
             {memorials.map(m => (
-              <Link key={m.id} href={`/dashboard/center/${id}/memorial/${m.id}`} className="block bg-cream-50 rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors">
-                <div className="flex items-start justify-between gap-2">
+              <div key={m.id} className="flex items-center gap-2 bg-cream-50 rounded-2xl gold-border">
+                <Link href={`/dashboard/center/${id}/memorial/${m.id}`} className="flex items-start gap-3 flex-1 min-w-0 px-4 py-3 hover:opacity-80 transition-opacity">
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold text-gold-800 leading-tight truncate">{m.name}</p>
                     <p className="text-[10px] text-gold-500 mt-0.5">ฌาปนกิจ {formatThaiDate(m.ceremony_date)}</p>
@@ -134,8 +135,15 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
                       {donorCounts[m.id] || 0} คน
                     </div>
                   </div>
+                </Link>
+                <div className="pr-3">
+                  <MemorialCardActions
+                    memorialId={m.id}
+                    memorialName={m.name}
+                    isClosed={m.funeral_status === "closed"}
+                  />
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         )}

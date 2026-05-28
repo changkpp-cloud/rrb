@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/types";
 
@@ -84,4 +85,24 @@ export async function PATCH(
     console.error("memorial PATCH error:", err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
+}
+
+export async function DELETE(
+  _req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const cookieStore = await cookies();
+  const centerSession = cookieStore.get("center_session");
+  const adminSession = cookieStore.get("admin_session");
+  if (!centerSession?.value && adminSession?.value !== "ok") {
+    return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึง" }, { status: 401 });
+  }
+
+  const { id } = await params;
+  const supabase = createAdminClient();
+
+  const { error } = await supabase.from("memorials").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  return NextResponse.json({ success: true });
 }
