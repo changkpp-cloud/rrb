@@ -16,7 +16,11 @@ export default function CenterLoginPage() {
     if (!code.trim()) { setError("กรุณากรอกรหัสศูนย์"); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`/api/center/login?code=${encodeURIComponent(code.trim().toUpperCase())}`);
+      const res = await fetch("/api/center/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: code.trim() }),
+      });
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "ไม่พบรหัสนี้");
       router.push(`/dashboard/center/${data.id}`);

@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     .from("centers")
     .insert({
       name: name.trim(),
-      center_code: center_code?.trim() || null,
+      center_code: center_code?.trim().toUpperCase() || null,
       province: province?.trim() || null,
       amphoe: amphoe?.trim() || null,
       tambon: tambon?.trim() || null,
