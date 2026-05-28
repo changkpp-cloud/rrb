@@ -6,6 +6,7 @@ import {
   ArrowLeft, Save, Loader2, CheckCircle2, XCircle,
 } from "lucide-react";
 import LotusIcon from "./LotusIcon";
+import ThaiDateInput from "./ThaiDateInput";
 import Link from "next/link";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -19,13 +20,6 @@ interface Props {
 const inputClass =
   "w-full px-3 py-2.5 rounded-xl border border-gold-200 bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm";
 
-function toBE(isoDate: string): string {
-  if (!isoDate) return "";
-  const year = parseInt(isoDate.split("-")[0]);
-  if (isNaN(year)) return "";
-  return `พ.ศ. ${year + 543}`;
-}
-
 function Field({ label, required, children }: { label: string; required?: boolean; children: React.ReactNode }) {
   return (
     <div className="space-y-1.5">
@@ -34,31 +28,6 @@ function Field({ label, required, children }: { label: string; required?: boolea
       </label>
       {children}
     </div>
-  );
-}
-
-function DateField({
-  label, required, value, onChange,
-}: {
-  label: string; required?: boolean; value: string; onChange: (v: string) => void;
-}) {
-  const be = toBE(value);
-  return (
-    <Field label={label} required={required}>
-      <input
-        type="date"
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        required={required}
-        className={inputClass}
-      />
-      {be && (
-        <p className={`text-[11px] font-semibold mt-0.5 ${value && parseInt(value.split("-")[0]) > 2300 ? "text-red-500" : "text-emerald-600"}`}>
-          {be}
-          {value && parseInt(value.split("-")[0]) > 2300 && " ← ปีนี้สูงเกินไป ให้ใส่ปี ค.ศ. เช่น 2025"}
-        </p>
-      )}
-    </Field>
   );
 }
 
@@ -170,26 +139,21 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
             <span className="text-[10px] text-blue-400">· ระบบบันทึกทุกการแก้ไข</span>
           </div>
 
-          {/* คำเตือน: ปีใน date field */}
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-800 leading-relaxed">
-            <p className="font-semibold mb-0.5">ช่องวันที่ใช้ปี ค.ศ. (คริสตกาล)</p>
-            <p>ปีไทย พ.ศ. 2568 = ค.ศ. <strong>2025</strong> · พ.ศ. 2567 = ค.ศ. 2024<br />
-            ระบบจะแสดงปี พ.ศ. ให้ตรวจสอบใต้แต่ละช่อง</p>
-          </div>
-
           {/* ข้อมูลผู้วายชนม์ */}
           <Section title="ข้อมูลผู้วายชนม์">
             <Field label="ชื่อ-นามสกุลผู้วายชนม์" required>
               <input type="text" value={name} onChange={e => setName(e.target.value)} required
                 className={inputClass} placeholder="ชื่อ-นามสกุล" />
             </Field>
-            <div className="grid grid-cols-2 gap-3">
-              <DateField label="วันเกิด (ชาตะ)" required value={birthDate} onChange={setBirthDate} />
-              <DateField label="วันเสียชีวิต (มรณะ)" required value={deathDate} onChange={setDeathDate} />
-            </div>
+            <Field label="วันเกิด (ชาตะ)" required>
+              <ThaiDateInput value={birthDate} onChange={setBirthDate} required />
+            </Field>
+            <Field label="วันเสียชีวิต (มรณะ)" required>
+              <ThaiDateInput value={deathDate} onChange={setDeathDate} required />
+            </Field>
             <Field label="อายุ (ปี)">
               <input type="number" value={age} onChange={e => setAge(e.target.value)}
-                className={inputClass} min="0" max="150" />
+                className={inputClass} min="0" max="150" placeholder="คำนวณอัตโนมัติ" />
             </Field>
           </Section>
 
@@ -198,17 +162,19 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
             <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2 text-[11px] text-blue-700">
               วันสวดจะแสดงอัตโนมัติ = วันฌาปนกิจ ลบ 3 วัน — ใส่วันฌาปนกิจให้ถูกต้องก็พอ
             </div>
-            <DateField label="วันฌาปนกิจ" required value={ceremonyDate} onChange={setCeremonyDate} />
+            <Field label="วันฌาปนกิจ" required>
+              <ThaiDateInput value={ceremonyDate} onChange={setCeremonyDate} required />
+            </Field>
             {ceremonyDate && (
               <div className="bg-cream-50 border border-gold-200 rounded-xl px-3 py-2 text-[11px] text-gold-700">
                 วันสวดจะแสดงเป็น: <strong>
                   {(() => {
-                    const d = new Date(ceremonyDate);
-                    const days = ["อาทิตย์","จันทร์","อังคาร","พุธ","พฤหัสบดี","ศุกร์","เสาร์"];
-                    const months = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
-                    const start = new Date(d); start.setDate(d.getDate() - 3);
-                    const end = new Date(d); end.setDate(d.getDate() - 1);
-                    return `${start.getDate()}–${end.getDate()} ${months[end.getMonth()]} พ.ศ. ${end.getFullYear() + 543}`;
+                    const [y, m, d] = ceremonyDate.split("-").map(Number);
+                    const ceremony = new Date(y, m - 1, d);
+                    const monthsShort = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+                    const start = new Date(ceremony); start.setDate(ceremony.getDate() - 3);
+                    const end = new Date(ceremony); end.setDate(ceremony.getDate() - 1);
+                    return `${start.getDate()}–${end.getDate()} ${monthsShort[end.getMonth()]} พ.ศ. ${end.getFullYear() + 543}`;
                   })()}
                 </strong>
               </div>

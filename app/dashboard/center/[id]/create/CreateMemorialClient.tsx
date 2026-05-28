@@ -7,6 +7,7 @@ import {
   ChevronDown, ChevronUp, Shield, CreditCard, FileText,
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import ThaiDateInput from "@/components/ThaiDateInput";
 
 interface Props { centerId: string; }
 
@@ -395,19 +396,12 @@ export default function CreateMemorialClient({ centerId }: Props) {
                 placeholder="เช่น นางสาว สุภาพร ปทุมานนท์" className={inputClass} />
             </Field>
 
-            <div className="bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-[11px] text-amber-800">
-              ช่องวันที่ใช้ <strong>ปี ค.ศ.</strong> — พ.ศ. 2568 = ค.ศ. 2025 · ระบบจะแปลงเป็น พ.ศ. ให้อัตโนมัติ
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="วันเกิด (ชาตะ)" required>
-                <input type="date" value={birthDate} onChange={e => setBirthDate(e.target.value)} required className={inputClass} />
-                {birthDate && <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">พ.ศ. {parseInt(birthDate) + 543}</p>}
-              </Field>
-              <Field label="วันเสียชีวิต (มรณะ)" required>
-                <input type="date" value={deathDate} onChange={e => setDeathDate(e.target.value)} required className={inputClass} />
-                {deathDate && <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">พ.ศ. {parseInt(deathDate) + 543}</p>}
-              </Field>
-            </div>
+            <Field label="วันเกิด (ชาตะ)" required>
+              <ThaiDateInput value={birthDate} onChange={setBirthDate} required />
+            </Field>
+            <Field label="วันเสียชีวิต (มรณะ)" required>
+              <ThaiDateInput value={deathDate} onChange={setDeathDate} required />
+            </Field>
 
             <Field label="อายุ (ปี)">
               <input type="number" value={age} onChange={e => setAge(e.target.value)}
@@ -424,8 +418,7 @@ export default function CreateMemorialClient({ centerId }: Props) {
               </Field>
 
               <Field label="วันฌาปนกิจ" required>
-                <input type="date" value={ceremonyDate} onChange={e => setCeremonyDate(e.target.value)} required className={inputClass} />
-                {ceremonyDate && <p className="text-[11px] text-emerald-600 font-semibold mt-0.5">พ.ศ. {parseInt(ceremonyDate) + 543}</p>}
+                <ThaiDateInput value={ceremonyDate} onChange={setCeremonyDate} required />
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
