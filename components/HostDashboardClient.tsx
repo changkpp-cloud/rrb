@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Users, Download } from "lucide-react";
+import { ArrowLeft, Users, Download, Pencil } from "lucide-react";
 import LotusIcon from "./LotusIcon";
 import HostBankForm from "./HostBankForm";
 import type { Memorial, Donation } from "@/lib/supabase/types";
@@ -83,7 +83,13 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
             </div>
             <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
           </div>
-          <div className="w-8" />
+          <Link
+            href={`/dashboard/host/${id}/edit?code=${memorial.host_code ?? ""}`}
+            className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all"
+            title="แก้ไขข้อมูลงาน"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </Link>
         </div>
 
         {/* Tabs */}

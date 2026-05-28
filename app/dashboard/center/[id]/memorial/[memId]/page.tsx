@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, Users, ExternalLink } from "lucide-react";
+import { ArrowLeft, Users, ExternalLink, Pencil } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Memorial, Donation } from "@/lib/supabase/types";
@@ -61,9 +61,14 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             </div>
             <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
           </div>
-          <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ExternalLink className="w-4 h-4" />
-          </a>
+          <div className="flex items-center gap-1.5">
+            <Link href={`/dashboard/center/${id}/memorial/${memId}/edit`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all" title="แก้ไขข้อมูล">
+              <Pencil className="w-3.5 h-3.5" />
+            </Link>
+            <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
+              <ExternalLink className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </header>
 
