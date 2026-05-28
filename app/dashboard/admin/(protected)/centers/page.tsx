@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Building2, ChevronRight, Plus } from "lucide-react";
+import DeleteCenterButton from "./DeleteCenterButton";
 
 export const revalidate = 60;
 
@@ -55,31 +56,33 @@ export default async function AdminCentersPage() {
       ) : (
         <div className="space-y-3">
           {centers.map(c => (
-            <Link
-              key={c.id}
-              href={`/dashboard/admin/centers/${c.id}`}
-              className="flex items-center gap-4 bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3.5 hover:bg-cream-100 transition-colors"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gold-100 border border-gold-300 flex items-center justify-center shrink-0">
-                <Building2 className="w-5 h-5 text-gold-600" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gold-800 truncate">{c.name}</p>
-                <p className="text-[10px] text-gold-500 mt-0.5">
-                  {[c.tambon, c.amphoe, c.province].filter(Boolean).join(" · ")}
-                </p>
-                <div className="flex items-center gap-3 mt-1">
-                  <span className="text-[10px] text-gold-600 font-medium">{c.totalMemorials} งาน</span>
-                  {c.activeMemorials > 0 && (
-                    <span className="text-[10px] text-emerald-600 font-medium">เปิดอยู่ {c.activeMemorials}</span>
-                  )}
-                  <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${c.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
-                    {c.status === "active" ? "ใช้งาน" : "ปิดแล้ว"}
-                  </span>
+            <div key={c.id} className="flex items-center gap-2 bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3.5">
+              <Link
+                href={`/dashboard/admin/centers/${c.id}`}
+                className="flex items-center gap-4 flex-1 min-w-0 hover:opacity-80 transition-opacity"
+              >
+                <div className="w-10 h-10 rounded-xl bg-gold-100 border border-gold-300 flex items-center justify-center shrink-0">
+                  <Building2 className="w-5 h-5 text-gold-600" />
                 </div>
-              </div>
-              <ChevronRight className="w-4 h-4 text-gold-400 shrink-0" />
-            </Link>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gold-800 truncate">{c.name}</p>
+                  <p className="text-[10px] text-gold-500 mt-0.5">
+                    {[c.tambon, c.amphoe, c.province].filter(Boolean).join(" · ")}
+                  </p>
+                  <div className="flex items-center gap-3 mt-1">
+                    <span className="text-[10px] text-gold-600 font-medium">{c.totalMemorials} งาน</span>
+                    {c.activeMemorials > 0 && (
+                      <span className="text-[10px] text-emerald-600 font-medium">เปิดอยู่ {c.activeMemorials}</span>
+                    )}
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium ${c.status === "active" ? "bg-emerald-50 text-emerald-700" : "bg-gray-100 text-gray-500"}`}>
+                      {c.status === "active" ? "ใช้งาน" : "ปิดแล้ว"}
+                    </span>
+                  </div>
+                </div>
+                <ChevronRight className="w-4 h-4 text-gold-400 shrink-0" />
+              </Link>
+              <DeleteCenterButton centerId={c.id} centerName={c.name} />
+            </div>
           ))}
         </div>
       )}
