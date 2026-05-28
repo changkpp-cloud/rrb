@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Download, Sparkles } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
 import type { Memorial } from "@/lib/supabase/types";
 
 const SIGN_W = 260;
@@ -493,6 +494,15 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </button>
             )}
           </div>
+
+          {/* ── SECTION 3: AI Photo Template System ── */}
+          <AiPhotoSection
+            donorName={name}
+            donorPosition={title}
+            condolenceText={message}
+            deceasedName={deceasedName}
+            funeralPlace={ceremonyLocation}
+          />
 
           {/* Back */}
           <Link
