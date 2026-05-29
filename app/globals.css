@@ -25,17 +25,13 @@
 @layer base {
   html {
     font-family: var(--font-sans);
-    background-color: #FFF8F1;
+    background-color: #FDFBF4;
   }
 
   body {
     color: #4D3318;
-    /* Layered celestial background — heaven light from above, warm lotus glow below */
-    background:
-      radial-gradient(ellipse 125% 48% at 50% -3%, rgba(245,222,170,0.42) 0%, transparent 100%),
-      radial-gradient(ellipse 65% 32% at  8%  94%, rgba(232,216,180,0.24) 0%, transparent 100%),
-      radial-gradient(ellipse 58% 28% at 94%  90%, rgba(243,198,168,0.20) 0%, transparent 100%),
-      linear-gradient(180deg, #FFF8F1 0%, #F7F3EA 35%, #F1E6DC 62%, #F7F3EA 85%, #FFF8F1 100%);
+    /* iOS 17 — clean warm gradient */
+    background: linear-gradient(180deg, #FDFBF4 0%, #F8F1E4 42%, #FAF4EC 68%, #FDFBF4 100%);
     background-attachment: fixed;
   }
 }
@@ -133,16 +129,16 @@
       inset 0 1px 0 rgba(255, 255, 255, 0.65);
   }
 
-  /* ── Standard border & shadow ── */
+  /* ── Standard border & shadow (iOS 17 tuned) ── */
   .gold-border {
-    border: 1px solid rgba(201, 152, 60, 0.40);
+    border: 0.5px solid rgba(201, 152, 60, 0.35);
   }
 
   .card-shadow {
     box-shadow:
-      0 4px 24px rgba(176, 120, 32, 0.09),
-      0 1px 4px  rgba(176, 120, 32, 0.05),
-      inset 0 1px 0 rgba(255, 255, 255, 0.62);
+      0 2px 24px rgba(176, 120, 32, 0.07),
+      0 1px 3px  rgba(0, 0, 0, 0.025),
+      inset 0 1px 0 rgba(255, 255, 255, 0.90);
   }
 
   .wreath-shadow {

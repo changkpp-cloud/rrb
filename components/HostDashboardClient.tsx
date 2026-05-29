@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Users, Download, Pencil } from "lucide-react";
+import { Users, Download, Pencil } from "lucide-react";
+import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostBankForm from "./HostBankForm";
 import type { Memorial, Donation } from "@/lib/supabase/types";
@@ -67,30 +68,25 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
+    <div className="min-h-screen">
 
       {/* ── Sticky header + tabs ── */}
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
-        <div className="max-w-lg mx-auto px-4 pt-2 pb-1 flex items-center justify-between">
-          <Link href="/dashboard/host" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-gold-600" />
-            <div className="text-center">
-              <p className="text-sm font-bold gold-gradient-text">Dashboard เจ้าภาพ</p>
-              <p className="text-[9px] text-gold-500 -mt-0.5">Host Dashboard</p>
-            </div>
-            <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
-          </div>
-          <Link
-            href={`/dashboard/host/${id}/edit?code=${memorial.host_code ?? ""}`}
-            className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all"
-            title="แก้ไขข้อมูลงาน"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-          </Link>
-        </div>
+      <div className="sticky top-0 z-40 print:hidden">
+        <IosPageHeader
+          title={memorial.name}
+          subtitle="Host Dashboard"
+          backHref="/dashboard/host"
+          rightSlot={
+            <Link
+              href={`/dashboard/host/${id}/edit?code=${memorial.host_code ?? ""}`}
+              className="flex items-center justify-center w-8 h-8 rounded-full active:scale-90 transition-transform"
+              style={{ background: "rgba(14,9,2,0.75)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "0.5px solid rgba(255,255,255,0.10)", boxShadow: "0 2px 12px rgba(0,0,0,0.24)" }}
+              title="แก้ไขข้อมูลงาน"
+            >
+              <Pencil className="w-3.5 h-3.5 text-gold-300" />
+            </Link>
+          }
+        />
 
         {/* Tabs */}
         <div className="max-w-lg mx-auto px-4 pb-2">
@@ -110,7 +106,7 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
             ))}
           </div>
         </div>
-      </header>
+      </div>
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-10">
 

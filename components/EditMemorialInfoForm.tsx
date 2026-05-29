@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  ArrowLeft, Save, Loader2, CheckCircle2, XCircle,
+  Save, Loader2, CheckCircle2, XCircle,
 } from "lucide-react";
-import LotusIcon from "./LotusIcon";
+import IosPageHeader from "./IosPageHeader";
 import ThaiDateInput from "./ThaiDateInput";
 import Link from "next/link";
 import type { Memorial } from "@/lib/supabase/types";
@@ -112,23 +112,8 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
   }
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href={backHref} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-gold-600" />
-            <div className="text-center">
-              <p className="text-sm font-bold gold-gradient-text">แก้ไขข้อมูลงาน</p>
-              <p className="text-[9px] text-gold-500 -mt-0.5 truncate max-w-[120px]">{memorial.name}</p>
-            </div>
-            <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
+    <div className="min-h-screen">
+      <IosPageHeader title="แก้ไขข้อมูลงาน" backHref={backHref} />
 
       <main className="max-w-lg mx-auto px-4 py-5">
         <form onSubmit={handleSave} className="space-y-4">

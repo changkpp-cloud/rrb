@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Download } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
 import type { Memorial } from "@/lib/supabase/types";
 
@@ -78,24 +79,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   return (
     <>
-    <div
-      className="min-h-dvh flex flex-col"
-      style={{ background: "#ffffff" }}
-    >
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="w-8" />
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-6 h-6 text-gold-600" />
-            <div className="text-center">
-              <h1 className="text-lg font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-              <p className="text-[9px] font-medium text-gold-500 tracking-[0.25em] uppercase -mt-0.5">Zero Waste</p>
-            </div>
-            <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
+    <div className="min-h-dvh flex flex-col">
+      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
