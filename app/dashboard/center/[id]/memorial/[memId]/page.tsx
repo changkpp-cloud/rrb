@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, Users, ExternalLink, Pencil } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
+import { Users, ExternalLink, Pencil } from "lucide-react";
+import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
@@ -47,30 +47,26 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const publicUrl = `${process.env.NEXT_PUBLIC_SITE_URL || ""}/${memorial.slug}`;
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href={`/dashboard/center/${id}`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-gold-600" />
-            <div className="text-center">
-              <p className="text-sm font-bold gold-gradient-text truncate max-w-[160px]">{memorial.name}</p>
-              <p className="text-[9px] text-gold-500 -mt-0.5">ฌาปนกิจ {formatThaiDate(memorial.ceremony_date)}</p>
-            </div>
-            <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
-          </div>
+    <div className="min-h-screen">
+      <IosPageHeader
+        title={memorial.name}
+        subtitle={`ฌาปนกิจ ${formatThaiDate(memorial.ceremony_date)}`}
+        backHref={`/dashboard/center/${id}`}
+        rightSlot={
           <div className="flex items-center gap-1.5">
-            <Link href={`/dashboard/center/${id}/memorial/${memId}/edit`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all" title="แก้ไขข้อมูล">
-              <Pencil className="w-3.5 h-3.5" />
+            <Link href={`/dashboard/center/${id}/memorial/${memId}/edit`} title="แก้ไขข้อมูล"
+              className="flex items-center justify-center w-8 h-8 rounded-full active:scale-90 transition-transform"
+              style={{ background: "rgba(14,9,2,0.75)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "0.5px solid rgba(255,255,255,0.10)", boxShadow: "0 2px 12px rgba(0,0,0,0.24)" }}>
+              <Pencil className="w-3.5 h-3.5 text-gold-300" />
             </Link>
-            <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-              <ExternalLink className="w-4 h-4" />
+            <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer"
+              className="flex items-center justify-center w-8 h-8 rounded-full active:scale-90 transition-transform"
+              style={{ background: "rgba(14,9,2,0.75)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "0.5px solid rgba(255,255,255,0.10)", boxShadow: "0 2px 12px rgba(0,0,0,0.24)" }}>
+              <ExternalLink className="w-3.5 h-3.5 text-gold-300" />
             </a>
           </div>
-        </div>
-      </header>
+        }
+      />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 

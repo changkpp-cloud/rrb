@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { ArrowLeft, Plus, Users } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
+import { Plus, Users } from "lucide-react";
+import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
@@ -59,7 +59,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const { id } = await params;
   const center = await getCenter(id);
   if (!center) return (
-    <div className="min-h-screen flex items-center justify-center" style={{ background: "#ffffff" }}>
+    <div className="min-h-screen flex items-center justify-center">
       <p className="text-gold-400 text-sm">ไม่พบข้อมูลศูนย์</p>
     </div>
   );
@@ -69,23 +69,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const activeCount = memorials.filter(m => m.funeral_status === "active").length;
 
   return (
-    <div className="min-h-screen" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href="/dashboard/center" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-gold-600" />
-            <div className="text-center">
-              <p className="text-sm font-bold gold-gradient-text">ศูนย์บริหาร</p>
-              <p className="text-[9px] text-gold-500 -mt-0.5">{center.name}</p>
-            </div>
-            <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
+    <div className="min-h-screen">
+      <IosPageHeader title={center.name} subtitle="ศูนย์บริหาร" backHref="/dashboard/center" />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 

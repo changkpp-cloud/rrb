@@ -6,6 +6,7 @@ import {
   ArrowLeft, Upload, Copy, Check, ExternalLink,
   ChevronDown, ChevronUp, Shield, CreditCard, FileText,
 } from "lucide-react";
+import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
 
@@ -72,18 +73,8 @@ function SuccessScreen({ result, centerId }: { result: Result; centerId: string 
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="w-8" />
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-5 h-5 text-gold-600" />
-            <p className="text-sm font-bold gold-gradient-text">เปิดงานสำเร็จ</p>
-            <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col">
+      <IosPageHeader title="เปิดงานสำเร็จ" />
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-6 space-y-4">

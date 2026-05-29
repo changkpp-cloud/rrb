@@ -13,57 +13,37 @@ function formatThaiDate(dateStr: string) {
     "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม",
     "กันยายน", "ตุลาคม", "พฤศจิกายน", "ธันวาคม",
   ];
-  const buddhistYear = date.getFullYear() + 543;
-  return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${buddhistYear}`;
+  return `${date.getDate()} ${thaiMonths[date.getMonth()]} ${date.getFullYear() + 543}`;
 }
 
 export default function MemorialProfile({ memorial }: Props) {
   return (
-    <section className="relative pt-2 pb-0">
+    <section className="relative pt-5 pb-4">
 
-      {/* Portrait frame */}
-      <div className="flex justify-center mb-[5px] px-3">
-        <div className="relative w-[44vw] max-w-[185px] aspect-square">
-
-          {/* Outer celestial halo — pulsing glow ring */}
+      {/* Portrait */}
+      <div className="flex justify-center mb-5">
+        <div className="relative" style={{ width: "42vw", maxWidth: 176 }}>
+          {/* Soft halo */}
           <div
             className="absolute animate-pulse-glow"
             style={{
-              inset: "-10px",
+              inset: "-18px",
               borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(245,222,170,0.48) 0%, rgba(232,200,140,0.22) 45%, transparent 68%)",
-              filter: "blur(12px)",
+              background: "radial-gradient(ellipse, rgba(245,222,170,0.42) 0%, transparent 65%)",
+              filter: "blur(20px)",
             }}
           />
 
-          {/* Second ring — champagne gold shimmer */}
+          {/* Photo */}
           <div
-            className="absolute"
+            className="relative overflow-hidden"
             style={{
-              inset: "-3px",
+              aspectRatio: "1",
               borderRadius: "50%",
-              border: "1px solid rgba(201,152,60,0.28)",
-              boxShadow: "0 0 18px rgba(201,152,60,0.22)",
-            }}
-          />
-
-          {/* Main gold border ring — overlaid on top of photo */}
-          <div
-            className="absolute"
-            style={{
-              inset: 0,
-              borderRadius: "50%",
-              border: "2px solid rgba(201,152,60,0.72)",
+              border: "2.5px solid rgba(201,152,60,0.70)",
               boxShadow:
-                "0 0 24px rgba(201,152,60,0.30), 0 4px 32px rgba(176,120,32,0.20), inset 0 0 0 3px rgba(255,252,248,0.60), inset 0 0 0 5px rgba(201,152,60,0.16)",
-              zIndex: 2,
+                "0 12px 40px rgba(176,120,32,0.20), 0 0 0 5px rgba(255,252,248,0.50), 0 0 0 6.5px rgba(201,152,60,0.14)",
             }}
-          />
-
-          {/* Photo clip — sits inside the border */}
-          <div
-            className="absolute overflow-hidden"
-            style={{ inset: "2px", borderRadius: "50%", zIndex: 1 }}
           >
             {memorial.photo_url ? (
               <Image
@@ -77,47 +57,57 @@ export default function MemorialProfile({ memorial }: Props) {
               <div
                 className="w-full h-full flex items-center justify-center"
                 style={{
-                  background: "linear-gradient(135deg, #F7F3EA 0%, #EDD8B0 50%, #F1E6DC 100%)",
+                  background: "linear-gradient(135deg, #FAF4E8 0%, #EDD8B0 55%, #F1E6DC 100%)",
                 }}
               >
-                {/* Placeholder lotus portrait */}
-                <LotusIcon className="w-20 h-20 text-gold-400 opacity-60" />
+                <LotusIcon className="w-16 h-16 text-gold-400 opacity-55" />
               </div>
             )}
           </div>
-
         </div>
       </div>
 
-      {/* Name & dates — glassmorphism backing */}
-      <div className="px-4">
-        <div className="max-w-lg mx-auto">
-          <div
-            className="text-center px-5 py-2 rounded-xl"
+      {/* Name — iOS large title style */}
+      <div className="text-center px-6">
+        <h2
+          className="font-bold text-gold-900 leading-tight mb-2"
+          style={{ fontSize: "clamp(1.25rem, 5.5vw, 1.55rem)", letterSpacing: "-0.02em" }}
+        >
+          {memorial.name}
+        </h2>
+
+        {/* Date row — pill tags */}
+        <div className="flex items-center justify-center gap-2 flex-wrap mb-1.5">
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-gold-700"
             style={{
-              background: "rgba(255,252,248,0.70)",
-              backdropFilter: "blur(18px)",
-              WebkitBackdropFilter: "blur(18px)",
-              border: "1px solid rgba(222,184,110,0.36)",
-              boxShadow: "0 6px 28px rgba(176,120,32,0.09), 0 1px 4px rgba(176,120,32,0.05), inset 0 1px 0 rgba(255,255,255,0.75)",
+              background: "rgba(255,252,248,0.80)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              border: "0.5px solid rgba(201,152,60,0.28)",
             }}
           >
-            <h2 className="text-xl font-bold text-gold-800 leading-snug">
-              {memorial.name}
-            </h2>
-            <div className="mt-1.5 space-y-0.5">
-              <p className="text-xs text-gold-600">
-                <span className="font-semibold text-gold-700">ชาตะ</span>{" "}
-                {formatThaiDate(memorial.birth_date)}
-              </p>
-              <p className="text-xs text-gold-600">
-                <span className="font-semibold text-gold-700">มรณะ</span>{" "}
-                {formatThaiDate(memorial.death_date)}
-              </p>
-            </div>
-            <p className="text-xs text-gold-500 mt-0.5">อายุ {memorial.age} ปี</p>
-          </div>
+            <span className="text-gold-400 text-[9px]">ชาตะ</span>
+            {formatThaiDate(memorial.birth_date)}
+          </span>
+          <span className="text-gold-300 text-xs">—</span>
+          <span
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-gold-700"
+            style={{
+              background: "rgba(255,252,248,0.80)",
+              backdropFilter: "blur(16px)",
+              WebkitBackdropFilter: "blur(16px)",
+              border: "0.5px solid rgba(201,152,60,0.28)",
+            }}
+          >
+            <span className="text-gold-400 text-[9px]">มรณะ</span>
+            {formatThaiDate(memorial.death_date)}
+          </span>
         </div>
+
+        <p className="text-xs text-gold-400 font-medium tracking-wide">
+          อายุ {memorial.age} ปี
+        </p>
       </div>
 
     </section>

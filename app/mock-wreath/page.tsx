@@ -3,6 +3,7 @@
 import { Suspense, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
+import IosPageHeader from "@/components/IosPageHeader";
 import {
   ArrowLeft,
   Camera,
@@ -148,30 +149,8 @@ function MockWreathInner() {
   const canGenerate = Boolean(donorPhoto) && Boolean(donorName.trim());
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link
-            href={`/ecard?${params.toString()}`}
-            className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-6 h-6 text-gold-600" />
-            <div className="text-center">
-              <h1 className="text-lg font-bold leading-tight gold-gradient-text tracking-wide">
-                จำลองมอบหรีดร่วมบุญ
-              </h1>
-              <p className="text-[9px] font-medium text-gold-500 tracking-[0.25em] uppercase -mt-0.5">
-                AI Photo Template
-              </p>
-            </div>
-            <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
+    <div className="min-h-dvh flex flex-col">
+      <IosPageHeader title="จำลองมอบหรีดร่วมบุญ" subtitle="AI Photo" backHref={`/ecard?${params.toString()}`} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">

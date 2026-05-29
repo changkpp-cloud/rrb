@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import LotusIcon from "@/components/LotusIcon";
+import IosPageHeader from "@/components/IosPageHeader";
 
 const STEPS = ["กำลังส่งข้อมูลป้าย", "กำลังประมวลผล", "ส่งพิมพ์สำเร็จ"];
 
@@ -48,17 +48,8 @@ function PrintingInner() {
   }, [router, name, title, amount, message, slug]);
 
   return (
-    <div className="min-h-dvh flex flex-col" style={{ background: "#ffffff" }}>
-      <header className="shrink-0 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-center gap-2">
-          <LotusIcon className="w-6 h-6 text-gold-600" />
-          <div className="text-center">
-            <h1 className="text-lg font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-            <p className="text-[9px] font-medium text-gold-500 tracking-[0.25em] uppercase -mt-0.5">Zero Waste</p>
-          </div>
-          <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
-        </div>
-      </header>
+    <div className="min-h-dvh flex flex-col">
+      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm bg-cream-50 rounded-3xl gold-border card-shadow px-6 py-10 flex flex-col items-center gap-6">
           {!showSuccess && (

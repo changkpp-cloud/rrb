@@ -17,12 +17,16 @@ function parseDate(dateStr: string) {
   return new Date(y, m - 1, d);
 }
 
-function formatDay(date: Date) {
-  return `${THAI_DAYS[date.getDay()]}ที่ ${date.getDate()}`;
-}
-
 function formatFull(date: Date) {
   return `วัน${THAI_DAYS[date.getDay()]}ที่ ${date.getDate()} ${THAI_MONTHS[date.getMonth()]} ${date.getFullYear() + 543}`;
+}
+
+function formatShortRange(start: Date, end: Date) {
+  const sameMonth = start.getMonth() === end.getMonth();
+  if (sameMonth) {
+    return `${start.getDate()}–${end.getDate()} ${THAI_MONTHS[end.getMonth()]} ${end.getFullYear() + 543}`;
+  }
+  return `${start.getDate()} ${THAI_MONTHS[start.getMonth()]} – ${end.getDate()} ${THAI_MONTHS[end.getMonth()]} ${end.getFullYear() + 543}`;
 }
 
 function addDays(date: Date, n: number) {
@@ -31,7 +35,6 @@ function addDays(date: Date, n: number) {
   return d;
 }
 
-/* Candle flame SVG icon */
 function CandleIcon({ className = "" }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
@@ -42,78 +45,79 @@ function CandleIcon({ className = "" }: { className?: string }) {
   );
 }
 
-const glassCard: React.CSSProperties = {
-  background: "rgba(255,252,248,0.70)",
-  backdropFilter: "blur(18px)",
-  WebkitBackdropFilter: "blur(18px)",
-  border: "1px solid rgba(222,184,110,0.36)",
-  boxShadow:
-    "0 6px 28px rgba(176,120,32,0.09), 0 1px 4px rgba(176,120,32,0.05), inset 0 1px 0 rgba(255,255,255,0.75)",
-  borderRadius: "0.75rem",
-};
-
 export default function CeremonyInfo({ memorial }: Props) {
   const cremationDate = parseDate(memorial.ceremony_date);
-
   const chantStart = addDays(cremationDate, -3);
   const chantEnd   = addDays(cremationDate, -1);
 
-  const sameMonth = chantStart.getMonth() === chantEnd.getMonth();
-  const chantRange = sameMonth
-    ? `${formatDay(chantStart)}–${chantEnd.getDate()} ${THAI_MONTHS[chantEnd.getMonth()]} ${chantEnd.getFullYear() + 543}`
-    : `${formatDay(chantStart)} ${THAI_MONTHS[chantStart.getMonth()]} – ${formatDay(chantEnd)} ${THAI_MONTHS[chantEnd.getMonth()]} ${chantEnd.getFullYear() + 543}`;
+  const prayerDateText = memorial.prayer_date
+    ? memorial.prayer_date
+    : formatShortRange(chantStart, chantEnd);
 
   const prayerLocation = memorial.prayer_location
-    ? `ณ ${memorial.prayer_location}`
-    : `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
+    ? memorial.prayer_location
+    : `${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
 
-  const cremationLocation = `ณ ${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
+  const cremationLocation = `${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
+  const cremationTime = memorial.ceremony_time ? ` เวลา ${memorial.ceremony_time} น.` : "";
 
   return (
-    <section className="px-4 pt-[5px] mb-1">
-      <div className="max-w-lg mx-auto space-y-[5px]">
+    <section className="px-4 pt-1 pb-3">
+      <div className="max-w-lg mx-auto">
 
-        {/* กำหนดการ สวดพระอภิธรรม */}
-        <div style={glassCard} className="p-2.5 flex gap-3 items-start">
-          <div
-            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, rgba(245,222,170,0.55) 0%, rgba(201,152,60,0.20) 100%)",
-              border: "1px solid rgba(201,152,60,0.35)",
-            }}
-          >
-            <LotusIcon className="w-5 h-5 text-gold-600" />
+        {/* iOS section label */}
+        <p
+          className="text-gold-500 font-semibold px-1 mb-2"
+          style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase" }}
+        >
+          กำหนดการ
+        </p>
+
+        {/* iOS grouped table */}
+        <div className="ios-group">
+
+          {/* Row 1 — สวดพระอภิธรรม */}
+          <div className="flex items-start gap-3 px-4 py-3.5">
+            <div
+              className="ios-icon-badge flex-shrink-0 w-9 h-9 rounded-[10px] flex items-center justify-center mt-0.5"
+            >
+              <LotusIcon className="w-[18px] h-[18px] text-gold-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gold-800 leading-tight mb-0.5">
+                สวดพระอภิธรรม
+              </p>
+              <p className="text-xs text-gold-600 leading-snug">{prayerDateText}</p>
+              <p className="text-[11px] text-gold-400 leading-snug mt-0.5 truncate">ณ {prayerLocation}</p>
+            </div>
           </div>
-          <div className="flex-1">
-            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการ <span className="font-bold">สวดพระอภิธรรม</span></p>
-            <p className="text-gold-700 text-xs leading-snug mt-0.5">
-              วัน{chantRange}
-            </p>
-            <p className="text-gold-600 text-xs leading-snug">{prayerLocation}</p>
+
+          {/* iOS separator — indented to align with text */}
+          <div className="ios-separator" />
+
+          {/* Row 2 — ฌาปนกิจ */}
+          <div className="flex items-start gap-3 px-4 py-3.5">
+            <div
+              className="flex-shrink-0 w-9 h-9 rounded-[10px] flex items-center justify-center mt-0.5"
+              style={{
+                background: "linear-gradient(135deg, rgba(243,198,168,0.55) 0%, rgba(201,152,60,0.22) 100%)",
+                border: "0.5px solid rgba(201,152,60,0.38)",
+              }}
+            >
+              <CandleIcon className="w-[18px] h-[18px] text-gold-600" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-gold-800 leading-tight mb-0.5">
+                ฌาปนกิจ
+              </p>
+              <p className="text-xs text-gold-600 leading-snug">
+                {formatFull(cremationDate)}{cremationTime}
+              </p>
+              <p className="text-[11px] text-gold-400 leading-snug mt-0.5 truncate">ณ {cremationLocation}</p>
+            </div>
           </div>
+
         </div>
-
-        {/* กำหนดการ ฌาปนกิจ */}
-        <div style={glassCard} className="p-2.5 flex gap-3 items-start">
-          <div
-            className="flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center"
-            style={{
-              background: "linear-gradient(135deg, rgba(243,198,168,0.45) 0%, rgba(201,152,60,0.18) 100%)",
-              border: "1px solid rgba(201,152,60,0.32)",
-            }}
-          >
-            <CandleIcon className="w-5 h-5 text-gold-600" />
-          </div>
-          <div className="flex-1">
-            <p className="font-bold text-gold-800 text-sm leading-tight">กำหนดการ <span className="font-bold">ฌาปนกิจ</span></p>
-            <p className="text-gold-700 text-xs leading-snug mt-0.5">
-              {formatFull(cremationDate)}
-              {memorial.ceremony_time ? ` เวลา ${memorial.ceremony_time} น.` : ""}
-            </p>
-            <p className="text-gold-600 text-xs leading-snug">{cremationLocation}</p>
-          </div>
-        </div>
-
       </div>
     </section>
   );

@@ -4,10 +4,7 @@ import LotusIcon from "@/components/LotusIcon";
 
 export default function DashboardPage() {
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: "#ffffff" }}
-    >
+    <div className="min-h-screen flex flex-col items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-6">
 
         {/* Logo */}
