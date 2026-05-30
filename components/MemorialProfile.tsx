@@ -76,8 +76,8 @@ export default function MemorialProfile({ memorial }: Props) {
           {memorial.name}
         </h2>
 
-        <div className="max-w-lg mx-auto mt-3 text-left">
-          <div className="ios-group px-4 py-3 space-y-1.5">
+        <div className="mt-3 flex justify-center px-2">
+          <div className="ios-group w-fit max-w-full px-4 py-3 space-y-1.5 text-center">
             <p className="text-sm font-medium text-gold-700 leading-snug">
               <span className="text-[11px] font-semibold text-gold-400">ชาตะ</span>{" "}
               {formatThaiDate(memorial.birth_date)}
