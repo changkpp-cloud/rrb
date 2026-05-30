@@ -76,38 +76,40 @@ export default function MemorialProfile({ memorial }: Props) {
           {memorial.name}
         </h2>
 
-        {/* Date row — pill tags */}
-        <div className="flex items-center justify-center gap-2 flex-wrap mb-1.5">
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-gold-700"
-            style={{
-              background: "rgba(255,252,248,0.80)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              border: "0.5px solid rgba(201,152,60,0.28)",
-            }}
-          >
-            <span className="text-gold-400 text-[9px]">ชาตะ</span>
-            {formatThaiDate(memorial.birth_date)}
-          </span>
-          <span className="text-gold-300 text-xs">—</span>
-          <span
-            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium text-gold-700"
-            style={{
-              background: "rgba(255,252,248,0.80)",
-              backdropFilter: "blur(16px)",
-              WebkitBackdropFilter: "blur(16px)",
-              border: "0.5px solid rgba(201,152,60,0.28)",
-            }}
-          >
-            <span className="text-gold-400 text-[9px]">มรณะ</span>
-            {formatThaiDate(memorial.death_date)}
-          </span>
-        </div>
+        <div className="max-w-lg mx-auto mt-3 text-left">
+          <div className="ios-group">
+            <div className="px-4 py-3">
+              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
+                ชาตะ
+              </p>
+              <p className="text-sm font-medium text-gold-700 leading-snug">
+                {formatThaiDate(memorial.birth_date)}
+              </p>
+            </div>
 
-        <p className="text-xs text-gold-400 font-medium tracking-wide">
-          อายุ {memorial.age} ปี
-        </p>
+            <div className="ios-separator !ml-4" />
+
+            <div className="px-4 py-3">
+              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
+                มรณะ
+              </p>
+              <p className="text-sm font-medium text-gold-700 leading-snug">
+                {formatThaiDate(memorial.death_date)}
+              </p>
+            </div>
+
+            <div className="ios-separator !ml-4" />
+
+            <div className="px-4 py-3">
+              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
+                อายุ
+              </p>
+              <p className="text-sm font-medium text-gold-700 leading-snug">
+                {memorial.age} ปี
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
 
     </section>
