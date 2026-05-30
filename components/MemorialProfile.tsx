@@ -77,17 +77,17 @@ export default function MemorialProfile({ memorial }: Props) {
         </h2>
 
         <div className="mt-3 flex justify-center px-2">
-          <div className="ios-group w-fit max-w-full px-4 py-3 space-y-1.5 text-center">
-            <p className="text-sm font-medium text-gold-700 leading-snug">
-              <span className="text-[11px] font-semibold text-gold-400">ชาตะ</span>{" "}
+          <div className="ios-group w-fit max-w-full px-5 py-3.5 space-y-2 text-center">
+            <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
+              <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>ชาตะ</span>{" "}
               {formatThaiDate(memorial.birth_date)}
             </p>
-            <p className="text-sm font-medium text-gold-700 leading-snug">
-              <span className="text-[11px] font-semibold text-gold-400">มรณะ</span>{" "}
+            <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
+              <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>มรณะ</span>{" "}
               {formatThaiDate(memorial.death_date)}
             </p>
-            <p className="text-sm font-medium text-gold-700 leading-snug">
-              <span className="text-[11px] font-semibold text-gold-400">อายุ</span>{" "}
+            <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
+              <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>อายุ</span>{" "}
               {memorial.age} ปี
             </p>
           </div>
