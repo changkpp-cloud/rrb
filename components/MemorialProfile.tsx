@@ -77,37 +77,19 @@ export default function MemorialProfile({ memorial }: Props) {
         </h2>
 
         <div className="max-w-lg mx-auto mt-3 text-left">
-          <div className="ios-group">
-            <div className="px-4 py-3">
-              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
-                ชาตะ
-              </p>
-              <p className="text-sm font-medium text-gold-700 leading-snug">
-                {formatThaiDate(memorial.birth_date)}
-              </p>
-            </div>
-
-            <div className="ios-separator !ml-4" />
-
-            <div className="px-4 py-3">
-              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
-                มรณะ
-              </p>
-              <p className="text-sm font-medium text-gold-700 leading-snug">
-                {formatThaiDate(memorial.death_date)}
-              </p>
-            </div>
-
-            <div className="ios-separator !ml-4" />
-
-            <div className="px-4 py-3">
-              <p className="text-[11px] font-semibold text-gold-400 leading-tight mb-0.5">
-                อายุ
-              </p>
-              <p className="text-sm font-medium text-gold-700 leading-snug">
-                {memorial.age} ปี
-              </p>
-            </div>
+          <div className="ios-group px-4 py-3 space-y-1.5">
+            <p className="text-sm font-medium text-gold-700 leading-snug">
+              <span className="text-[11px] font-semibold text-gold-400">ชาตะ</span>{" "}
+              {formatThaiDate(memorial.birth_date)}
+            </p>
+            <p className="text-sm font-medium text-gold-700 leading-snug">
+              <span className="text-[11px] font-semibold text-gold-400">มรณะ</span>{" "}
+              {formatThaiDate(memorial.death_date)}
+            </p>
+            <p className="text-sm font-medium text-gold-700 leading-snug">
+              <span className="text-[11px] font-semibold text-gold-400">อายุ</span>{" "}
+              {memorial.age} ปี
+            </p>
           </div>
         </div>
       </div>
