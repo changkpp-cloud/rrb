@@ -37,7 +37,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const [saving, setSaving]       = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
 
-  const activeView = params.get("view") ?? "ecard";
+  const requestedView = params.get("view");
+  const activeView = requestedView === "ai" || requestedView === "certificate" ? requestedView : "ecard";
   const showAmount = activeView === "certificate";
 
   const deceasedName = memorial.name;
@@ -132,6 +133,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {showAmount ? "เอกสารมอบหรีด" : "เจ้าภาพขอขอบคุณ"}
               </span>
             </div>
+            <p className="text-xs text-gold-500 -mt-1">
+              {showAmount ? "อีการ์ดแสดงยอดเงิน" : "E-Card ขอบคุณ ไม่แสดงยอดเงิน"}
+            </p>
 
             {/* E-card — fixed 1080×1350 px saved (360×450 element × pixelRatio 3) */}
             <div
@@ -163,7 +167,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s), width: "100%" }}>
                   <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
                     <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
-                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", letterSpacing: "0.1em", margin: 0 }}>เจ้าภาพขอขอบพระคุณ</p>
+                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", letterSpacing: "0.1em", margin: 0 }}>เจ้าภาพขอขอบคุณ</p>
                     <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                   </div>
                   <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>

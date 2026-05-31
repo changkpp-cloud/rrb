@@ -42,6 +42,7 @@ function PrintingInner() {
     timers.push(setTimeout(() => setShowSuccess(true), STEPS.length * 1100 + 400));
     timers.push(setTimeout(() => {
       const q = new URLSearchParams({ name, title, amount, message });
+      q.set("view", "ecard");
       router.push(`/${slug}/ecard?${q.toString()}`);
     }, STEPS.length * 1100 + 400 + 3000));
     return () => timers.forEach(clearTimeout);

@@ -55,6 +55,7 @@ function PrintingInner() {
     timers.push(
       setTimeout(() => {
         const q = new URLSearchParams({ name, title, amount, message });
+        q.set("view", "ecard");
         router.push(`/ecard?${q.toString()}`);
       }, STEPS.length * 1100 + 400 + 3000)
     );
