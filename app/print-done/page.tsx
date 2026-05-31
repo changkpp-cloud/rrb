@@ -3,7 +3,7 @@
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Home, FileText, Flower2 } from "lucide-react";
+import { Home, FileText, Flower2, Image as ImageIcon } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 
@@ -21,7 +21,11 @@ function PrintDoneInner() {
   const title = params.get("title") ?? "";
   const amount = params.get("amount") ?? "";
 
-  const extraParams = new URLSearchParams({ name, title, amount }).toString();
+  function buildECardHref(view: "ai" | "ecard" | "certificate") {
+    const q = new URLSearchParams({ name, title, amount });
+    q.set("view", view);
+    return `/ecard?${q.toString()}`;
+  }
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -65,19 +69,27 @@ function PrintDoneInner() {
           {/* Actions */}
           <div className="w-full space-y-3 mt-2">
             <Link
-              href={`/ecard?${extraParams}`}
+              href={buildECardHref("ai")}
               className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
             >
-              <FileText className="w-4 h-4" />
-              ดูอีการ์ด / หลักฐานการมอบ
+              <Flower2 className="w-4 h-4" />
+              AI จำลองมอบหรีด
             </Link>
 
             <Link
-              href={`/mock-wreath?${extraParams}`}
+              href={buildECardHref("ecard")}
               className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
-              <Flower2 className="w-4 h-4" />
-              จำลองภาพมอบหรีด
+              <ImageIcon className="w-4 h-4" />
+              E-Card ขอบคุณ
+            </Link>
+
+            <Link
+              href={buildECardHref("certificate")}
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+            >
+              <FileText className="w-4 h-4" />
+              เอกสารมอบหรีด
             </Link>
 
             <Link

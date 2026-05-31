@@ -170,7 +170,7 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
           </div>
 
           <Link
-            href={`/ecard?${new URLSearchParams({ name, title, amount, message }).toString()}`}
+            href={`/ecard?${new URLSearchParams({ name, title, amount, message, view: "certificate" }).toString()}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             ย้อนกลับ

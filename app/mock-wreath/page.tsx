@@ -150,7 +150,7 @@ function MockWreathInner() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="จำลองมอบหรีดร่วมบุญ" subtitle="AI Photo" backHref={`/ecard?${params.toString()}`} />
+      <IosPageHeader title="จำลองมอบหรีดร่วมบุญ" subtitle="AI Photo" backHref={`/ecard?${new URLSearchParams({ ...Object.fromEntries(params.entries()), view: "ai" }).toString()}`} />
 
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">
@@ -398,7 +398,7 @@ function MockWreathInner() {
           </StepCard>
 
           <Link
-            href={`/ecard?${params.toString()}`}
+            href={`/ecard?${new URLSearchParams({ ...Object.fromEntries(params.entries()), view: "ai" }).toString()}`}
             className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />

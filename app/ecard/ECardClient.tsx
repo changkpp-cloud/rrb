@@ -1,9 +1,10 @@
 ﻿"use client";
 
 import { useRef, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Download } from "lucide-react";
+import { Camera, Download, FileText, Image as ImageIcon } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
@@ -33,22 +34,23 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [saving, setSaving]           = useState(false);
-  const [showAmount, setShowAmount]   = useState(false);
-  const [blinking, setBlinking]       = useState(false);
-  const [cardWidth, setCardWidth]     = useState(360);
+  const [saving, setSaving]       = useState(false);
+  const [cardWidth, setCardWidth] = useState(360);
 
-  function handleStyleChange(withAmount: boolean) {
-    setShowAmount(withAmount);
-    setBlinking(true);
-    setTimeout(() => setBlinking(false), 1000);
-  }
+  const activeView = params.get("view") ?? "ecard";
+  const showAmount = activeView === "certificate";
 
   const deceasedName = memorial.name;
   const birthDate    = memorial.birth_date ? thaiDate(memorial.birth_date) : "";
   const deathDate    = memorial.death_date ? thaiDate(memorial.death_date) : "";
   const ceremonyDate = thaiDate(memorial.ceremony_date);
   const ceremonyLocation = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
+
+  function buildViewHref(view: "ai" | "ecard" | "certificate") {
+    const q = new URLSearchParams({ name, title, amount, message });
+    q.set("view", view);
+    return `${basePath}/ecard?${q.toString()}`;
+  }
 
   async function handleSaveCard() {
     if (!cardRef.current) return;
@@ -57,7 +59,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
       const link = document.createElement("a");
-      link.download = `E-card-${name || "ecard"}-${showAmount ? "แสดงยอด" : "ไม่แสดงยอด"}.png`;
+      link.download = showAmount
+        ? `เอกสารมอบหรีด-${name || "document"}.png`
+        : `E-card-ขอบคุณ-${name || "ecard"}.png`;
       link.href = dataUrl;
       link.click();
     } catch {}
@@ -85,31 +89,48 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-          {/* ── SECTION 1: E-Card ── */}
+          <div className="grid grid-cols-3 gap-2">
+            <MenuLink
+              href={buildViewHref("ai")}
+              active={activeView === "ai"}
+              icon={<Camera className="w-4 h-4" />}
+              label="AI จำลองมอบหรีด"
+            />
+            <MenuLink
+              href={buildViewHref("ecard")}
+              active={activeView === "ecard"}
+              icon={<ImageIcon className="w-4 h-4" />}
+              label="E-Card ขอบคุณ"
+            />
+            <MenuLink
+              href={buildViewHref("certificate")}
+              active={activeView === "certificate"}
+              icon={<FileText className="w-4 h-4" />}
+              label="เอกสารมอบหรีด"
+            />
+          </div>
+
+          {activeView === "ai" && (
+          <AiPhotoSection
+            donorName={name}
+            donorPosition={title}
+            condolenceText={message}
+            deceasedName={deceasedName}
+            funeralPlace={ceremonyLocation}
+          />
+          )}
+
+          {activeView !== "ai" && (
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-3">
             <div className="flex items-center gap-1.5">
-              <LotusIcon className="w-4 h-4 text-gold-500" />
-              <span className="text-sm font-semibold text-gold-700">E-card ขอบคุณ</span>
-            </div>
-
-            {/* Style toggle */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleStyleChange(false)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
-                  !showAmount ? "gold-gradient text-white border-transparent shadow-sm" : "bg-white border-gold-200 text-gold-600 hover:border-gold-300"
-                }`}
-              >
-                ไม่แสดงยอดเงิน
-              </button>
-              <button
-                onClick={() => handleStyleChange(true)}
-                className={`flex-1 py-2 rounded-xl text-xs font-semibold border-2 transition-all ${
-                  showAmount ? "gold-gradient text-white border-transparent shadow-sm" : "bg-white border-gold-200 text-gold-600 hover:border-gold-300"
-                }`}
-              >
-                แสดงยอดเงิน
-              </button>
+              {showAmount ? (
+                <FileText className="w-4 h-4 text-gold-500" />
+              ) : (
+                <LotusIcon className="w-4 h-4 text-gold-500" />
+              )}
+              <span className="text-sm font-semibold text-gold-700">
+                {showAmount ? "เอกสารมอบหรีด" : "เจ้าภาพขอขอบคุณ"}
+              </span>
             </div>
 
             {/* E-card — fixed 1080×1350 px saved (360×450 element × pixelRatio 3) */}
@@ -208,21 +229,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             <button
               onClick={handleSaveCard}
               disabled={saving}
-              className={`w-full gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60 ${blinking ? "animate-pulse ring-4 ring-gold-400 ring-offset-1" : ""}`}
+              className="w-full gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <Download className="w-4 h-4" />
-              {saving ? "กำลังบันทึก..." : "บันทึก E-card"}
+              {saving ? "กำลังบันทึก..." : showAmount ? "บันทึกเอกสารมอบหรีด" : "บันทึก E-Card ขอบคุณ"}
             </button>
           </div>
-
-          {/* ── SECTION 2: AI Photo Template System ── */}
-          <AiPhotoSection
-            donorName={name}
-            donorPosition={title}
-            condolenceText={message}
-            deceasedName={deceasedName}
-            funeralPlace={ceremonyLocation}
-          />
+          )}
 
           {/* Back */}
           <Link
@@ -237,6 +250,32 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       </main>
     </div>
     </>
+  );
+}
+
+function MenuLink({
+  href,
+  active,
+  icon,
+  label,
+}: {
+  href: string;
+  active: boolean;
+  icon: ReactNode;
+  label: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className={`min-h-[76px] rounded-2xl border-2 px-2 py-3 flex flex-col items-center justify-center gap-1.5 text-center text-[11px] font-semibold leading-snug transition-all ${
+        active
+          ? "gold-gradient text-white border-transparent shadow-md"
+          : "bg-cream-50 border-gold-200 text-gold-700 hover:border-gold-300"
+      }`}
+    >
+      {icon}
+      <span>{label}</span>
+    </Link>
   );
 }
 
