@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Camera, Download, FileText, Image as ImageIcon } from "lucide-react";
+import { Camera, Check, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
@@ -35,6 +35,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [saving, setSaving]       = useState(false);
+  const [sharing, setSharing]     = useState(false);
+  const [shared, setShared]       = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
 
   const requestedView = params.get("view");
@@ -51,6 +53,46 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     const q = new URLSearchParams({ name, title, amount, message });
     q.set("view", view);
     return `${basePath}/ecard?${q.toString()}`;
+  }
+
+  async function handleShareLine() {
+    setSharing(true);
+    const shareUrl = window.location.href;
+    const shareTitle = showAmount
+      ? `เอกสารมอบหรีด — ${name}${title ? ` (${title})` : ""} ยอด ${parseInt(amount).toLocaleString()} บาท`
+      : `E-Card ขอบคุณ — ${name}${title ? ` · ${title}` : ""}`;
+    const shareText = `ร่วมมอบหรีดร่วมบุญในงานของ ${deceasedName} 🌸\n#หรีดร่วมบุญ #ZeroWaste`;
+
+    // Try Web Share API (works natively on mobile LINE browser)
+    if (navigator.share) {
+      try {
+        // Try sharing the card as an image file first
+        if (cardRef.current && !sharing) {
+          const { toPng } = await import("html-to-image");
+          const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+          const res = await fetch(dataUrl);
+          const blob = await res.blob();
+          const filename = showAmount ? "เอกสารมอบหรีด.png" : "E-card-ขอบคุณ.png";
+          const file = new File([blob], filename, { type: "image/png" });
+          if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: shareTitle, text: shareText });
+            setShared(true); setTimeout(() => setShared(false), 2500);
+            setSharing(false); return;
+          }
+        }
+        await navigator.share({ url: shareUrl, title: shareTitle, text: shareText });
+        setShared(true); setTimeout(() => setShared(false), 2500);
+        setSharing(false); return;
+      } catch (e) {
+        if ((e as Error).name === "AbortError") { setSharing(false); return; }
+      }
+    }
+
+    // Fallback: open LINE share URL
+    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
+    window.open(lineUrl, "_blank", "noopener");
+    setShared(true); setTimeout(() => setShared(false), 2500);
+    setSharing(false);
   }
 
   async function handleSaveCard() {
@@ -230,14 +272,25 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
             </div>
 
-            <button
-              onClick={handleSaveCard}
-              disabled={saving}
-              className="w-full gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              <Download className="w-4 h-4" />
-              {saving ? "กำลังบันทึก..." : showAmount ? "บันทึกเอกสารมอบหรีด" : "บันทึก E-Card ขอบคุณ"}
-            </button>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                onClick={handleSaveCard}
+                disabled={saving || sharing}
+                className="gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+              >
+                <Download className="w-4 h-4" />
+                {saving ? "กำลังบันทึก..." : "บันทึกภาพ"}
+              </button>
+              <button
+                onClick={handleShareLine}
+                disabled={saving || sharing}
+                className="flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-semibold border-2 border-gold-300 bg-white text-gold-700 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
+                style={{ borderColor: shared ? "#00b900" : undefined, color: shared ? "#00b900" : undefined }}
+              >
+                {shared ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                {shared ? "แชร์แล้ว!" : "แชร์ LINE"}
+              </button>
+            </div>
           </div>
           )}
 

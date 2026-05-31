@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/lib/supabase/types";
+import { notifyHost, msgDonationConfirmed } from "@/lib/notify";
 
 type DonationUpdate = Database["public"]["Tables"]["donations"]["Update"];
 
@@ -50,6 +51,29 @@ export async function PATCH(
 
   if (error) {
     return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+  }
+
+  // Notify host when center confirms a donation
+  if (update.status === "confirmed" && data) {
+    const supabaseInner = createAdminClient();
+    const donation = data as { memorial_id: string; donor_name: string; amount: number };
+    const { data: mem } = await supabaseInner
+      .from("memorials")
+      .select("name, host_phone")
+      .eq("id", donation.memorial_id)
+      .single();
+    if (mem) {
+      const m = mem as { name: string; host_phone?: string | null };
+      notifyHost({
+        hostPhone: m.host_phone ?? null,
+        message: msgDonationConfirmed({
+          memorialName: m.name,
+          donorName: donation.donor_name,
+          amount: donation.amount,
+          hostId: donation.memorial_id,
+        }),
+      }).catch(() => {});
+    }
   }
 
   return NextResponse.json({ success: true, donation: data });

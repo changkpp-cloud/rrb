@@ -218,6 +218,7 @@ export default function AiPhotoSection({
           onSelect={setSelectedIdx}
           onDownload={handleDownload}
           downloading={downloading}
+          donorName={donorName}
         />
       )}
     </div>

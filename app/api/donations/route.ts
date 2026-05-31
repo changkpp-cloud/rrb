@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyHost, msgNewDonation } from "@/lib/notify";
 
 export async function POST(request: NextRequest) {
   try {
@@ -86,6 +87,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save donation" }, { status: 500 });
     }
 
+    // Notify host — best-effort, never blocks response
+    notifyHost({
+      hostPhone: await getHostPhone(supabase, memorial_id),
+      message: msgNewDonation({
+        memorialName: await getMemorialName(supabase, memorial_id),
+        donorName: donor_name,
+        donorTitle: donor_title,
+        amount,
+        hostId: memorial_id,
+      }),
+    }).catch(() => {});
+
     return NextResponse.json({ success: true, donation: data });
   } catch (err) {
     console.error("API error:", err);
@@ -111,4 +124,17 @@ export async function GET(request: NextRequest) {
   }
 
   return NextResponse.json(data ?? []);
+}
+
+// ── helpers for notify ──────────────────────────────────────────────────────
+type SupabaseClient = ReturnType<typeof createAdminClient>;
+
+async function getHostPhone(supabase: SupabaseClient, memorialId: string): Promise<string | null> {
+  const { data } = await supabase.from("memorials").select("host_phone").eq("id", memorialId).single();
+  return (data as { host_phone?: string | null } | null)?.host_phone ?? null;
+}
+
+async function getMemorialName(supabase: SupabaseClient, memorialId: string): Promise<string> {
+  const { data } = await supabase.from("memorials").select("name").eq("id", memorialId).single();
+  return (data as { name?: string } | null)?.name ?? "งานศพ";
 }
