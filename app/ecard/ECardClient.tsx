@@ -27,10 +27,11 @@ function thaiDate(iso: string) {
 
 export default function ECardClient({ memorial, basePath = "" }: { memorial: Memorial; basePath?: string }) {
   const params = useSearchParams();
-  const name    = params.get("name")    ?? "";
-  const title   = params.get("title")   ?? "";
-  const amount  = params.get("amount")  ?? "";
-  const message = params.get("message") ?? "";
+  const name       = params.get("name")        ?? "";
+  const title      = params.get("title")       ?? "";
+  const amount     = params.get("amount")      ?? "";
+  const message    = params.get("message")     ?? "";
+  const donationId = params.get("donation_id") ?? "";
 
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +52,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   function buildViewHref(view: "ai" | "ecard" | "certificate") {
     const q = new URLSearchParams({ name, title, amount, message });
+    if (donationId) q.set("donation_id", donationId);
     q.set("view", view);
     return `${basePath}/ecard?${q.toString()}`;
   }
@@ -160,6 +162,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             condolenceText={message}
             deceasedName={deceasedName}
             funeralPlace={ceremonyLocation}
+            donationId={donationId || undefined}
+            memorialId={memorial.id}
           />
           )}
 

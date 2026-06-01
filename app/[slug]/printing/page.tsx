@@ -35,6 +35,7 @@ function PrintingInner() {
   const title = params.get("title") ?? "";
   const amount = params.get("amount") ?? "";
   const message = params.get("message") ?? "";
+  const donationId = params.get("donation_id") ?? "";
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -42,6 +43,7 @@ function PrintingInner() {
     timers.push(setTimeout(() => setShowSuccess(true), STEPS.length * 1100 + 400));
     timers.push(setTimeout(() => {
       const q = new URLSearchParams({ name, title, amount, message });
+      if (donationId) q.set("donation_id", donationId);
       q.set("view", "ecard");
       router.push(`/${slug}/ecard?${q.toString()}`);
     }, STEPS.length * 1100 + 400 + 3000));

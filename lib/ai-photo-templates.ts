@@ -1,7 +1,8 @@
 export type AiPhotoTemplateKey =
   | "standing_with_label"
   | "mourning_wai"
-  | "host_receiving";
+  | "host_receiving"
+  | "organization_board";
 
 export type AiPhotoTemplate = {
   templateName: string;
@@ -97,6 +98,30 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ].join("\n"),
     negativePrompt:
       "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามป้ายใหญ่เกินจริง, ห้ามท่าทางรื่นเริง, ห้ามเพิ่มฝูงชน, ห้ามข้อความมั่วหรือภาษาเพี้ยน",
+  },
+  {
+    templateName: "ในนามองค์กร / บริษัท",
+    templateKey: "organization_board",
+    description: "ภาพป้ายหรีดในนามหน่วยงาน บริษัท หรือกลุ่มเพื่อนร่วมงาน เน้นป้ายชื่อองค์กรชัดเจน",
+    requiredInputs: [
+      "donor_name",
+      "donor_position",
+      "condolence_text",
+      "funeral_place",
+    ],
+    sortOrder: 4,
+    promptTemplate: [
+      "สร้างภาพถ่ายสมจริงในงานศพไทยที่สุภาพ สงบ เป็นทางการ โทนครีม เบจ ทอง",
+      "ไม่จำเป็นต้องมีบุคคลในภาพ หรือมีตัวแทนองค์กร 1–2 คน แต่งชุดสุภาพสีดำ",
+      "จุดเด่นคือป้ายหรีดร่วมบุญแนวยาว ขนาดมาตรฐาน วางตรงกลางภาพอย่างสง่า",
+      "บนป้ายเขียนข้อความในนามองค์กรให้ชัดเจน อ่านออก:",
+      "[wreath_label_text]",
+      "ฉากหลังเป็นศาลางานศพไทย มีบอร์ดดอกไม้แห้งโทนครีมและทอง",
+      "งานจัดที่ [funeral_place] เพื่อรำลึกถึง [deceased_name]",
+      "บรรยากาศเป็นทางการ สุภาพ สมเกียรติ ไม่มีสีสด ไม่มีโบ ไม่มีโลโก้บริษัทจริง",
+    ].join("\n"),
+    negativePrompt:
+      "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามใส่โลโก้บริษัทจริง, ห้ามภาพหมู่หลายสิบคน, ห้ามท่าทางร่าเริง, ห้ามข้อความมั่วหรือผิดภาษา",
   },
 ];
 
