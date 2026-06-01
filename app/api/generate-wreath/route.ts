@@ -50,6 +50,23 @@ async function handleTemplateForm(request: NextRequest) {
   );
 
   const template = getAiPhotoTemplate(templateKey);
+  const { createAdminClient } = await import("@/lib/supabase/admin");
+  const supabase = createAdminClient();
+  let promptOverride: string | undefined;
+  let negativeOverride: string | undefined;
+  try {
+    const { data } = await (supabase.from("ai_photo_templates") as any)
+      .select("prompt_template, negative_prompt")
+      .eq("template_key", template.templateKey)
+      .eq("is_active", true)
+      .maybeSingle();
+    const row = data as { prompt_template?: string | null; negative_prompt?: string | null } | null;
+    promptOverride = row?.prompt_template ?? undefined;
+    negativeOverride = row?.negative_prompt ?? undefined;
+  } catch {
+    promptOverride = undefined;
+    negativeOverride = undefined;
+  }
   const prompt = buildAiPhotoPrompt({
     templateKey: template.templateKey,
     donorName,
@@ -57,6 +74,8 @@ async function handleTemplateForm(request: NextRequest) {
     condolenceText,
     deceasedName,
     funeralPlace,
+    promptTemplate: promptOverride,
+    negativePrompt: negativeOverride,
   });
 
   const images =

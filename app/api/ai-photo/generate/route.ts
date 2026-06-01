@@ -97,6 +97,21 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   }
 
   const template = getAiPhotoTemplate(templateKey);
+  let promptOverride: string | undefined;
+  let negativeOverride: string | undefined;
+  try {
+    const { data } = await (supabase.from("ai_photo_templates") as any)
+      .select("prompt_template, negative_prompt")
+      .eq("template_key", template.templateKey)
+      .eq("is_active", true)
+      .maybeSingle();
+    const row = data as { prompt_template?: string | null; negative_prompt?: string | null } | null;
+    promptOverride = row?.prompt_template ?? undefined;
+    negativeOverride = row?.negative_prompt ?? undefined;
+  } catch {
+    promptOverride = undefined;
+    negativeOverride = undefined;
+  }
   const finalPrompt = buildAiPhotoPrompt({
     templateKey: template.templateKey,
     donorName,
@@ -104,6 +119,8 @@ async function handleAiPhotoGenerate(req: NextRequest) {
     condolenceText,
     deceasedName,
     funeralPlace,
+    promptTemplate: promptOverride,
+    negativePrompt: negativeOverride,
   });
 
   let generatedImageUrl: string | null = null;

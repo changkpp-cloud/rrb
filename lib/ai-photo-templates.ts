@@ -22,6 +22,8 @@ export type AiPhotoPromptInput = {
   deceasedName?: string;
   funeralPlace?: string;
   wreathLabelText?: string;
+  promptTemplate?: string;
+  negativePrompt?: string;
 };
 
 const COMMON_SCENE = [
@@ -167,7 +169,7 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     "[wreath_label_text]": wreathLabelText,
   };
 
-  let prompt = template.promptTemplate;
+  let prompt = input.promptTemplate?.trim() || template.promptTemplate;
   for (const [token, value] of Object.entries(replacements)) {
     prompt = prompt.replaceAll(token, value);
   }
@@ -178,6 +180,6 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     "Style requirements:",
     "Photorealistic, vertical 2:3 composition, soft light, respectful Thai funeral atmosphere, premium but understated design.",
     "",
-    `Negative requirements: ${template.negativePrompt}`,
+    `Negative requirements: ${input.negativePrompt?.trim() || template.negativePrompt}`,
   ].join("\n");
 }
