@@ -24,11 +24,19 @@ export type AiPhotoPromptInput = {
   wreathLabelText?: string;
 };
 
+const COMMON_SCENE = [
+  "Create a respectful photorealistic vertical image for a Thai Buddhist funeral memorial.",
+  "The mood must be calm, dignified, elegant, and suitable for sharing with family.",
+  "Use a cream, white, beige, and soft gold palette with gentle natural lighting.",
+  "Show a reusable dried-flower condolence wreath board or memorial board in the scene.",
+  "Avoid festive expressions. Faces should look calm and respectful.",
+].join(" ");
+
 export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
   {
     templateName: "ยืนถือป้ายหรีดร่วมบุญ",
     templateKey: "standing_with_label",
-    description: "ภาพหลักสำหรับผู้มอบ ยืนถือป้ายแนวยาวในงานศพไทย",
+    description: "ผู้มอบยืนถือป้ายหรีดร่วมบุญในงานศพไทยอย่างสุภาพ",
     requiredInputs: [
       "donor_photo",
       "donor_name",
@@ -38,22 +46,20 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 1,
     promptTemplate: [
-      "สร้างภาพถ่ายสมจริงในงานศพไทยที่สุภาพ หรู เรียบ โทนครีม เบจ ทอง",
-      "ใช้บุคคลจากรูปที่แนบเป็นผู้มอบหลัก ให้หน้าตาใกล้เคียงรูปอ้างอิงอย่างสุภาพ",
-      "ผู้มอบยืนตรง ถือป้ายหรีดร่วมบุญแนวยาวสองมือ ขนาดเท่าป้ายพวงหรีดจริง ไม่ใหญ่เกินจริง",
-      "บนป้ายเขียนข้อความไทยให้ชัดเจน:",
+      COMMON_SCENE,
+      "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
+      "The donor stands upright holding a modest horizontal condolence board with both hands.",
+      "The board text should be readable Thai text:",
       "[wreath_label_text]",
-      "ฉากหลังเป็นบอร์ดหรีดร่วมบุญดอกไม้แห้ง ใช้ซ้ำได้ มีบรรยากาศศาลางานศพไทย",
-      "งานจัดที่ [funeral_place] เพื่อรำลึกถึง [deceased_name]",
-      "สีหน้าผู้มอบสงบ อาลัย สุภาพ ไม่ยิ้ม",
+      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามป้ายใหญ่เกินจริง, ห้ามท่าทางร่าเริง, ห้ามเพิ่มคนจำนวนมาก, ห้ามโลโก้ปลอม, ห้ามข้อความมั่วหรือภาษาเพี้ยน",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, crowded scene, disrespectful pose",
   },
   {
-    templateName: "ไหว้อาลัยหน้าบอร์ด",
+    templateName: "ไหว้อาลัย",
     templateKey: "mourning_wai",
-    description: "ภาพสุภาพ ผู้มอบไหว้อาลัยหน้าบอร์ดหรีดร่วมบุญ",
+    description: "ผู้มอบไหว้อาลัยหน้าบอร์ดหรีดร่วมบุญ",
     requiredInputs: [
       "donor_photo",
       "donor_name",
@@ -63,21 +69,20 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 2,
     promptTemplate: [
-      "สร้างภาพถ่ายสมจริงในงานศพไทยที่สงบ เรียบหรู สมเกียรติ โทนครีม เบจ ทอง",
-      "ใช้บุคคลจากรูปที่แนบเป็นผู้มอบหลัก ให้ผู้มอบยืนไหว้อาลัยหน้าบอร์ดหรีดร่วมบุญ",
-      "มีป้ายชื่อผู้มอบติดอยู่บนบอร์ดด้านหลังอย่างสุภาพ ข้อความบนป้าย:",
+      COMMON_SCENE,
+      "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
+      "The donor performs a respectful Thai wai in front of a condolence wreath board.",
+      "Place a tasteful donor label on the board with readable Thai text:",
       "[wreath_label_text]",
-      "บรรยากาศเป็นศาลางานศพไทย มีดอกไม้แห้งสีขาวและทองอย่างพอดี",
-      "งานจัดที่ [funeral_place] เพื่อรำลึกถึง [deceased_name]",
-      "สีหน้าผู้มอบสงบ อาลัย ไม่ยิ้ม ไม่มองกล้องมากเกินไป",
+      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามท่าทางร่าเริง, ห้ามบอร์ดรก, ห้ามเพิ่มคนจำนวนมาก, ห้ามข้อความมั่วหรือภาษาเพี้ยน",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, crowded scene, disrespectful pose",
   },
   {
     templateName: "เจ้าภาพรับมอบ",
     templateKey: "host_receiving",
-    description: "ภาพจำลองการมอบป้ายระหว่างผู้มอบและเจ้าภาพ",
+    description: "จำลองภาพผู้มอบส่งมอบป้ายให้เจ้าภาพอย่างสุภาพ",
     requiredInputs: [
       "donor_photo",
       "donor_name",
@@ -87,22 +92,21 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 3,
     promptTemplate: [
-      "สร้างภาพถ่ายสมจริงในงานศพไทยที่สุภาพ หรู เรียบ สมเกียรติ โทนครีม เบจ ทอง",
-      "ใช้บุคคลจากรูปที่แนบเป็นผู้มอบหลัก ให้ผู้มอบยืนมอบป้ายหรีดร่วมบุญให้เจ้าภาพหนึ่งคน",
-      "เจ้าภาพรับป้ายด้วยท่าทางสุภาพ สงบ และขอบคุณ",
-      "ป้ายเป็นแนวยาว ขนาดเท่าป้ายพวงหรีดเดิม ไม่ใหญ่เกินจริง ข้อความบนป้าย:",
+      COMMON_SCENE,
+      "Use the uploaded donor photo as the donor reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
+      "Show the donor respectfully presenting a modest condolence board to one host representative.",
+      "The host looks calm and appreciative. Both people wear formal dark clothing.",
+      "The board text should be readable Thai text:",
       "[wreath_label_text]",
-      "ฉากหลังเป็นศาลางานศพไทยและบอร์ดหรีดร่วมบุญดอกไม้แห้ง",
-      "งานจัดที่ [funeral_place] เพื่อรำลึกถึง [deceased_name]",
-      "ทุกคนมีสีหน้าสงบ อาลัย ไม่ยิ้มกว้าง",
+      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามป้ายใหญ่เกินจริง, ห้ามท่าทางรื่นเริง, ห้ามเพิ่มฝูงชน, ห้ามข้อความมั่วหรือภาษาเพี้ยน",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, large crowd, disrespectful pose",
   },
   {
     templateName: "ในนามองค์กร / บริษัท",
     templateKey: "organization_board",
-    description: "ภาพป้ายหรีดในนามหน่วยงาน บริษัท หรือกลุ่มเพื่อนร่วมงาน เน้นป้ายชื่อองค์กรชัดเจน",
+    description: "ภาพป้ายหรีดในนามองค์กรหรือกลุ่มผู้ร่วมงาน",
     requiredInputs: [
       "donor_name",
       "donor_position",
@@ -111,17 +115,15 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 4,
     promptTemplate: [
-      "สร้างภาพถ่ายสมจริงในงานศพไทยที่สุภาพ สงบ เป็นทางการ โทนครีม เบจ ทอง",
-      "ไม่จำเป็นต้องมีบุคคลในภาพ หรือมีตัวแทนองค์กร 1–2 คน แต่งชุดสุภาพสีดำ",
-      "จุดเด่นคือป้ายหรีดร่วมบุญแนวยาว ขนาดมาตรฐาน วางตรงกลางภาพอย่างสง่า",
-      "บนป้ายเขียนข้อความในนามองค์กรให้ชัดเจน อ่านออก:",
+      COMMON_SCENE,
+      "Focus on an elegant central condolence board for an organization or group. People are optional and should be subtle if included.",
+      "The board text should be readable Thai text:",
       "[wreath_label_text]",
-      "ฉากหลังเป็นศาลางานศพไทย มีบอร์ดดอกไม้แห้งโทนครีมและทอง",
-      "งานจัดที่ [funeral_place] เพื่อรำลึกถึง [deceased_name]",
-      "บรรยากาศเป็นทางการ สุภาพ สมเกียรติ ไม่มีสีสด ไม่มีโบ ไม่มีโลโก้บริษัทจริง",
+      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
+      "Do not add real company logos.",
     ].join("\n"),
     negativePrompt:
-      "ห้ามทำเป็นการ์ตูน, ห้ามสีสดจัด, ห้ามใส่โลโก้บริษัทจริง, ห้ามภาพหมู่หลายสิบคน, ห้ามท่าทางร่าเริง, ห้ามข้อความมั่วหรือผิดภาษา",
+      "cartoon, anime, caricature, party mood, bright festive colors, fake company logos, crowded group photo, unreadable text, disrespectful pose",
   },
 ];
 
@@ -173,9 +175,9 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   return [
     prompt,
     "",
-    "ข้อกำกับสไตล์:",
-    "ภาพถ่ายสมจริง, แสงนุ่ม, องค์ประกอบสุภาพ, ไม่มีความหวือหวา, ไม่ละเมิดกาลเทศะ, โทนสีสอดคล้องแบรนด์หรีดร่วมบุญ",
+    "Style requirements:",
+    "Photorealistic, vertical 2:3 composition, soft light, respectful Thai funeral atmosphere, premium but understated design.",
     "",
-    `ข้อห้าม: ${template.negativePrompt}`,
+    `Negative requirements: ${template.negativePrompt}`,
   ].join("\n");
 }

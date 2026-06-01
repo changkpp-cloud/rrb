@@ -24,6 +24,68 @@ type CreditState =
   | { status: "can_generate" }
   | { status: "used"; existingImageUrl: string | null };
 
+const AI_PHOTO_MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
+const AI_PHOTO_MAX_DIMENSION = 1536;
+
+function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("ไม่สามารถบีบอัดรูปได้"));
+      },
+      "image/jpeg",
+      quality
+    );
+  });
+}
+
+async function compressAiPhotoUpload(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+  }
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.decoding = "async";
+    image.src = sourceUrl;
+    await image.decode();
+
+    const scale = Math.min(
+      1,
+      AI_PHOTO_MAX_DIMENSION / Math.max(image.width, image.height)
+    );
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("ไม่สามารถเตรียมรูปก่อนส่งได้");
+    ctx.drawImage(image, 0, 0, width, height);
+
+    let blob = await canvasToBlob(canvas, 0.82);
+    for (const quality of [0.74, 0.66, 0.58]) {
+      if (blob.size <= AI_PHOTO_MAX_UPLOAD_BYTES) break;
+      blob = await canvasToBlob(canvas, quality);
+    }
+
+    if (blob.size > AI_PHOTO_MAX_UPLOAD_BYTES) {
+      throw new Error("รูปมีขนาดใหญ่เกินไป กรุณาเลือกรูปที่เล็กลงหรือครอปรูปก่อนอัปโหลด");
+    }
+
+    const name = file.name.replace(/\.[^.]+$/, "") || "donor-photo";
+    return new File([blob], `${name}-ai-photo.jpg`, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 export default function AiPhotoSection({
   donorName,
   donorPosition,
@@ -41,6 +103,7 @@ export default function AiPhotoSection({
   const [images, setImages] = useState<string[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState("");
+  const [compressing, setCompressing] = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [credit, setCredit] = useState<CreditState>({ status: "idle" });
 
@@ -61,15 +124,24 @@ export default function AiPhotoSection({
       .catch(() => setCredit({ status: "can_generate" })); // fallback: allow on error
   }, [donationId]);
 
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    setPhotoFile(file);
-    const reader = new FileReader();
-    reader.onload = () => setPhotoPreview(reader.result as string);
-    reader.readAsDataURL(file);
-    setImages([]);
     setError("");
+    setCompressing(true);
+    setImages([]);
+    try {
+      const compressedFile = await compressAiPhotoUpload(file);
+      setPhotoFile(compressedFile);
+      const reader = new FileReader();
+      reader.onload = () => setPhotoPreview(reader.result as string);
+      reader.readAsDataURL(compressedFile);
+    } catch (e) {
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      setError(e instanceof Error ? e.message : "เตรียมรูปไม่สำเร็จ กรุณาลองใหม่");
+    }
+    setCompressing(false);
     e.target.value = "";
   }
 
@@ -96,10 +168,16 @@ export default function AiPhotoSection({
 
       const res = await fetch(endpoint, { method: "POST", body: form });
       const text = await res.text();
+      if (res.status === 413) {
+        throw new Error("รูปที่ส่งใหญ่เกินไป กรุณาเลือกรูปใหม่ ระบบจะย่อรูปให้ก่อนส่ง");
+      }
       if (!text) throw new Error(`[${res.status}] response ว่าง — ระบบ AI อาจ timeout`);
       let data: Record<string, unknown>;
       try { data = JSON.parse(text); }
-      catch { throw new Error(`[${res.status}] parse error: ${text.slice(0, 300)}`); }
+      catch {
+        if (!res.ok) throw new Error(`[${res.status}] ${text.slice(0, 300)}`);
+        throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่");
+      }
 
       // 429 = credit exhausted (race condition check)
       if (res.status === 429) {
@@ -303,10 +381,10 @@ export default function AiPhotoSection({
         <button
           type="button"
           onClick={handleGenerate}
-          disabled={!photoFile || generating}
+          disabled={!photoFile || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 disabled:opacity-50 transition-all active:scale-[0.98]"
         >
-          {generating ? (
+          {generating || compressing ? (
             <Loader2 className="w-4 h-4 animate-spin" />
           ) : (
             <Sparkles className="w-4 h-4" />

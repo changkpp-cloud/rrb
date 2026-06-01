@@ -5,20 +5,19 @@ import {
   getAiPhotoTemplate,
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
+import { editOpenAIImage, generateOpenAIImage } from "@/lib/openai-image";
 
-// Vercel Pro: ให้เวลา AI สร้างภาพได้นานสูงสุด 300 วินาที
+// Allow enough time for GPT Image requests on Vercel.
 export const maxDuration = 300;
 
 /**
  * POST /api/ai-photo/generate  (multipart/form-data)
  *
- * ใช้ DALL-E 3 (text-to-image) — เร็ว 5-15 วินาที
- *
  * Fields:
- *   donation_id       string   (optional — credit tracking)
+ *   donation_id       string   (optional, enables credit tracking)
  *   memorial_id       string   (optional)
  *   template_key      string
- *   donor_photo       File     (optional — เก็บไว้แต่ยังไม่ใช้สำหรับ face-edit)
+ *   donor_photo       File     (optional, used as the person reference)
  *   donor_name        string
  *   donor_position    string
  *   condolence_text   string
@@ -26,10 +25,21 @@ export const maxDuration = 300;
  *   funeral_place     string
  */
 export async function POST(req: NextRequest) {
+  try {
+    return await handleAiPhotoGenerate(req);
+  } catch (err) {
+    const message =
+      err instanceof Error ? err.message : "เกิดข้อผิดพลาดระหว่างสร้างภาพ";
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+async function handleAiPhotoGenerate(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
-    const where = process.env.NODE_ENV === "production"
-      ? "Vercel → Settings → Environment Variables"
-      : ".env.local";
+    const where =
+      process.env.NODE_ENV === "production"
+        ? "Vercel > Settings > Environment Variables"
+        : ".env.local";
     return NextResponse.json(
       { error: `ไม่มี OPENAI_API_KEY กรุณาตั้งค่าใน ${where}` },
       { status: 503 }
@@ -37,18 +47,22 @@ export async function POST(req: NextRequest) {
   }
 
   const form = await req.formData();
-  const donationId     = (form.get("donation_id")    as string | null) || null;
-  const memorialId     = (form.get("memorial_id")    as string | null) || null;
-  const templateKey    = (form.get("template_key")   as AiPhotoTemplateKey | null) ?? "standing_with_label";
-  const donorName      = (form.get("donor_name")     as string | null) ?? "ผู้ร่วมบุญ";
-  const donorPosition  = (form.get("donor_position") as string | null) ?? "";
-  const condolenceText = (form.get("condolence_text") as string | null) ?? "ร่วมอาลัยและร่วมทำบุญ";
-  const deceasedName   = (form.get("deceased_name")  as string | null) ?? "";
-  const funeralPlace   = (form.get("funeral_place")  as string | null) ?? "";
+  const donationId = (form.get("donation_id") as string | null) || null;
+  const memorialId = (form.get("memorial_id") as string | null) || null;
+  const templateKey =
+    (form.get("template_key") as AiPhotoTemplateKey | null) ??
+    "standing_with_label";
+  const donorPhoto = form.get("donor_photo") as File | null;
+  const donorName = (form.get("donor_name") as string | null) ?? "ผู้ร่วมบุญ";
+  const donorPosition = (form.get("donor_position") as string | null) ?? "";
+  const condolenceText =
+    (form.get("condolence_text") as string | null) ??
+    "ร่วมอาลัยและร่วมทำบุญ";
+  const deceasedName = (form.get("deceased_name") as string | null) ?? "";
+  const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
 
   const supabase = createAdminClient();
 
-  // ── Credit check ───────────────────────────────────────────────────
   if (donationId) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: credit } = await (supabase.from("ai_photo_credits") as any)
@@ -68,7 +82,8 @@ export async function POST(req: NextRequest) {
         .single();
 
       const existingImageUrl =
-        (prev as { generated_image_url?: string } | null)?.generated_image_url ?? null;
+        (prev as { generated_image_url?: string } | null)?.generated_image_url ??
+        null;
 
       return NextResponse.json(
         {
@@ -81,7 +96,6 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // ── Build prompt ────────────────────────────────────────────────────
   const template = getAiPhotoTemplate(templateKey);
   const finalPrompt = buildAiPhotoPrompt({
     templateKey: template.templateKey,
@@ -92,55 +106,35 @@ export async function POST(req: NextRequest) {
     funeralPlace,
   });
 
-  // ── Call DALL-E 3 (text-to-image) — เร็ว 5-15 วินาที ───────────────
   let generatedImageUrl: string | null = null;
   let errorMessage: string | null = null;
 
   try {
-    const res = await fetch("https://api.openai.com/v1/images/generations", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: finalPrompt,
-        n: 1,
-        size: "1024x1792",
-        quality: "standard",
-      }),
-    });
-
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error?.message ?? `OpenAI ${res.status}`);
-
-    const item = (data.data ?? [])[0] as { url?: string; b64_json?: string } | undefined;
-    if (item?.b64_json) {
-      generatedImageUrl = `data:image/png;base64,${item.b64_json}`;
-    } else if (item?.url) {
-      generatedImageUrl = item.url;
-    } else {
-      throw new Error("ไม่ได้รับภาพจาก AI กรุณาลองใหม่");
-    }
+    const images =
+      donorPhoto && donorPhoto.size > 0
+        ? await editOpenAIImage(finalPrompt, donorPhoto, 1)
+        : await generateOpenAIImage(finalPrompt, 1);
+    generatedImageUrl = images[0] ?? null;
   } catch (e) {
     errorMessage = (e as Error).message;
   }
 
-  // ── Record request log ──────────────────────────────────────────────
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from("ai_photo_requests") as any).insert({
-    donation_id:         donationId,
-    memorial_id:         memorialId,
-    template_key:        templateKey,
-    final_prompt:        finalPrompt,
-    generated_image_url: generatedImageUrl,
-    status:              generatedImageUrl ? "completed" : "failed",
-    error_message:       errorMessage,
-    completed_at:        new Date().toISOString(),
-  }).catch(() => {});
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase.from("ai_photo_requests") as any).insert({
+      donation_id: donationId,
+      memorial_id: memorialId,
+      template_key: template.templateKey,
+      final_prompt: finalPrompt,
+      generated_image_url: generatedImageUrl,
+      status: generatedImageUrl ? "completed" : "failed",
+      error_message: errorMessage,
+      completed_at: new Date().toISOString(),
+    });
+  } catch {
+    // Logging should never block the user from receiving the generated image.
+  }
 
-  // ── Update credit on success ────────────────────────────────────────
   if (donationId && generatedImageUrl) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: existing } = await (supabase.from("ai_photo_credits") as any)
@@ -151,12 +145,18 @@ export async function POST(req: NextRequest) {
     if (existing) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from("ai_photo_credits") as any)
-        .update({ used_count: (existing as { used_count: number }).used_count + 1, updated_at: new Date().toISOString() })
+        .update({
+          used_count: (existing as { used_count: number }).used_count + 1,
+          updated_at: new Date().toISOString(),
+        })
         .eq("donation_id", donationId);
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any)
-        .insert({ donation_id: donationId, free_quota: 1, used_count: 1 });
+      await (supabase.from("ai_photo_credits") as any).insert({
+        donation_id: donationId,
+        free_quota: 1,
+        used_count: 1,
+      });
     }
   }
 
@@ -167,5 +167,9 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({ imageUrl: generatedImageUrl, templateKey, creditUsed: Boolean(donationId) });
+  return NextResponse.json({
+    imageUrl: generatedImageUrl,
+    templateKey: template.templateKey,
+    creditUsed: Boolean(donationId),
+  });
 }
