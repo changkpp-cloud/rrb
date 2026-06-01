@@ -95,25 +95,30 @@ export default function AiPhotoSection({
       const endpoint = donationId ? "/api/ai-photo/generate" : "/api/generate-wreath";
 
       const res = await fetch(endpoint, { method: "POST", body: form });
-      const data = await res.json();
+      const text = await res.text();
+      if (!text) throw new Error("ระบบ AI ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
+      let data: Record<string, unknown>;
+      try { data = JSON.parse(text); }
+      catch { throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่"); }
 
       // 429 = credit exhausted (race condition check)
       if (res.status === 429) {
-        setCredit({ status: "used", existingImageUrl: data.existingImageUrl ?? null });
-        if (data.existingImageUrl) setImages([data.existingImageUrl]);
+        const existingUrl = typeof data.existingImageUrl === "string" ? data.existingImageUrl : null;
+        setCredit({ status: "used", existingImageUrl: existingUrl });
+        if (existingUrl) setImages([existingUrl]);
         setError("คุณใช้สิทธิ์สร้างภาพที่ระลึกฟรีแล้ว 1 รูป");
         setGenerating(false);
         return;
       }
 
-      if (!res.ok) throw new Error(data.error ?? "เกิดข้อผิดพลาด");
+      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "เกิดข้อผิดพลาด");
 
       // credit-aware endpoint returns { imageUrl }, free endpoint returns { images, url }
-      const imgs: string[] = data.imageUrl
+      const imgs: string[] = typeof data.imageUrl === "string"
         ? [data.imageUrl]
         : Array.isArray(data.images) && data.images.length > 0
-        ? data.images
-        : data.url
+        ? (data.images as string[])
+        : typeof data.url === "string"
         ? [data.url]
         : [];
 

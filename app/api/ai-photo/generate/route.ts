@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+
+export const maxDuration = 60; // วินาที — ป้องกัน Vercel timeout ระหว่าง AI สร้างภาพ
 import {
   buildAiPhotoPrompt,
   getAiPhotoTemplate,
