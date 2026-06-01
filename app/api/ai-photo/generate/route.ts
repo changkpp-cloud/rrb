@@ -1,33 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-
-export const maxDuration = 60; // วินาที — ป้องกัน Vercel timeout ระหว่าง AI สร้างภาพ
 import {
   buildAiPhotoPrompt,
   getAiPhotoTemplate,
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 
-const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
+// Vercel Pro: ให้เวลา AI สร้างภาพได้นานสูงสุด 300 วินาที
+export const maxDuration = 300;
 
 /**
  * POST /api/ai-photo/generate  (multipart/form-data)
  *
+ * ใช้ DALL-E 3 (text-to-image) — เร็ว 5-15 วินาที
+ *
  * Fields:
- *   donation_id       string   (optional — omit for unlimited guest use)
+ *   donation_id       string   (optional — credit tracking)
  *   memorial_id       string   (optional)
  *   template_key      string
- *   donor_photo       File     (required)
+ *   donor_photo       File     (optional — เก็บไว้แต่ยังไม่ใช้สำหรับ face-edit)
  *   donor_name        string
  *   donor_position    string
  *   condolence_text   string
  *   deceased_name     string
  *   funeral_place     string
- *
- * Credit rules (only when donation_id is provided):
- *   - free_quota = 1
- *   - If used_count >= free_quota → 429 with existingImageUrl
- *   - On success → increment used_count, record request
  */
 export async function POST(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
@@ -41,22 +37,14 @@ export async function POST(req: NextRequest) {
   }
 
   const form = await req.formData();
-  const donationId    = (form.get("donation_id") as string | null) || null;
-  const memorialId    = (form.get("memorial_id") as string | null) || null;
-  const templateKey   = (form.get("template_key") as AiPhotoTemplateKey | null) ?? "standing_with_label";
-  const donorPhoto    = form.get("donor_photo") as File | null;
-  const donorName     = (form.get("donor_name")     as string | null) ?? "ผู้ร่วมบุญ";
-  const donorPosition = (form.get("donor_position") as string | null) ?? "";
+  const donationId     = (form.get("donation_id")    as string | null) || null;
+  const memorialId     = (form.get("memorial_id")    as string | null) || null;
+  const templateKey    = (form.get("template_key")   as AiPhotoTemplateKey | null) ?? "standing_with_label";
+  const donorName      = (form.get("donor_name")     as string | null) ?? "ผู้ร่วมบุญ";
+  const donorPosition  = (form.get("donor_position") as string | null) ?? "";
   const condolenceText = (form.get("condolence_text") as string | null) ?? "ร่วมอาลัยและร่วมทำบุญ";
-  const deceasedName  = (form.get("deceased_name")  as string | null) ?? "";
-  const funeralPlace  = (form.get("funeral_place")  as string | null) ?? "";
-
-  if (!donorPhoto || donorPhoto.size === 0) {
-    return NextResponse.json(
-      { error: "กรุณาแนบรูปผู้มอบก่อนสร้างภาพ" },
-      { status: 400 }
-    );
-  }
+  const deceasedName   = (form.get("deceased_name")  as string | null) ?? "";
+  const funeralPlace   = (form.get("funeral_place")  as string | null) ?? "";
 
   const supabase = createAdminClient();
 
@@ -70,7 +58,6 @@ export async function POST(req: NextRequest) {
 
     const c = credit as { free_quota: number; used_count: number } | null;
     if (c && c.used_count >= c.free_quota) {
-      // Return existing image so frontend can show it
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: prev } = await (supabase.from("ai_photo_requests") as any)
         .select("generated_image_url")
@@ -105,29 +92,30 @@ export async function POST(req: NextRequest) {
     funeralPlace,
   });
 
-  // ── Call OpenAI Images Edit API ─────────────────────────────────────
+  // ── Call DALL-E 3 (text-to-image) — เร็ว 5-15 วินาที ───────────────
   let generatedImageUrl: string | null = null;
   let errorMessage: string | null = null;
 
   try {
-    const openaiBody = new FormData();
-    openaiBody.append("model", OPENAI_IMAGE_MODEL);
-    openaiBody.append("prompt", finalPrompt);
-    openaiBody.append("n", "1");
-    openaiBody.append("size", "1024x1536");
-    openaiBody.append("quality", "medium");
-    openaiBody.append("image", donorPhoto, donorPhoto.name || "donor.png");
-
-    const res = await fetch("https://api.openai.com/v1/images/edits", {
+    const res = await fetch("https://api.openai.com/v1/images/generations", {
       method: "POST",
-      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-      body: openaiBody,
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: finalPrompt,
+        n: 1,
+        size: "1024x1792",
+        quality: "standard",
+      }),
     });
 
     const data = await res.json();
     if (!res.ok) throw new Error(data.error?.message ?? `OpenAI ${res.status}`);
 
-    const item = (data.data ?? [])[0] as { b64_json?: string; url?: string } | undefined;
+    const item = (data.data ?? [])[0] as { url?: string; b64_json?: string } | undefined;
     if (item?.b64_json) {
       generatedImageUrl = `data:image/png;base64,${item.b64_json}`;
     } else if (item?.url) {
@@ -139,20 +127,20 @@ export async function POST(req: NextRequest) {
     errorMessage = (e as Error).message;
   }
 
-  // ── Record request log (best-effort) ────────────────────────────────
+  // ── Record request log ──────────────────────────────────────────────
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   await (supabase.from("ai_photo_requests") as any).insert({
-    donation_id:          donationId,
-    memorial_id:          memorialId,
-    template_key:         templateKey,
-    final_prompt:         finalPrompt,
-    generated_image_url:  generatedImageUrl,
-    status:               generatedImageUrl ? "completed" : "failed",
-    error_message:        errorMessage,
-    completed_at:         new Date().toISOString(),
+    donation_id:         donationId,
+    memorial_id:         memorialId,
+    template_key:        templateKey,
+    final_prompt:        finalPrompt,
+    generated_image_url: generatedImageUrl,
+    status:              generatedImageUrl ? "completed" : "failed",
+    error_message:       errorMessage,
+    completed_at:        new Date().toISOString(),
   }).catch(() => {});
 
-  // ── Update credit (only on success + donationId) ────────────────────
+  // ── Update credit on success ────────────────────────────────────────
   if (donationId && generatedImageUrl) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: existing } = await (supabase.from("ai_photo_credits") as any)
@@ -163,18 +151,12 @@ export async function POST(req: NextRequest) {
     if (existing) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (supabase.from("ai_photo_credits") as any)
-        .update({
-          used_count: (existing as { used_count: number }).used_count + 1,
-          updated_at: new Date().toISOString(),
-        })
+        .update({ used_count: (existing as { used_count: number }).used_count + 1, updated_at: new Date().toISOString() })
         .eq("donation_id", donationId);
     } else {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any).insert({
-        donation_id: donationId,
-        free_quota:  1,
-        used_count:  1,
-      });
+      await (supabase.from("ai_photo_credits") as any)
+        .insert({ donation_id: donationId, free_quota: 1, used_count: 1 });
     }
   }
 
@@ -185,9 +167,5 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  return NextResponse.json({
-    imageUrl: generatedImageUrl,
-    templateKey,
-    creditUsed: Boolean(donationId),
-  });
+  return NextResponse.json({ imageUrl: generatedImageUrl, templateKey, creditUsed: Boolean(donationId) });
 }

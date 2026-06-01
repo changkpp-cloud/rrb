@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-
-export const maxDuration = 60;
 import {
   buildAiPhotoPrompt,
   getAiPhotoTemplate,
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 
-const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
+// ต้องอยู่บนสุด — Vercel Pro รองรับสูงสุด 300 วินาที
+export const maxDuration = 300;
 
 const STYLE_PROMPTS: Record<string, string> = {
   temple:
@@ -35,7 +34,8 @@ function imageResultToUrl(item: { b64_json?: string; url?: string }) {
   return item.url ?? "";
 }
 
-async function callOpenAIJson(prompt: string, n = 1) {
+// DALL-E 3 text-to-image (เร็ว 5-15 วิ)
+async function callDallE3(prompt: string) {
   const res = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
     headers: {
@@ -43,11 +43,11 @@ async function callOpenAIJson(prompt: string, n = 1) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: OPENAI_IMAGE_MODEL,
+      model: "dall-e-3",
       prompt,
-      n,
-      size: "1024x1536",
-      quality: "medium",
+      n: 1,
+      size: "1024x1792",
+      quality: "standard",
     }),
   });
 
@@ -58,9 +58,10 @@ async function callOpenAIJson(prompt: string, n = 1) {
     .filter(Boolean);
 }
 
-async function callOpenAIEdit(prompt: string, donorPhoto: File, n = 3) {
+// gpt-image-1 edit with donor photo (ช้า แต่มี face reference)
+async function callOpenAIEdit(prompt: string, donorPhoto: File, n = 1) {
   const body = new FormData();
-  body.append("model", OPENAI_IMAGE_MODEL);
+  body.append("model", process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1");
   body.append("prompt", prompt);
   body.append("n", String(n));
   body.append("size", "1024x1536");
@@ -69,9 +70,7 @@ async function callOpenAIEdit(prompt: string, donorPhoto: File, n = 3) {
 
   const res = await fetch("https://api.openai.com/v1/images/edits", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-    },
+    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
     body,
   });
 
@@ -84,43 +83,35 @@ async function callOpenAIEdit(prompt: string, donorPhoto: File, n = 3) {
 
 async function handleTemplateForm(request: NextRequest) {
   const form = await request.formData();
-  const donorPhoto = form.get("donor_photo") as File | null;
-  const templateKey = (form.get("template_key") as AiPhotoTemplateKey | null) ?? "standing_with_label";
-  const donorName = (form.get("donor_name") as string | null) ?? "ผู้ร่วมบุญ";
+  const donorPhoto    = form.get("donor_photo") as File | null;
+  const templateKey   = (form.get("template_key") as AiPhotoTemplateKey | null) ?? "standing_with_label";
+  const donorName     = (form.get("donor_name")     as string | null) ?? "ผู้ร่วมบุญ";
   const donorPosition = (form.get("donor_position") as string | null) ?? "";
   const condolenceText = (form.get("condolence_text") as string | null) ?? "";
-  const deceasedName = (form.get("deceased_name") as string | null) ?? "";
-  const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
+  const deceasedName  = (form.get("deceased_name")  as string | null) ?? "";
+  const funeralPlace  = (form.get("funeral_place")  as string | null) ?? "";
   const requestedCount = Number(form.get("count") ?? 3);
   const count = Math.min(4, Math.max(1, Number.isFinite(requestedCount) ? requestedCount : 3));
 
-  if (!donorPhoto || donorPhoto.size === 0) {
-    return NextResponse.json({ error: "กรุณาแนบรูปผู้มอบก่อนสร้างภาพ" }, { status: 400 });
+  const template = getAiPhotoTemplate(templateKey);
+  const prompt = buildAiPhotoPrompt({ templateKey: template.templateKey, donorName, donorPosition, condolenceText, deceasedName, funeralPlace });
+
+  // ถ้ามีรูปผู้มอบ → ใช้ edit API (face reference), ไม่มี → ใช้ DALL-E 3
+  let images: string[];
+  if (donorPhoto && donorPhoto.size > 0) {
+    images = await callOpenAIEdit(prompt, donorPhoto, count);
+  } else {
+    const img = await callDallE3(prompt);
+    images = Array(count).fill(img[0] ?? "").filter(Boolean);
   }
 
-  const template = getAiPhotoTemplate(templateKey);
-  const prompt = buildAiPhotoPrompt({
-    templateKey: template.templateKey,
-    donorName,
-    donorPosition,
-    condolenceText,
-    deceasedName,
-    funeralPlace,
-  });
-
-  const images = await callOpenAIEdit(prompt, donorPhoto, count);
-  return NextResponse.json({
-    images,
-    url: images[0] ?? "",
-    prompt,
-    templateKey: template.templateKey,
-  });
+  return NextResponse.json({ images, url: images[0] ?? "", prompt, templateKey: template.templateKey });
 }
 
 async function handleLegacyJson(request: NextRequest) {
   const body = await request.json();
   const styleId = body.styleId as string | undefined;
-  const pose = body.pose as string | undefined;
+  const pose    = body.pose    as string | undefined;
 
   const prompt = styleId
     ? STYLE_PROMPTS[styleId] ?? STYLE_PROMPTS.temple
@@ -133,7 +124,7 @@ async function handleLegacyJson(request: NextRequest) {
         funeralPlace: body.funeralPlace ?? "",
       });
 
-  const images = await callOpenAIJson(prompt, 1);
+  const images = await callDallE3(prompt);
   return NextResponse.json({ url: images[0] ?? "", images, prompt });
 }
 
@@ -144,7 +135,6 @@ export async function POST(req: NextRequest) {
       { status: 503 }
     );
   }
-
   try {
     const contentType = req.headers.get("content-type") ?? "";
     if (contentType.includes("multipart/form-data")) {
