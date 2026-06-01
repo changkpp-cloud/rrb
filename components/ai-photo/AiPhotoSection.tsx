@@ -96,10 +96,10 @@ export default function AiPhotoSection({
 
       const res = await fetch(endpoint, { method: "POST", body: form });
       const text = await res.text();
-      if (!text) throw new Error("ระบบ AI ใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
+      if (!text) throw new Error(`[${res.status}] response ว่าง — ระบบ AI อาจ timeout`);
       let data: Record<string, unknown>;
       try { data = JSON.parse(text); }
-      catch { throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่"); }
+      catch { throw new Error(`[${res.status}] parse error: ${text.slice(0, 300)}`); }
 
       // 429 = credit exhausted (race condition check)
       if (res.status === 429) {
