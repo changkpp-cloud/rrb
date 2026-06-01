@@ -29,8 +29,11 @@ const OPENAI_IMAGE_MODEL = process.env.OPENAI_IMAGE_MODEL ?? "gpt-image-1";
  */
 export async function POST(req: NextRequest) {
   if (!process.env.OPENAI_API_KEY) {
+    const where = process.env.NODE_ENV === "production"
+      ? "Vercel → Settings → Environment Variables"
+      : ".env.local";
     return NextResponse.json(
-      { error: "ไม่มี OPENAI_API_KEY กรุณาตั้งค่าใน .env.local" },
+      { error: `ไม่มี OPENAI_API_KEY กรุณาตั้งค่าใน ${where}` },
       { status: 503 }
     );
   }
