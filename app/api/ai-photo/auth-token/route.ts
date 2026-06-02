@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
   const form = await req.formData();
   const donationId = (form.get("donation_id") as string | null) || null;
   const memorialId = (form.get("memorial_id") as string | null) || null;
+  const hostPersonId = (form.get("host_person_id") as string | null) || null;
   const templateKey =
     (form.get("template_key") as AiPhotoTemplateKey | null) ??
     "standing_with_label";
@@ -120,6 +121,23 @@ export async function POST(req: NextRequest) {
     negativePrompt: negativeOverride,
   });
 
+  // Resolve host person photo URL if provided
+  let hostPhotoUrl: string | null = null;
+  if (hostPersonId && memorialId) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: person } = await (supabase.from("memorial_persons") as any)
+        .select("photo_url, allow_in_sim")
+        .eq("id", hostPersonId)
+        .eq("memorial_id", memorialId)
+        .eq("allow_in_sim", true)
+        .single();
+      hostPhotoUrl = (person as { photo_url?: string | null } | null)?.photo_url ?? null;
+    } catch {
+      // No host photo available
+    }
+  }
+
   const token = createServiceToken();
 
   return NextResponse.json({
@@ -129,5 +147,6 @@ export async function POST(req: NextRequest) {
     templateKey: template.templateKey,
     donationId,
     memorialId,
+    hostPhotoUrl,
   });
 }

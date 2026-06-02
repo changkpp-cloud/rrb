@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Camera, Check, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import IosPageHeader from "@/components/IosPageHeader";
-import AiPhotoSection from "@/components/ai-photo/AiPhotoSection";
+import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
 
 const SIGN_W = 260;
@@ -139,12 +139,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
           <div className="grid gap-2 grid-cols-3">
             <MenuLink
-              href={buildViewHref("ai")}
-              active={activeView === "ai"}
-              icon={<Camera className="w-4 h-4" />}
-              label="AI จำลองมอบหรีด"
-            />
-            <MenuLink
               href={buildViewHref("ecard")}
               active={activeView === "ecard"}
               icon={<ImageIcon className="w-4 h-4" />}
@@ -154,12 +148,18 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               href={buildViewHref("certificate")}
               active={activeView === "certificate"}
               icon={<FileText className="w-4 h-4" />}
-              label="เอกสารมอบหรีด"
+              label="หลักฐานร่วมบุญ"
+            />
+            <MenuLink
+              href={buildViewHref("ai")}
+              active={activeView === "ai"}
+              icon={<Camera className="w-4 h-4" />}
+              label="จำลองมอบหรีด"
             />
           </div>
 
           {activeView === "ai" && (
-          <AiPhotoSection
+          <AiPhotoSectionV2
             donorName={name}
             donorPosition={title}
             condolenceText={message}

@@ -6,6 +6,7 @@ import { Users, Download, Pencil } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostBankForm from "./HostBankForm";
+import MemorialPersonManager from "./host/MemorialPersonManager";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 
 interface Props {
@@ -29,6 +30,7 @@ const TABS = [
   { id: "donors",  label: "รายชื่อ" },
   { id: "report",  label: "รายงาน" },
   { id: "bank",    label: "บัญชีรับเงิน" },
+  { id: "persons", label: "บุคคลภาพจำลอง" },
 ];
 
 export default function HostDashboardClient({ memorial, donations, id }: Props) {
@@ -293,6 +295,19 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
           <p className="text-sm font-bold text-gold-700 px-1 mb-4">ข้อมูลบัญชีเจ้าภาพสำหรับรับเงิน</p>
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4">
             <HostBankForm memorial={memorial} />
+          </div>
+        </section>
+
+        <Divider />
+
+        {/* ════ Section 5: บุคคลสำหรับภาพจำลอง ════ */}
+        <section
+          ref={setRef("persons")}
+          data-section="persons"
+          className="scroll-mt-28"
+        >
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4">
+            <MemorialPersonManager memorialId={memorial.id} />
           </div>
         </section>
 

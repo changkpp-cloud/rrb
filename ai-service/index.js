@@ -56,7 +56,10 @@ function verifyToken(authHeader) {
 }
 
 // ── POST /generate ────────────────────────────────────────────────────────────
-app.post("/generate", upload.single("donor_photo"), async (req, res) => {
+app.post("/generate", upload.fields([
+  { name: "donor_photo", maxCount: 1 },
+  { name: "host_photo",  maxCount: 1 },
+]), async (req, res) => {
   if (!verifyToken(req.headers.authorization)) {
     return res.status(401).json({ error: "Unauthorized" });
   }
@@ -66,7 +69,9 @@ app.post("/generate", upload.single("donor_photo"), async (req, res) => {
 
   const prompt = req.body?.prompt;
   const count = Math.min(4, Math.max(1, parseInt(req.body?.count || "1", 10)));
-  const donorPhoto = req.file;
+  const files = req.files || {};
+  const donorPhoto = Array.isArray(files.donor_photo) ? files.donor_photo[0] : null;
+  const hostPhoto  = Array.isArray(files.host_photo)  ? files.host_photo[0]  : null;
 
   if (!prompt) return res.status(400).json({ error: "prompt is required" });
 
@@ -76,7 +81,7 @@ app.post("/generate", upload.single("donor_photo"), async (req, res) => {
     let images;
 
     if (donorPhoto && donorPhoto.size > 0) {
-      // Image edit — use donor photo as face reference
+      // Image edit — use donor photo (+ optional host photo) as reference
       const formData = new FormData();
       formData.append("model", MODEL);
       formData.append("prompt", prompt);
@@ -89,6 +94,11 @@ app.post("/generate", upload.single("donor_photo"), async (req, res) => {
         type: donorPhoto.mimetype || "image/jpeg",
       });
       formData.append("image", blob, donorPhoto.originalname || "donor-photo.jpg");
+      // Append host photo as additional reference (gpt-image-1 accepts multiple images)
+      if (hostPhoto && hostPhoto.size > 0) {
+        const hostBlob = new Blob([hostPhoto.buffer], { type: hostPhoto.mimetype || "image/jpeg" });
+        formData.append("image", hostBlob, hostPhoto.originalname || "host-photo.jpg");
+      }
 
       const r = await fetch("https://api.openai.com/v1/images/edits", {
         method: "POST",

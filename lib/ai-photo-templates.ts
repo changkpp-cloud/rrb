@@ -24,7 +24,20 @@ export type AiPhotoPromptInput = {
   wreathLabelText?: string;
   promptTemplate?: string;
   negativePrompt?: string;
+  hostPersonName?: string;
+  hostPersonRole?: string;
 };
+
+// Added to prompt when a host/family reference photo is included
+export function buildHostPersonInstruction(name: string, role: string): string {
+  return [
+    "SECOND PERSON — HOST / FAMILY REPRESENTATIVE:",
+    `The second uploaded reference photo shows "${name}" (${role}).`,
+    "Their face and appearance MUST match the second reference photo with the same maximum accuracy as the donor.",
+    "Preserve exactly: face shape, skin tone, age, eye shape, hair color and style.",
+    "Do NOT alter, idealize, or change this person's appearance in any way.",
+  ].join(" ");
+}
 
 // Placed FIRST in every template that includes a donor photo.
 // GPT-Image-1 weighs early instructions most heavily.
@@ -165,8 +178,6 @@ export function buildWreathLabelText(input: {
 export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   const template = getAiPhotoTemplate(input.templateKey);
 
-  // Only inject scene/location context — never inject donor text into prompt
-  // (Thai text is overlaid on the image client-side after generation)
   const replacements: Record<string, string> = {
     "[deceased_name]": input.deceasedName?.trim() || "ผู้วายชนม์",
     "[funeral_place]": input.funeralPlace?.trim() || "ศาลางานศพไทย",
@@ -177,12 +188,18 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     prompt = prompt.replaceAll(token, value);
   }
 
-  return [
+  const parts = [
     prompt,
     "",
     "Style requirements:",
     "Photorealistic, vertical 2:3 composition, soft light, respectful Thai funeral atmosphere, premium but understated design.",
-    "",
-    `Negative requirements: ${input.negativePrompt?.trim() || template.negativePrompt}`,
-  ].join("\n");
+  ];
+
+  if (input.hostPersonName && input.hostPersonRole) {
+    parts.push("", buildHostPersonInstruction(input.hostPersonName, input.hostPersonRole));
+  }
+
+  parts.push("", `Negative requirements: ${input.negativePrompt?.trim() || template.negativePrompt}`);
+
+  return parts.join("\n");
 }
