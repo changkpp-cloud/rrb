@@ -34,15 +34,14 @@ export default function MemorialProfile({ memorial }: Props) {
             }}
           />
 
-          {/* Photo */}
+          {/* Photo — feathered edges, no hard border */}
           <div
             className="relative overflow-hidden"
             style={{
               aspectRatio: "3/4",
               borderRadius: "50%",
-              border: "2.5px solid rgba(201,152,60,0.70)",
-              boxShadow:
-                "0 12px 40px rgba(176,120,32,0.20), 0 0 0 5px rgba(255,252,248,0.50), 0 0 0 6.5px rgba(201,152,60,0.14)",
+              maskImage: "radial-gradient(ellipse at center, black 96%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse at center, black 96%, transparent 100%)",
             }}
           >
             {memorial.photo_url ? (
