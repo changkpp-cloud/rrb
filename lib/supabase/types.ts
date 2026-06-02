@@ -51,6 +51,173 @@ export interface Database {
         };
         Relationships: [];
       };
+      app_users: {
+        Row: {
+          id: string;
+          email: string | null;
+          display_name: string;
+          phone: string | null;
+          auth_provider: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id: string | null;
+          password_hash: string | null;
+          global_role: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
+          status: "pending" | "active" | "suspended" | "rejected";
+          approved_by: string | null;
+          approved_at: string | null;
+          last_login_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          email?: string | null;
+          display_name: string;
+          phone?: string | null;
+          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id?: string | null;
+          password_hash?: string | null;
+          global_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          email?: string | null;
+          display_name?: string;
+          phone?: string | null;
+          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id?: string | null;
+          password_hash?: string | null;
+          global_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      center_memberships: {
+        Row: {
+          id: string;
+          center_id: string;
+          user_id: string;
+          role: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          status: "pending" | "active" | "suspended" | "rejected";
+          approved_by: string | null;
+          approved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          center_id: string;
+          user_id: string;
+          role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          center_id?: string;
+          user_id?: string;
+          role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_by?: string | null;
+          approved_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "center_memberships_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] },
+          { foreignKeyName: "center_memberships_user_id_fkey"; columns: ["user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
+        ];
+      };
+      center_user_requests: {
+        Row: {
+          id: string;
+          center_id: string;
+          email: string;
+          display_name: string;
+          phone: string | null;
+          requested_role: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          auth_provider: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id: string | null;
+          password_hash: string | null;
+          status: "pending" | "active" | "suspended" | "rejected";
+          approved_user_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          center_id: string;
+          email: string;
+          display_name: string;
+          phone?: string | null;
+          requested_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id?: string | null;
+          password_hash?: string | null;
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_user_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          center_id?: string;
+          email?: string;
+          display_name?: string;
+          phone?: string | null;
+          requested_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
+          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
+          provider_user_id?: string | null;
+          password_hash?: string | null;
+          status?: "pending" | "active" | "suspended" | "rejected";
+          approved_user_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "center_user_requests_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] },
+          { foreignKeyName: "center_user_requests_approved_user_id_fkey"; columns: ["approved_user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
+        ];
+      };
+      app_user_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          token_hash: string;
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          token_hash: string;
+          expires_at: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          token_hash?: string;
+          expires_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "app_user_sessions_user_id_fkey"; columns: ["user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
+        ];
+      };
       memorials: {
         Row: {
           id: string;

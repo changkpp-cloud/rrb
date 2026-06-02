@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Plus, Users } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
 import MemorialCardActions from "./MemorialCardActions";
@@ -57,6 +59,9 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default async function CenterDashboardPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  const access = await getCenterAccess(id);
+  if (!access.allowed) redirect("/dashboard/center");
+
   const center = await getCenter(id);
   if (!center) return (
     <div className="min-h-screen flex items-center justify-center">
@@ -70,7 +75,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
 
   return (
     <div className="min-h-screen">
-      <IosPageHeader title={center.name} subtitle="ศูนย์บริหาร" backHref="/dashboard/center" />
+      <IosPageHeader title={center.name} subtitle={access.user ? `${roleLabel(access.role)} · ${access.user.display_name}` : "ศูนย์บริหาร"} backHref="/dashboard/center" />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
 

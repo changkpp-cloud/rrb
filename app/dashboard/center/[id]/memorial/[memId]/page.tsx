@@ -1,7 +1,9 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { Users, ExternalLink, Pencil } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess } from "@/lib/iam";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
 import VerifyDonationButton from "./VerifyDonationButton";
@@ -37,6 +39,9 @@ function formatDate(iso: string) {
 
 export default async function CenterMemorialPage({ params }: { params: Promise<{ id: string; memId: string }> }) {
   const { id, memId } = await params;
+  const access = await getCenterAccess(id);
+  if (!access.allowed) redirect("/dashboard/center");
+
   const memorial = await getMemorialById(memId);
   if (!memorial) return null;
 
