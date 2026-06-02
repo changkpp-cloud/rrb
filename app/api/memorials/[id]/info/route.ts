@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyAdminToken } from "@/lib/admin-session";
 import type { Database } from "@/lib/supabase/types";
 
 type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
@@ -15,7 +14,7 @@ export async function PATCH(
 
   const cookieStore = await cookies();
   const centerSession = cookieStore.get("center_session")?.value ?? null;
-  const adminToken    = cookieStore.get("admin_session")?.value ?? null;
+  const adminSession  = cookieStore.get("admin_session")?.value ?? null;
 
   const body = await req.json() as {
     host_code?: string;
@@ -38,7 +37,7 @@ export async function PATCH(
   let actorType: "center" | "host" | "admin" | null = null;
   let actorId = "";
 
-  if (verifyAdminToken(adminToken)) {
+  if (adminSession === "ok") {
     actorType = "admin";
     actorId = "admin";
   } else if (centerSession) {

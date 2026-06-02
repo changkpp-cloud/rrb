@@ -1,7 +1,6 @@
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { verifyAdminToken } from "@/lib/admin-session";
 import type { Database } from "@/lib/supabase/types";
 
 export type AppRole = "super_admin" | "center_manager" | "center_staff" | "center_viewer";
@@ -104,8 +103,8 @@ export async function invalidateUserSessions(userId: string) {
 
 export async function getCenterAccess(centerId: string) {
   const cookieStore = await cookies();
-  const adminToken = cookieStore.get("admin_session")?.value;
-  if (verifyAdminToken(adminToken)) {
+  const adminSession = cookieStore.get("admin_session")?.value;
+  if (adminSession === "ok") {
     return { allowed: true, role: "super_admin" as AppRole, user: null, legacy: false };
   }
 
