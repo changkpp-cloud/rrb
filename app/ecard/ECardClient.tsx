@@ -40,11 +40,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const [shared, setShared]       = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
 
-  const AI_PHOTO_ENABLED = process.env.NEXT_PUBLIC_AI_PHOTO_ENABLED === "true";
-
   const requestedView = params.get("view");
   const activeView =
-    (requestedView === "ai" && AI_PHOTO_ENABLED) || requestedView === "certificate"
+    requestedView === "ai" || requestedView === "certificate"
       ? requestedView
       : "ecard";
   const showAmount = activeView === "certificate";
@@ -139,15 +137,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
-          <div className={`grid gap-2 ${AI_PHOTO_ENABLED ? "grid-cols-3" : "grid-cols-2"}`}>
-            {AI_PHOTO_ENABLED && (
-              <MenuLink
-                href={buildViewHref("ai")}
-                active={activeView === "ai"}
-                icon={<Camera className="w-4 h-4" />}
-                label="AI จำลองมอบหรีด"
-              />
-            )}
+          <div className="grid gap-2 grid-cols-3">
+            <MenuLink
+              href={buildViewHref("ai")}
+              active={activeView === "ai"}
+              icon={<Camera className="w-4 h-4" />}
+              label="AI จำลองมอบหรีด"
+            />
             <MenuLink
               href={buildViewHref("ecard")}
               active={activeView === "ecard"}
@@ -162,7 +158,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             />
           </div>
 
-          {activeView === "ai" && AI_PHOTO_ENABLED && (
+          {activeView === "ai" && (
           <AiPhotoSection
             donorName={name}
             donorPosition={title}
