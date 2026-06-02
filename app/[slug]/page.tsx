@@ -1,5 +1,6 @@
 import SiteHeader from "@/components/SiteHeader";
 import MemorialProfile from "@/components/MemorialProfile";
+import HideFloatingBack from "@/components/HideFloatingBack";
 import CeremonyInfo from "@/components/CeremonyInfo";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
@@ -23,6 +24,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
   return (
     <div className="relative min-h-screen">
+      <HideFloatingBack />
       {/* iOS 17 — clean warm gradient background */}
       <div className="fixed inset-0 z-0" aria-hidden="true">
         <div style={{

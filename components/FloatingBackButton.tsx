@@ -12,6 +12,7 @@ export default function FloatingBackButton() {
       title="ย้อนกลับ"
       aria-label="ย้อนกลับ"
       onClick={() => router.back()}
+      id="floating-back-btn"
       className="fixed right-4 bottom-5 z-50 flex h-11 w-11 items-center justify-center rounded-full active:scale-90 transition-transform duration-150"
       style={{
         background: "rgba(14, 9, 2, 0.72)",
