@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Building2, Check, Hash, Info, Loader2, MapPin, Phone, User } from "lucide-react";
+import { Building2, Check, Hash, Info, Loader2, MapPin, Phone, User } from "lucide-react";
 
 const LGO_TYPES: Record<string, string> = {
   "01": "ท้องถิ่นรูปแบบพิเศษ (กทม./พัทยา)",
@@ -81,10 +81,6 @@ export default function NewCenterPage() {
 
       {/* Header */}
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/admin/centers"
-          className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all shrink-0">
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
         <div>
           <h2 className="text-base font-bold text-gold-800">เปิดศูนย์ใหม่</h2>
           <p className="text-[11px] text-gold-500">สร้างโดย Super Admin เท่านั้น</p>

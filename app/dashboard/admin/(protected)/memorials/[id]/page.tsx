@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
-import { ArrowLeft, ExternalLink, Users, Banknote, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ExternalLink, Users, Banknote, Clock, CheckCircle, XCircle } from "lucide-react";
 
 export const revalidate = 30;
 
@@ -48,9 +48,6 @@ export default async function AdminMemorialDetailPage({ params }: { params: Prom
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3">
-        <Link href="/dashboard/admin/memorials" className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all shrink-0">
-          <ArrowLeft className="w-4 h-4" />
-        </Link>
         <div className="flex-1 min-w-0">
           <h2 className="text-base font-bold text-gold-800 truncate">{m.name}</h2>
           {centerName && <p className="text-[11px] text-gold-500">{centerName}</p>}

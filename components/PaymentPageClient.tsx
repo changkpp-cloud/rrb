@@ -4,7 +4,7 @@ import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Copy, Check, CloudUpload, Download } from "lucide-react";
+import { Copy, Check, CloudUpload, Download } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import PromptPayQR from "./PromptPayQR";
 import type { Memorial } from "@/lib/supabase/types";
@@ -216,14 +216,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
           </Card>
 
 
-          {/* ─── Back button ─── */}
-          <Link
-            href={basePath || "/"}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            ย้อนกลับ
-          </Link>
 
           <div className="h-2" />
         </div>

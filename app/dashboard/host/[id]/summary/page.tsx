@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowLeft, Download, Users } from "lucide-react";
+import { Download, Users } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
@@ -48,9 +48,6 @@ export default function HostSummaryPage() {
     <div className="min-h-screen" style={{ background: "#ffffff" }}>
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href={`/dashboard/host/${id}`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
           <div className="flex items-center gap-2">
             <LotusIcon className="w-5 h-5 text-gold-600" />
             <div className="text-center">

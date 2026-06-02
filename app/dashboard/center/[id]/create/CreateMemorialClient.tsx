@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft, Upload, Copy, Check, ExternalLink,
+  Upload, Copy, Check, ExternalLink,
   ChevronDown, ChevronUp, Shield, CreditCard, FileText,
 } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
@@ -147,14 +147,6 @@ function SuccessScreen({ result, centerId }: { result: Result; centerId: string 
             <p className="text-[10px] text-gold-400 text-center">แจ้งรหัสเจ้าภาพแก่เจ้าภาพเพื่อเข้าดู Dashboard ของตัวเอง</p>
           </div>
 
-          {/* Back */}
-          <Link
-            href={`/dashboard/center/${centerId}`}
-            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            กลับหน้าหลักศูนย์
-          </Link>
 
           <div className="h-2" />
         </div>
@@ -349,9 +341,6 @@ export default function CreateMemorialClient({ centerId }: Props) {
     <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
       <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <Link href={`/dashboard/center/${centerId}`} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <ArrowLeft className="w-4 h-4" />
-          </Link>
           <div className="flex items-center gap-2">
             <LotusIcon className="w-5 h-5 text-gold-600" />
             <div className="text-center">
