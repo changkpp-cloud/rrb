@@ -40,8 +40,8 @@ export default function MemorialProfile({ memorial }: Props) {
             style={{
               aspectRatio: "3/4",
               borderRadius: "50%",
-              maskImage: "radial-gradient(ellipse at center, black 96%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse at center, black 96%, transparent 100%)",
+              maskImage: "radial-gradient(ellipse at center, black 77%, transparent 100%)",
+              WebkitMaskImage: "radial-gradient(ellipse at center, black 77%, transparent 100%)",
             }}
           >
             {memorial.photo_url ? (
