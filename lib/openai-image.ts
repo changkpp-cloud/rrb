@@ -11,7 +11,7 @@ type OpenAIImageResponse = {
 };
 
 const OPENAI_IMAGE_SIZE = "1024x1536"; // portrait 2:3 — matches display aspect ratio
-const OPENAI_IMAGE_QUALITY_GENERATE = "low";
+const OPENAI_IMAGE_QUALITY_GENERATE = "high";
 const OPENAI_IMAGE_QUALITY_EDIT = "high"; // high for face-reference edits
 const OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
 const OPENAI_IMAGE_OUTPUT_COMPRESSION = 85;
