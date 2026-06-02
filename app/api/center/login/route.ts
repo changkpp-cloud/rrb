@@ -2,17 +2,31 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { setCenterUserSession, verifyPassword } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { checkRateLimit, resetRateLimit } from "@/lib/rate-limit";
+
+const MAX_ATTEMPTS = 10;
+const WINDOW_MS = 15 * 60 * 1000;
 
 export async function POST(req: NextRequest) {
+  const ip =
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const { allowed } = checkRateLimit(`center-login:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "พยายามเข้าสู่ระบบมากเกินไป กรุณารอ 15 นาทีแล้วลองใหม่" },
+      { status: 429 }
+    );
+  }
+
   const body = await req.json();
   const email = String(body.email ?? "").trim().toLowerCase();
   const password = String(body.password ?? "");
 
-  if (email || password) return loginWithUser(email, password);
+  if (email || password) return loginWithUser(ip, email, password);
   return loginWithLegacyCenterCode(String(body.code ?? "").trim().toUpperCase());
 }
 
-async function loginWithUser(email: string, password: string) {
+async function loginWithUser(ip: string, email: string, password: string) {
   if (!email || !password) {
     return NextResponse.json({ error: "กรุณากรอกอีเมลและรหัสผ่าน" }, { status: 400 });
   }
@@ -41,6 +55,7 @@ async function loginWithUser(email: string, password: string) {
     return NextResponse.json({ error: "บัญชีนี้ยังไม่ได้รับสิทธิ์เข้าศูนย์" }, { status: 403 });
   }
 
+  resetRateLimit(`center-login:${ip}`);
   await setCenterUserSession(user.id);
   await supabase.from("app_users").update({ last_login_at: new Date().toISOString() }).eq("id", user.id);
 

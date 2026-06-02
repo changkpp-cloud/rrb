@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { verifyAdminToken } from "@/lib/admin-session";
 import type { Database } from "@/lib/supabase/types";
 
 type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
@@ -93,8 +94,8 @@ export async function DELETE(
 ) {
   const cookieStore = await cookies();
   const centerSession = cookieStore.get("center_session");
-  const adminSession = cookieStore.get("admin_session");
-  if (!centerSession?.value && adminSession?.value !== "ok") {
+  const adminToken = cookieStore.get("admin_session")?.value;
+  if (!centerSession?.value && !verifyAdminToken(adminToken)) {
     return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึง" }, { status: 401 });
   }
 

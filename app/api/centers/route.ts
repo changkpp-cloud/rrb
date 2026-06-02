@@ -1,11 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getAdminSession } from "@/lib/admin-session";
 
 export async function POST(req: NextRequest) {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session");
-  if (!session || session.value !== "ok") {
+  if (!(await getAdminSession())) {
     return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึง" }, { status: 401 });
   }
 

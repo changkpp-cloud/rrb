@@ -1,14 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getAdminSession } from "@/lib/admin-session";
 
 export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("admin_session");
-  if (!session || session.value !== "ok") {
+  if (!(await getAdminSession())) {
     return NextResponse.json({ error: "ไม่มีสิทธิ์เข้าถึง" }, { status: 401 });
   }
 
