@@ -2,6 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+// Generate center_code from official LGO code or auto-sequence
+async function buildCenterCode(
+  officialLgoCode: string | null | undefined,
+  supabase: ReturnType<typeof createAdminClient>
+): Promise<string> {
+  const lgo = officialLgoCode?.replace(/\D/g, "");
+  if (lgo?.length === 8) return `RRB-${lgo}`;
+
+  // Auto-sequence for non-LGO centers: RRB-CEN-000001
+  const { count } = await supabase
+    .from("centers")
+    .select("id", { count: "exact", head: true })
+    .like("center_code", "RRB-CEN-%");
+  const seq = String((count ?? 0) + 1).padStart(6, "0");
+  return `RRB-CEN-${seq}`;
+}
+
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session");
@@ -10,18 +27,32 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json();
-  const { name, center_code, province, amphoe, tambon, municipality, manager_name, phone } = body;
+  const {
+    name,
+    official_lgo_code,
+    province,
+    amphoe,
+    tambon,
+    municipality,
+    manager_name,
+    phone,
+  } = body;
 
   if (!name?.trim()) {
     return NextResponse.json({ error: "กรุณากรอกชื่อศูนย์" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from("centers")
+  const center_code = await buildCenterCode(official_lgo_code, supabase);
+
+  const lgoCode = official_lgo_code?.replace(/\D/g, "").slice(0, 8) || null;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase.from("centers") as any)
     .insert({
       name: name.trim(),
-      center_code: center_code?.trim().toUpperCase() || null,
+      official_lgo_code: lgoCode,
+      center_code,
       province: province?.trim() || null,
       amphoe: amphoe?.trim() || null,
       tambon: tambon?.trim() || null,

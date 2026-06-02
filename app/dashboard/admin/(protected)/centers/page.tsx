@@ -69,6 +69,9 @@ export default async function AdminCentersPage() {
                   <p className="text-[10px] text-gold-500 mt-0.5">
                     {[c.tambon, c.amphoe, c.province].filter(Boolean).join(" · ")}
                   </p>
+                  {c.center_code && (
+                    <p className="text-[10px] font-mono text-gold-400 mt-0.5 tracking-wide">{c.center_code}</p>
+                  )}
                   <div className="flex items-center gap-3 mt-1">
                     <span className="text-[10px] text-gold-600 font-medium">{c.totalMemorials} งาน</span>
                     {c.activeMemorials > 0 && (
