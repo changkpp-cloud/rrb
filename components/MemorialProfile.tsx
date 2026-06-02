@@ -38,7 +38,7 @@ export default function MemorialProfile({ memorial }: Props) {
           <div
             className="relative overflow-hidden"
             style={{
-              aspectRatio: "1",
+              aspectRatio: "3/4",
               borderRadius: "50%",
               border: "2.5px solid rgba(201,152,60,0.70)",
               boxShadow:
