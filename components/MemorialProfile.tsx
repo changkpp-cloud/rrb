@@ -58,22 +58,22 @@ export default function MemorialProfile({ memorial }: Props) {
       <div className="text-center px-6">
         <h2
           className="font-bold text-gold-900 leading-tight mb-2"
-          style={{ fontSize: "clamp(1.25rem, 5.5vw, 1.55rem)", letterSpacing: "-0.02em" }}
+          style={{ fontSize: "clamp(1.05rem, 4.6vw, 1.28rem)", letterSpacing: "-0.01em" }}
         >
           {memorial.name}
         </h2>
 
         <div className="mt-3 space-y-2 text-center">
-          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
-            <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>ชาตะ</span>{" "}
+          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(0.88rem, 3.7vw, 1.02rem)" }}>
+            <span className="text-gold-400" style={{ fontSize: "clamp(0.78rem, 3.2vw, 0.9rem)" }}>ชาตะ</span>{" "}
             {formatThaiDate(memorial.birth_date)}
           </p>
-          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
-            <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>มรณะ</span>{" "}
+          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(0.88rem, 3.7vw, 1.02rem)" }}>
+            <span className="text-gold-400" style={{ fontSize: "clamp(0.78rem, 3.2vw, 0.9rem)" }}>มรณะ</span>{" "}
             {formatThaiDate(memorial.death_date)}
           </p>
-          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(1.05rem, 4.5vw, 1.28rem)" }}>
-            <span className="text-gold-400" style={{ fontSize: "clamp(0.9rem, 3.6vw, 1.05rem)" }}>อายุ</span>{" "}
+          <p className="font-semibold text-gold-700 leading-snug" style={{ fontSize: "clamp(0.88rem, 3.7vw, 1.02rem)" }}>
+            <span className="text-gold-400" style={{ fontSize: "clamp(0.78rem, 3.2vw, 0.9rem)" }}>อายุ</span>{" "}
             {memorial.age} ปี
           </p>
         </div>
