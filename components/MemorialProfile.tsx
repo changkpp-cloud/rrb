@@ -1,5 +1,6 @@
 import Image from "next/image";
 import LotusIcon from "./LotusIcon";
+import MemorialPortraitFrame, { getFrameIndex } from "./MemorialPortraitFrame";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface Props {
@@ -22,27 +23,29 @@ export default function MemorialProfile({ memorial }: Props) {
 
       {/* Portrait */}
       <div className="flex justify-center mb-5">
-        <div className="relative" style={{ width: "42vw", maxWidth: 176 }}>
+        <div
+          className="relative"
+          style={{
+            width: "42vw",
+            maxWidth: 176,
+            filter: "drop-shadow(0 8px 20px rgba(176,120,32,0.18))",
+          }}
+        >
           {/* Soft halo */}
           <div
             className="absolute animate-pulse-glow"
             style={{
-              inset: "-18px",
+              inset: "-20px",
               borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(245,222,170,0.42) 0%, transparent 65%)",
-              filter: "blur(20px)",
+              background: "radial-gradient(ellipse, rgba(245,222,170,0.38) 0%, transparent 65%)",
+              filter: "blur(22px)",
             }}
           />
 
-          {/* Photo — feathered edges, no hard border */}
+          {/* Photo — clipped to oval */}
           <div
             className="relative overflow-hidden"
-            style={{
-              aspectRatio: "3/4",
-              borderRadius: "50%",
-              maskImage: "radial-gradient(ellipse at center, black 77%, transparent 100%)",
-              WebkitMaskImage: "radial-gradient(ellipse at center, black 77%, transparent 100%)",
-            }}
+            style={{ aspectRatio: "3/4", borderRadius: "50%" }}
           >
             {memorial.photo_url ? (
               <Image
@@ -63,6 +66,9 @@ export default function MemorialProfile({ memorial }: Props) {
               </div>
             )}
           </div>
+
+          {/* Flower frame overlay — cycles 1 of 10 per memorial */}
+          <MemorialPortraitFrame index={getFrameIndex(memorial.id)} />
         </div>
       </div>
 
