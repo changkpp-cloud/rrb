@@ -31,6 +31,7 @@ const COMMON_SCENE = [
   "The mood must be calm, dignified, elegant, and suitable for sharing with family.",
   "Use a cream, white, beige, and soft gold palette with gentle natural lighting.",
   "Show a reusable dried-flower condolence wreath board or memorial board in the scene.",
+  "The board surface must be completely blank and empty — absolutely no text, no letters, no characters, no inscription of any kind on the board.",
   "Avoid festive expressions. Faces should look calm and respectful.",
 ].join(" ");
 
@@ -51,12 +52,11 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
       COMMON_SCENE,
       "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
       "The donor stands upright holding a modest horizontal condolence board with both hands.",
-      "The board text should be readable Thai text:",
-      "[wreath_label_text]",
+      "The board is completely blank with a clean cream or white surface and an elegant gold border — no text, no writing, no markings on the board at all.",
       "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, crowded scene, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
   },
   {
     templateName: "ไหว้อาลัย",
@@ -74,12 +74,11 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
       COMMON_SCENE,
       "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
       "The donor performs a respectful Thai wai in front of a condolence wreath board.",
-      "Place a tasteful donor label on the board with readable Thai text:",
-      "[wreath_label_text]",
+      "The condolence board is entirely blank with a clean cream or white surface and gold trim — no text, no writing, no markings on the board at all.",
       "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, crowded scene, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
   },
   {
     templateName: "เจ้าภาพรับมอบ",
@@ -98,12 +97,11 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
       "Use the uploaded donor photo as the donor reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
       "Show the donor respectfully presenting a modest condolence board to one host representative.",
       "The host looks calm and appreciative. Both people wear formal dark clothing.",
-      "The board text should be readable Thai text:",
-      "[wreath_label_text]",
+      "The board is entirely blank with a clean cream or white surface and elegant gold border — no text, no writing, no markings on the board at all.",
       "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, unreadable text, fake logos, large crowd, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, large crowd, disrespectful pose",
   },
   {
     templateName: "ในนามองค์กร / บริษัท",
@@ -119,13 +117,12 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     promptTemplate: [
       COMMON_SCENE,
       "Focus on an elegant central condolence board for an organization or group. People are optional and should be subtle if included.",
-      "The board text should be readable Thai text:",
-      "[wreath_label_text]",
+      "The board surface must be completely blank and clean — no text, no writing, no characters, no inscription whatsoever on the board.",
       "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
       "Do not add real company logos.",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, fake company logos, crowded group photo, unreadable text, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, fake company logos, crowded group photo, text on board, writing on board, letters on board, Thai characters on board, inscription, disrespectful pose",
   },
 ];
 
@@ -152,21 +149,12 @@ export function buildWreathLabelText(input: {
 
 export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   const template = getAiPhotoTemplate(input.templateKey);
-  const wreathLabelText =
-    input.wreathLabelText ??
-    buildWreathLabelText({
-      donorName: input.donorName,
-      donorPosition: input.donorPosition,
-      condolenceText: input.condolenceText,
-    });
 
+  // Only inject scene/location context — never inject donor text into prompt
+  // (Thai text is overlaid on the image client-side after generation)
   const replacements: Record<string, string> = {
-    "[donor_name]": input.donorName.trim() || "ผู้ร่วมบุญ",
-    "[donor_position]": input.donorPosition?.trim() || "",
-    "[condolence_text]": input.condolenceText?.trim() || "ร่วมอาลัยและร่วมทำบุญ",
     "[deceased_name]": input.deceasedName?.trim() || "ผู้วายชนม์",
     "[funeral_place]": input.funeralPlace?.trim() || "ศาลางานศพไทย",
-    "[wreath_label_text]": wreathLabelText,
   };
 
   let prompt = input.promptTemplate?.trim() || template.promptTemplate;

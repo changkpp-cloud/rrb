@@ -5,6 +5,7 @@ import {
   Camera, CheckCircle2, ImageIcon, Loader2, Sparkles, XCircle,
 } from "lucide-react";
 import AiPhotoResult from "./AiPhotoResult";
+import type { AiPhotoOverlayData } from "./AiPhotoResult";
 import AiPhotoTemplateSelector from "./AiPhotoTemplateSelector";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
@@ -104,7 +105,6 @@ export default function AiPhotoSection({
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState("");
   const [compressing, setCompressing] = useState(false);
-  const [downloading, setDownloading] = useState(false);
   const [credit, setCredit] = useState<CreditState>({ status: "idle" });
 
   // Check credit on mount when donationId is provided
@@ -214,31 +214,11 @@ export default function AiPhotoSection({
     setGenerating(false);
   }
 
-  async function handleDownload() {
-    const img = images[selectedIdx];
-    if (!img) return;
-    setDownloading(true);
-    try {
-      const filename = `หรีดร่วมบุญ-AI-${donorName || "photo"}.png`;
-      if (img.startsWith("data:")) {
-        const res = await fetch(img);
-        const blob = await res.blob();
-        const href = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.download = filename;
-        link.href = href;
-        link.click();
-        URL.revokeObjectURL(href);
-      } else {
-        const link = document.createElement("a");
-        link.download = filename;
-        link.href = img;
-        link.target = "_blank";
-        link.click();
-      }
-    } catch {}
-    setDownloading(false);
-  }
+  const overlayData: AiPhotoOverlayData = {
+    donorName: donorName || "ผู้ร่วมบุญ",
+    donorPosition,
+    condolenceText,
+  };
 
   // ── Credit check state: still loading ──────────────────────────────
   if (donationId && credit.status === "checking") {
@@ -272,9 +252,8 @@ export default function AiPhotoSection({
             images={displayImages}
             selectedIdx={Math.min(selectedIdx, displayImages.length - 1)}
             onSelect={setSelectedIdx}
-            onDownload={handleDownload}
-            downloading={downloading}
             donorName={donorName}
+            overlayData={overlayData}
           />
         )}
       </div>
@@ -424,9 +403,8 @@ export default function AiPhotoSection({
           images={images}
           selectedIdx={selectedIdx}
           onSelect={setSelectedIdx}
-          onDownload={handleDownload}
-          downloading={downloading}
           donorName={donorName}
+          overlayData={overlayData}
         />
       )}
     </div>
