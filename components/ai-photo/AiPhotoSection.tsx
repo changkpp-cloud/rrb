@@ -152,62 +152,84 @@ export default function AiPhotoSection({
     setImages([]);
 
     try {
-      const form = new FormData();
-      if (donationId) form.append("donation_id", donationId);
-      if (memorialId) form.append("memorial_id", memorialId);
-      form.append("donor_photo", photoFile);
-      form.append("template_key", templateKey);
-      form.append("donor_name", donorName || "ผู้ร่วมบุญ");
-      form.append("donor_position", donorPosition ?? "");
-      form.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
-      form.append("deceased_name", deceasedName ?? "");
-      form.append("funeral_place", funeralPlace ?? "");
+      // Step 1 — Get auth token + built prompt from Next.js (fast, < 1s)
+      const tokenForm = new FormData();
+      if (donationId) tokenForm.append("donation_id", donationId);
+      if (memorialId) tokenForm.append("memorial_id", memorialId);
+      tokenForm.append("template_key", templateKey);
+      tokenForm.append("donor_name", donorName || "ผู้ร่วมบุญ");
+      tokenForm.append("donor_position", donorPosition ?? "");
+      tokenForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
+      tokenForm.append("deceased_name", deceasedName ?? "");
+      tokenForm.append("funeral_place", funeralPlace ?? "");
 
-      // Use credit-aware endpoint when donationId present, otherwise free endpoint
-      const endpoint = donationId ? "/api/ai-photo/generate" : "/api/generate-wreath";
+      const tokenRes = await fetch("/api/ai-photo/auth-token", {
+        method: "POST",
+        body: tokenForm,
+      });
+      const tokenText = await tokenRes.text();
+      if (!tokenText) throw new Error(`[${tokenRes.status}] response ว่าง`);
+      let tokenData: Record<string, unknown>;
+      try { tokenData = JSON.parse(tokenText); }
+      catch { throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่"); }
 
-      const res = await fetch(endpoint, { method: "POST", body: form });
-      const text = await res.text();
-      if (res.status === 413) {
-        throw new Error("รูปที่ส่งใหญ่เกินไป กรุณาเลือกรูปใหม่ ระบบจะย่อรูปให้ก่อนส่ง");
-      }
-      if (!text) throw new Error(`[${res.status}] response ว่าง — ระบบ AI อาจ timeout`);
-      let data: Record<string, unknown>;
-      try { data = JSON.parse(text); }
-      catch {
-        if (!res.ok) throw new Error(`[${res.status}] ${text.slice(0, 300)}`);
-        throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่");
-      }
-
-      // 429 = credit exhausted (race condition check)
-      if (res.status === 429) {
-        const existingUrl = typeof data.existingImageUrl === "string" ? data.existingImageUrl : null;
+      if (tokenRes.status === 429) {
+        const existingUrl = typeof tokenData.existingImageUrl === "string" ? tokenData.existingImageUrl : null;
         setCredit({ status: "used", existingImageUrl: existingUrl });
         if (existingUrl) setImages([existingUrl]);
         setError("คุณใช้สิทธิ์สร้างภาพที่ระลึกฟรีแล้ว 1 รูป");
         setGenerating(false);
         return;
       }
+      if (!tokenRes.ok) throw new Error(typeof tokenData.error === "string" ? tokenData.error : "เกิดข้อผิดพลาด");
 
-      if (!res.ok) throw new Error(typeof data.error === "string" ? data.error : "เกิดข้อผิดพลาด");
+      const { token, serviceUrl, prompt: builtPrompt, donationId: checkedDonationId, memorialId: checkedMemorialId } =
+        tokenData as { token: string; serviceUrl: string; prompt: string; donationId: string | null; memorialId: string | null };
 
-      // credit-aware endpoint returns { imageUrl }, free endpoint returns { images, url }
-      const imgs: string[] = typeof data.imageUrl === "string"
-        ? [data.imageUrl]
-        : Array.isArray(data.images) && data.images.length > 0
-        ? (data.images as string[])
-        : typeof data.url === "string"
-        ? [data.url]
+      // Step 2 — Call external AI service directly (30-90s, no Vercel timeout)
+      const genForm = new FormData();
+      genForm.append("prompt", builtPrompt);
+      genForm.append("count", "1");
+      genForm.append("donor_photo", photoFile);
+
+      const genRes = await fetch(serviceUrl, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: genForm,
+      });
+      const genText = await genRes.text();
+      if (!genText) throw new Error(`[${genRes.status}] response ว่าง — ระบบ AI อาจ timeout`);
+      let genData: Record<string, unknown>;
+      try { genData = JSON.parse(genText); }
+      catch {
+        if (!genRes.ok) throw new Error(`[${genRes.status}] ${genText.slice(0, 300)}`);
+        throw new Error("เกิดข้อผิดพลาดในการรับข้อมูล กรุณาลองใหม่");
+      }
+      if (!genRes.ok) throw new Error(typeof genData.error === "string" ? genData.error : "เกิดข้อผิดพลาด");
+
+      const imgs: string[] = Array.isArray(genData.images) && genData.images.length > 0
+        ? (genData.images as string[])
+        : typeof genData.url === "string"
+        ? [genData.url as string]
         : [];
-
       if (imgs.length === 0) throw new Error("ไม่ได้รับภาพจาก AI กรุณาลองใหม่");
+
+      // Step 3 — Save result to DB (fire-and-forget, < 1s)
+      fetch("/api/ai-photo/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          donationId: checkedDonationId,
+          memorialId: checkedMemorialId,
+          imageUrl: imgs[0],
+          templateKey,
+          prompt: builtPrompt,
+        }),
+      }).catch(() => {});
+
       setImages(imgs);
       setSelectedIdx(0);
-
-      // Update credit state to "used" after successful generation with donationId
-      if (donationId) {
-        setCredit({ status: "used", existingImageUrl: imgs[0] });
-      }
+      if (donationId) setCredit({ status: "used", existingImageUrl: imgs[0] });
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
     }

@@ -1,0 +1,17 @@
+{
+  "name": "rrb-ai-service",
+  "version": "1.0.0",
+  "description": "AI image generation service for หรีดร่วมบุญ (no timeout limit)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "multer": "^1.4.5-lts.1"
+  }
+}
