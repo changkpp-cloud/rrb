@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import FloatingBackButton from "@/components/FloatingBackButton";
 
 export const metadata: Metadata = {
   title: "หรีดร่วมบุญ - Zero Waste",
@@ -57,6 +58,9 @@ export default function RootLayout({
         <div style={{ position: "relative", zIndex: 1 }}>
           {children}
         </div>
+
+        {/* Global floating back button — bottom-right, all pages */}
+        <FloatingBackButton />
       </body>
     </html>
   );

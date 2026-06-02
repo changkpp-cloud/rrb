@@ -3,7 +3,6 @@ import MemorialProfile from "@/components/MemorialProfile";
 import CeremonyInfo from "@/components/CeremonyInfo";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
-import FloatingBackButton from "@/components/FloatingBackButton";
 import { getMemorialBySlug } from "@/lib/memorial";
 
 export const revalidate = 60;
@@ -56,7 +55,6 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
           </div>
         </main>
         <SiteFooter />
-        <FloatingBackButton />
       </div>
     </div>
   );
