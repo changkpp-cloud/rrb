@@ -25,38 +25,23 @@ export default function MemorialProfile({ memorial }: Props) {
         <div
           className="relative"
           style={{
-            width: "42vw",
-            maxWidth: 176,
-            filter: "drop-shadow(0 8px 20px rgba(176,120,32,0.18))",
+            width: "52vw",
+            maxWidth: 220,
           }}
         >
-          {/* Soft halo */}
-          <div
-            className="absolute animate-pulse-glow"
-            style={{
-              inset: "-20px",
-              borderRadius: "50%",
-              background: "radial-gradient(ellipse, rgba(245,222,170,0.38) 0%, transparent 65%)",
-              filter: "blur(22px)",
-            }}
-          />
-
-          {/* Photo — clipped to oval */}
-          <div
-            className="relative overflow-hidden"
-            style={{ aspectRatio: "3/4", borderRadius: "50%" }}
-          >
+          <div className="relative">
             {memorial.photo_url ? (
               <Image
                 src={memorial.photo_url}
                 alt={memorial.name}
-                fill
-                className="object-cover"
+                width={440}
+                height={640}
+                className="h-auto w-full object-contain"
                 priority
               />
             ) : (
               <div
-                className="w-full h-full flex items-center justify-center"
+                className="aspect-[3/4] w-full flex items-center justify-center"
                 style={{
                   background: "linear-gradient(135deg, #FAF4E8 0%, #EDD8B0 55%, #F1E6DC 100%)",
                 }}
