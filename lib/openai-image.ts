@@ -10,11 +10,12 @@ type OpenAIImageResponse = {
   output_format?: "png" | "jpeg" | "webp";
 };
 
-const OPENAI_IMAGE_SIZE = "1024x1024";
-const OPENAI_IMAGE_QUALITY = "low";
+const OPENAI_IMAGE_SIZE = "1024x1536"; // portrait 2:3 — matches display aspect ratio
+const OPENAI_IMAGE_QUALITY_GENERATE = "low";
+const OPENAI_IMAGE_QUALITY_EDIT = "high"; // high for face-reference edits
 const OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
-const OPENAI_IMAGE_OUTPUT_COMPRESSION = 72;
-const OPENAI_IMAGE_TIMEOUT_MS = 120_000;
+const OPENAI_IMAGE_OUTPUT_COMPRESSION = 85;
+const OPENAI_IMAGE_TIMEOUT_MS = 180_000; // bumped for high-quality edit
 
 function imageResultToUrl(item: OpenAIImageItem, outputFormat: string) {
   if (item.b64_json) return `data:image/${outputFormat};base64,${item.b64_json}`;
@@ -64,7 +65,7 @@ export async function generateOpenAIImage(prompt: string, count = 1) {
       prompt,
       n: count,
       size: OPENAI_IMAGE_SIZE,
-      quality: OPENAI_IMAGE_QUALITY,
+      quality: OPENAI_IMAGE_QUALITY_GENERATE,
       output_format: OPENAI_IMAGE_OUTPUT_FORMAT,
       output_compression: OPENAI_IMAGE_OUTPUT_COMPRESSION,
     }),
@@ -83,7 +84,7 @@ export async function editOpenAIImage(prompt: string, image: File, count = 1) {
   body.append("prompt", prompt);
   body.append("n", String(count));
   body.append("size", OPENAI_IMAGE_SIZE);
-  body.append("quality", OPENAI_IMAGE_QUALITY);
+  body.append("quality", OPENAI_IMAGE_QUALITY_EDIT);
   body.append("output_format", OPENAI_IMAGE_OUTPUT_FORMAT);
   body.append("output_compression", String(OPENAI_IMAGE_OUTPUT_COMPRESSION));
   body.append("image", image, image.name || "donor-photo.jpg");

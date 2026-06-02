@@ -26,13 +26,26 @@ export type AiPhotoPromptInput = {
   negativePrompt?: string;
 };
 
+// Placed FIRST in every template that includes a donor photo.
+// GPT-Image-1 weighs early instructions most heavily.
+const FACE_IDENTITY = [
+  "HIGHEST PRIORITY — FACE IDENTITY:",
+  "The uploaded reference photo shows the REAL person who must appear in this image.",
+  "You MUST reproduce this person's face with the maximum possible accuracy.",
+  "Preserve exactly: face shape, eye shape and color, nose shape, mouth and lips, jawline, cheekbones, skin tone and complexion, age, hair color, hair length and texture, hair style, eyebrows, and any distinctive features (scars, moles, glasses, etc.).",
+  "Do NOT change their ethnicity, gender, approximate age, or any facial feature.",
+  "Do NOT idealize, smooth, beautify, slim, or generalize the face in any way.",
+  "The person in the output must be immediately recognizable as the same individual from the reference photo.",
+  "Facial likeness to the reference photo overrides all other stylistic considerations.",
+].join(" ");
+
 const COMMON_SCENE = [
-  "Create a respectful photorealistic vertical image for a Thai Buddhist funeral memorial.",
+  "Create a respectful photorealistic vertical portrait image for a Thai Buddhist funeral memorial.",
   "The mood must be calm, dignified, elegant, and suitable for sharing with family.",
-  "Use a cream, white, beige, and soft gold palette with gentle natural lighting.",
+  "Use a cream, white, beige, and soft gold palette with gentle, soft, flattering natural lighting.",
   "Show a reusable dried-flower condolence wreath board or memorial board in the scene.",
   "The board surface must be completely blank and empty — absolutely no text, no letters, no characters, no inscription of any kind on the board.",
-  "Avoid festive expressions. Faces should look calm and respectful.",
+  "Avoid festive expressions. The donor's face should look calm, composed, and respectful.",
 ].join(" ");
 
 export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
@@ -49,14 +62,15 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 1,
     promptTemplate: [
+      FACE_IDENTITY,
       COMMON_SCENE,
-      "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
-      "The donor stands upright holding a modest horizontal condolence board with both hands.",
+      "The donor stands upright holding a modest horizontal condolence board with both hands at chest height.",
       "The board is completely blank with a clean cream or white surface and an elegant gold border — no text, no writing, no markings on the board at all.",
-      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
+      "The donor wears formal dark attire appropriate for a Thai Buddhist funeral.",
+      "The background is a softly blurred Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, changed face, different person, idealized face, different ethnicity, different age, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
   },
   {
     templateName: "ไหว้อาลัย",
@@ -71,14 +85,15 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 2,
     promptTemplate: [
+      FACE_IDENTITY,
       COMMON_SCENE,
-      "Use the uploaded donor photo as the main person reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
-      "The donor performs a respectful Thai wai in front of a condolence wreath board.",
+      "The donor performs a respectful Thai wai gesture (hands pressed together at chest) in front of a condolence wreath board.",
       "The condolence board is entirely blank with a clean cream or white surface and gold trim — no text, no writing, no markings on the board at all.",
-      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
+      "The donor wears formal dark attire appropriate for a Thai Buddhist funeral.",
+      "The background is a softly blurred Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, changed face, different person, idealized face, different ethnicity, different age, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, crowded scene, disrespectful pose",
   },
   {
     templateName: "เจ้าภาพรับมอบ",
@@ -93,15 +108,15 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     ],
     sortOrder: 3,
     promptTemplate: [
+      FACE_IDENTITY,
       COMMON_SCENE,
-      "Use the uploaded donor photo as the donor reference. Preserve the donor's identity, face shape, age, and general appearance as much as possible.",
       "Show the donor respectfully presenting a modest condolence board to one host representative.",
-      "The host looks calm and appreciative. Both people wear formal dark clothing.",
+      "Both the donor and the host wear formal dark attire. The host looks calm and appreciative.",
       "The board is entirely blank with a clean cream or white surface and elegant gold border — no text, no writing, no markings on the board at all.",
-      "The background is a Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
+      "The background is a softly blurred Thai funeral hall at [funeral_place], arranged in memory of [deceased_name].",
     ].join("\n"),
     negativePrompt:
-      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, large crowd, disrespectful pose",
+      "cartoon, anime, caricature, party mood, bright festive colors, smiling broadly, distorted face, changed face, different person, idealized face, different ethnicity, different age, extra fingers, extra limbs, text on board, writing on board, letters on board, Thai characters on board, inscription, fake logos, large crowd, disrespectful pose",
   },
   {
     templateName: "ในนามองค์กร / บริษัท",
