@@ -1,6 +1,5 @@
 import Image from "next/image";
 import LotusIcon from "./LotusIcon";
-import MemorialPortraitFrame, { getFrameIndex } from "./MemorialPortraitFrame";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface Props {
@@ -67,8 +66,6 @@ export default function MemorialProfile({ memorial }: Props) {
             )}
           </div>
 
-          {/* Flower frame overlay — cycles 1 of 10 per memorial */}
-          <MemorialPortraitFrame index={getFrameIndex(memorial.id)} />
         </div>
       </div>
 
