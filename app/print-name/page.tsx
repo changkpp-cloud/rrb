@@ -3,7 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { User, Briefcase } from "lucide-react";
+import { Check, User, Briefcase } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
@@ -23,10 +23,17 @@ function PrintNameInner() {
   const [name,    setName]    = useState(params.get("name")    ?? "");
   const [title,   setTitle]   = useState(params.get("title")   ?? "");
   const [showModal, setShowModal] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [printSuccess, setPrintSuccess] = useState(false);
 
   function handleSend() {
+    setSending(true);
     const q = new URLSearchParams({ name: name.trim(), title: title.trim(), amount });
-    router.push(`/printing?${q.toString()}`);
+    q.set("view", "ecard");
+    setPrintSuccess(true);
+    setTimeout(() => {
+      router.push(`/ecard?${q.toString()}`);
+    }, 1000);
   }
 
   return (
@@ -120,17 +127,29 @@ function PrintNameInner() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all"
+                disabled={sending}
+                className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-40"
               >
                 แก้ไขข้อความ
               </button>
               <button
                 onClick={handleSend}
-                className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all"
+                disabled={sending}
+                className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-60"
               >
-                ส่งพิมพ์
+                {sending ? "กำลังส่งพิมพ์" : "ส่งพิมพ์"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {printSuccess && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center px-6 bg-gold-900/25 backdrop-blur-sm">
+          <div className="w-full max-w-xs rounded-3xl bg-cream-50 gold-border card-shadow px-7 py-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
+              <Check className="h-8 w-8 text-emerald-500" />
+            </div>
+            <p className="text-lg font-bold text-gold-800">ส่งพิมพ์สำเร็จแล้ว</p>
           </div>
         </div>
       )}

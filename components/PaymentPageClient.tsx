@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useRef } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -24,6 +24,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const [copied, setCopied] = useState(false);
   const [savedQR, setSavedQR] = useState(false);
   const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -34,6 +35,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     setSlipFile(f);
     setSlipPreview(URL.createObjectURL(f));
     setVerifying(false);
+    setVerified(false);
   }
 
   function copyAccount() {
@@ -82,7 +84,10 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       amount: String(parsedAmount),
       slip_url: slipUrl,
     });
-    router.push(`${basePath}/verifying?${q.toString()}`);
+    setVerified(true);
+    setTimeout(() => {
+      router.push(`${basePath}/print-name?${q.toString()}`);
+    }, 1000);
   }
 
   return (
@@ -205,7 +210,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               disabled={!slipFile || parsedAmount <= 0 || verifying}
               className="mt-3 w-full gold-gradient text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-opacity"
             >
-              {verifying ? "กำลังส่ง..." : "ตรวจสอบสลิป"}
+              {verifying ? "กำลังตรวจสอบสลิป" : "ตรวจสอบสลิป"}
             </button>
 
           </Card>
@@ -223,6 +228,16 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
           <div className="h-2" />
         </div>
       </main>
+      {verified && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-gold-900/25 backdrop-blur-sm">
+          <div className="w-full max-w-xs rounded-3xl bg-cream-50 gold-border card-shadow px-7 py-8 text-center">
+            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
+              <Check className="h-8 w-8 text-emerald-500" />
+            </div>
+            <p className="text-lg font-bold text-gold-800">ตรวจสอบสำเร็จแล้ว</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
