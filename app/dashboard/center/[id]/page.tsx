@@ -1,21 +1,53 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Plus, Users } from "lucide-react";
+import {
+  AlertTriangle,
+  BarChart3,
+  Banknote,
+  Boxes,
+  CheckCircle2,
+  ChevronRight,
+  ClipboardCheck,
+  Leaf,
+  Plus,
+  Printer,
+  ScrollText,
+  Settings,
+  ShieldCheck,
+  Users,
+} from "lucide-react";
+import CenterDashboardScrollNav from "@/components/CenterDashboardScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
-import MemorialCardActions from "./MemorialCardActions";
 
 export const revalidate = 30;
+
+type DonationStats = {
+  amount: number;
+  confirmed: number;
+  pendingSlip: number;
+  nameplatePending: number;
+  nameplateQueued: number;
+  nameplatePrinted: number;
+  nameplatePosted: number;
+};
+
+type MemorialSummary = DonationStats & {
+  memorial: Memorial;
+  wasteKg: number;
+};
 
 async function getCenter(id: string): Promise<Center | null> {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase.from("centers").select("*").eq("id", id).single();
     return data as Center | null;
-  } catch { return null; }
+  } catch {
+    return null;
+  }
 }
 
 async function getMemorials(centerId: string): Promise<Memorial[]> {
@@ -27,34 +59,60 @@ async function getMemorials(centerId: string): Promise<Memorial[]> {
       .eq("center_id", centerId)
       .order("created_at", { ascending: false });
     return (data as Memorial[] | null) ?? [];
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 }
 
-async function getDonationCounts(memorialIds: string[]): Promise<Record<string, number>> {
+async function getDonationStats(memorialIds: string[]): Promise<Record<string, DonationStats>> {
   if (memorialIds.length === 0) return {};
+
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("donations")
-      .select("memorial_id, status")
+      .select("memorial_id, status, amount, nameplate_status")
       .in("memorial_id", memorialIds);
-    const counts: Record<string, number> = {};
+
+    const stats: Record<string, DonationStats> = {};
     for (const d of data ?? []) {
-      if (d.status === "confirmed") counts[d.memorial_id] = (counts[d.memorial_id] || 0) + 1;
+      if (!stats[d.memorial_id]) {
+        stats[d.memorial_id] = {
+          amount: 0,
+          confirmed: 0,
+          pendingSlip: 0,
+          nameplatePending: 0,
+          nameplateQueued: 0,
+          nameplatePrinted: 0,
+          nameplatePosted: 0,
+        };
+      }
+
+      const row = stats[d.memorial_id];
+      if (d.status === "pending") row.pendingSlip++;
+      if (d.status !== "confirmed") continue;
+
+      row.confirmed++;
+      row.amount += d.amount || 0;
+      if (d.nameplate_status === "pending") row.nameplatePending++;
+      if (d.nameplate_status === "queued") row.nameplateQueued++;
+      if (d.nameplate_status === "printed") row.nameplatePrinted++;
+      if (d.nameplate_status === "posted") row.nameplatePosted++;
     }
-    return counts;
-  } catch { return {}; }
+    return stats;
+  } catch {
+    return {};
+  }
 }
 
-const STATUS_LABEL: Record<string, string> = {
-  draft: "ร่าง",
-  active: "กำลังดำเนินการ",
-  closed: "ปิดแล้ว",
-};
-const STATUS_COLOR: Record<string, string> = {
-  draft: "bg-gray-100 text-gray-600",
-  active: "bg-emerald-50 text-emerald-700",
-  closed: "bg-gold-100 text-gold-700",
+const emptyStats: DonationStats = {
+  amount: 0,
+  confirmed: 0,
+  pendingSlip: 0,
+  nameplatePending: 0,
+  nameplateQueued: 0,
+  nameplatePrinted: 0,
+  nameplatePosted: 0,
 };
 
 export default async function CenterDashboardPage({ params }: { params: Promise<{ id: string }> }) {
@@ -63,83 +121,205 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   if (!access.allowed) redirect("/dashboard/center");
 
   const center = await getCenter(id);
-  if (!center) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <p className="text-gold-400 text-sm">ไม่พบข้อมูลศูนย์</p>
-    </div>
-  );
+  if (!center) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gold-400 text-sm">ไม่พบข้อมูลศูนย์</p>
+      </div>
+    );
+  }
 
   const memorials = await getMemorials(id);
-  const donorCounts = await getDonationCounts(memorials.map(m => m.id));
-  const activeCount = memorials.filter(m => m.funeral_status === "active").length;
+  const donationStats = await getDonationStats(memorials.map((m) => m.id));
+
+  const summaries: MemorialSummary[] = memorials.map((memorial) => {
+    const stats = donationStats[memorial.id] ?? emptyStats;
+    return { memorial, ...stats, wasteKg: stats.confirmed * 2 };
+  });
+
+  const activeRows = summaries.filter((row) => row.memorial.funeral_status === "active");
+  const closedRows = summaries.filter((row) => row.memorial.funeral_status === "closed");
+  const totalAmount = summaries.reduce((sum, row) => sum + row.amount, 0);
+  const totalDonors = summaries.reduce((sum, row) => sum + row.confirmed, 0);
+  const pendingSlipCount = summaries.reduce((sum, row) => sum + row.pendingSlip, 0);
+  const pendingPrintCount = summaries.reduce((sum, row) => sum + row.nameplatePending + row.nameplateQueued, 0);
+  const printedCount = summaries.reduce((sum, row) => sum + row.nameplatePrinted, 0);
+  const postedCount = summaries.reduce((sum, row) => sum + row.nameplatePosted, 0);
 
   return (
-    <div className="min-h-screen">
-      <IosPageHeader title={center.name} subtitle={access.user ? `${roleLabel(access.role)} · ${access.user.display_name}` : "ศูนย์บริหาร"} backHref="/dashboard/center" />
+    <div className="min-h-screen bg-white">
+      <IosPageHeader
+        title={center.name}
+        subtitle={access.user ? `${roleLabel(access.role)} · ${access.user.display_name}` : "ศูนย์บริหารประจำตำบล"}
+        backHref="/dashboard/center"
+      />
 
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
+      <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
+        <CenterDashboardScrollNav />
 
-        {/* Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 text-center">
-            <p className="text-2xl font-bold text-gold-800">{memorials.length}</p>
-            <p className="text-xs text-gold-500 mt-0.5">งานทั้งหมด</p>
+        <section id="open" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={Plus} title="1. เปิดงานศพใหม่" subtitle="สร้างงานใหม่และเริ่มรับบริจาคในศูนย์นี้" />
+          <Link
+            href={`/dashboard/center/${id}/create`}
+            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl gold-gradient text-white font-bold text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            <Plus className="w-5 h-5" />
+            เปิดงานศพใหม่
+          </Link>
+        </section>
+
+        <section id="active" className="scroll-mt-36 space-y-3">
+          <SectionHeader
+            icon={ScrollText}
+            title="2. งานศพที่เปิดอยู่"
+            subtitle={`${activeRows.length} งาน · ${pendingSlipCount} สลิปรอตรวจ · ${pendingPrintCount} ป้ายรอพิมพ์`}
+          />
+          {activeRows.length === 0 ? (
+            <Empty text="ยังไม่มีงานศพที่เปิดอยู่" />
+          ) : (
+            <div className="space-y-3">
+              {activeRows.map((row) => (
+                <ActiveMemorialCard key={row.memorial.id} centerId={id} row={row} />
+              ))}
+            </div>
+          )}
+        </section>
+
+        <section id="board" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={Boxes} title="3. จัดการบอร์ดและอุปกรณ์" subtitle="ดูภาพรวมสถานะป้ายและงานที่ต้องติดบอร์ด" />
+          <div className="grid grid-cols-2 gap-3">
+            <Metric icon={Printer} label="รอพิมพ์ป้าย" value={pendingPrintCount.toLocaleString()} tone="amber" />
+            <Metric icon={ClipboardCheck} label="พิมพ์แล้ว" value={printedCount.toLocaleString()} tone="blue" />
+            <Metric icon={CheckCircle2} label="ติดบอร์ดแล้ว" value={postedCount.toLocaleString()} tone="emerald" />
+            <Metric icon={Boxes} label="งานที่เปิดอยู่" value={activeRows.length.toLocaleString()} tone="gold" />
           </div>
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 text-center">
-            <p className="text-2xl font-bold text-emerald-600">{activeCount}</p>
-            <p className="text-xs text-gold-500 mt-0.5">กำลังดำเนินการ</p>
-          </div>
-        </div>
+        </section>
 
-        {/* New memorial button */}
-        <Link
-          href={`/dashboard/center/${id}/create`}
-          className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
-        >
-          <Plus className="w-5 h-5" />
-          เปิดงานศพใหม่
-        </Link>
-
-        {/* Memorial list */}
-        {memorials.length === 0 ? (
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-10 text-center">
-            <p className="text-sm text-gold-400">ยังไม่มีงานศพ กดปุ่มด้านบนเพื่อเปิดงานใหม่</p>
+        <section id="reports" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={BarChart3} title="4. รายงานศูนย์" subtitle="สรุปยอดบริจาค งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
+          <div className="grid grid-cols-2 gap-3">
+            <Metric icon={Banknote} label="ยอดบริจาค" value={`${totalAmount.toLocaleString()} บาท`} tone="amber" />
+            <Metric icon={Users} label="ผู้ร่วมบุญ" value={totalDonors.toLocaleString()} tone="blue" />
+            <Metric icon={CheckCircle2} label="งานปิดแล้ว" value={closedRows.length.toLocaleString()} tone="emerald" />
+            <Metric icon={Leaf} label="ลดขยะประมาณ" value={`${(totalDonors * 2).toLocaleString()} กก.`} tone="gold" />
           </div>
-        ) : (
-          <div className="space-y-3">
-            <p className="text-xs font-semibold text-gold-600 px-1">รายการงานศพ</p>
-            {memorials.map(m => (
-              <div key={m.id} className="flex items-center gap-2 bg-cream-50 rounded-2xl gold-border">
-                <Link href={`/dashboard/center/${id}/memorial/${m.id}`} className="flex items-start gap-3 flex-1 min-w-0 px-4 py-3 hover:opacity-80 transition-opacity">
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-gold-800 leading-tight truncate">{m.name}</p>
-                    <p className="text-[10px] text-gold-500 mt-0.5">ฌาปนกิจ {formatThaiDate(m.ceremony_date)}</p>
-                    <p className="text-[10px] text-gold-400 truncate">{m.ceremony_location}</p>
-                  </div>
-                  <div className="flex flex-col items-end gap-1 shrink-0">
-                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-medium ${STATUS_COLOR[m.funeral_status]}`}>
-                      {STATUS_LABEL[m.funeral_status]}
-                    </span>
-                    <div className="flex items-center gap-1 text-[10px] text-gold-500">
-                      <Users className="w-3 h-3" />
-                      {donorCounts[m.id] || 0} คน
-                    </div>
-                  </div>
-                </Link>
-                <div className="pr-3">
-                  <MemorialCardActions
-                    memorialId={m.id}
-                    memorialName={m.name}
-                    isClosed={m.funeral_status === "closed"}
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+          <Link href={`/dashboard/center/${id}/closed`} className="block text-center text-xs font-semibold text-gold-700 underline underline-offset-4">
+            ดูงานศพที่ปิดแล้วทั้งหมด
+          </Link>
+        </section>
 
-        <div className="h-2" />
+        <section id="staff" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={Users} title="5. เจ้าหน้าที่ศูนย์" subtitle="ข้อมูลผู้ใช้งานศูนย์และสิทธิ์การเข้าถึงของเจ้าหน้าที่" />
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 flex items-start gap-3">
+            <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-gold-800">เจ้าหน้าที่ที่เข้าสู่ระบบ</p>
+              <p className="text-[11px] text-gold-500 mt-0.5">
+                {access.user ? `${access.user.display_name} · ${roleLabel(access.role)}` : "ใช้รหัสศูนย์แบบเดิม"}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="settings" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={Settings} title="6. ตั้งค่าศูนย์" subtitle="ข้อมูลหลักของศูนย์บริหารประจำตำบล" />
+          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
+            <InfoRow label="ชื่อศูนย์" value={center.name} />
+            <InfoRow label="ผู้จัดการ" value={center.manager_name || "-"} />
+            <InfoRow label="โทรศัพท์" value={center.phone || "-"} />
+            <InfoRow label="พื้นที่" value={[center.tambon, center.amphoe, center.province].filter(Boolean).join(" · ") || "-"} />
+            <InfoRow label="สถานะศูนย์" value={center.status || "-"} />
+          </div>
+        </section>
+
+        <div className="h-4" />
       </main>
+    </div>
+  );
+}
+
+function ActiveMemorialCard({ centerId, row }: { centerId: string; row: MemorialSummary }) {
+  return (
+    <Link
+      href={`/dashboard/center/${centerId}/memorial/${row.memorial.id}`}
+      className="block bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 hover:bg-cream-100 transition-colors"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <p className="text-sm font-semibold text-gold-800 truncate">{row.memorial.name}</p>
+          <p className="text-[10px] text-gold-500">ฌาปนกิจ {formatThaiDate(row.memorial.ceremony_date)}</p>
+          <p className="text-[10px] text-gold-400 truncate">{row.memorial.ceremony_location}</p>
+        </div>
+        <ChevronRight className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
+      </div>
+      <div className="grid grid-cols-4 gap-2 mt-3 text-center">
+        <StatusMini label="รอตรวจสลิป" value={row.pendingSlip} warning={row.pendingSlip > 0} />
+        <StatusMini label="รอพิมพ์ป้าย" value={row.nameplatePending + row.nameplateQueued} warning={row.nameplatePending + row.nameplateQueued > 0} />
+        <StatusMini label="พิมพ์แล้ว" value={row.nameplatePrinted} />
+        <StatusMini label="ติดบอร์ดแล้ว" value={row.nameplatePosted} done />
+      </div>
+      <p className="text-[10px] text-gold-500 mt-2">กดเข้าไปดูรายละเอียดงาน</p>
+    </Link>
+  );
+}
+
+function StatusMini({ done, label, value, warning }: { done?: boolean; label: string; value: number; warning?: boolean }) {
+  const tone = warning ? "bg-amber-50 text-amber-700" : done ? "bg-emerald-50 text-emerald-700" : "bg-white/70 text-gold-700";
+  return (
+    <div className={`rounded-lg py-1.5 px-1 ${tone}`}>
+      <p className="text-sm font-bold">{value.toLocaleString()}</p>
+      <p className="text-[8px] leading-tight">{label}</p>
+    </div>
+  );
+}
+
+function SectionHeader({ icon: Icon, subtitle, title }: { icon: React.ElementType; subtitle: string; title: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <div className="w-8 h-8 rounded-xl bg-gold-100 text-gold-700 flex items-center justify-center shrink-0">
+        <Icon className="w-4 h-4" />
+      </div>
+      <div>
+        <h2 className="text-base font-bold text-gold-800">{title}</h2>
+        <p className="text-[11px] text-gold-500 leading-relaxed">{subtitle}</p>
+      </div>
+    </div>
+  );
+}
+
+function Metric({ icon: Icon, label, tone, value }: { icon: React.ElementType; label: string; tone: "amber" | "blue" | "emerald" | "gold"; value: string }) {
+  const color = {
+    amber: "bg-amber-50 text-amber-600",
+    blue: "bg-blue-50 text-blue-600",
+    emerald: "bg-emerald-50 text-emerald-600",
+    gold: "bg-gold-100 text-gold-700",
+  }[tone];
+  return (
+    <div className="bg-cream-50 rounded-xl gold-border card-shadow px-3 py-3 flex items-center gap-3">
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${color}`}>
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="min-w-0">
+        <p className="text-base font-bold text-gold-800 truncate">{value}</p>
+        <p className="text-[10px] text-gold-500">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between gap-3">
+      <span className="text-gold-400 shrink-0">{label}</span>
+      <span className="text-right">{value}</span>
+    </div>
+  );
+}
+
+function Empty({ text }: { text: string }) {
+  return (
+    <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-10 text-center">
+      <p className="text-sm text-gold-400">{text}</p>
     </div>
   );
 }
