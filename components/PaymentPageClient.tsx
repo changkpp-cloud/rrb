@@ -27,6 +27,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const [verified, setVerified] = useState(false);
 
   const fileRef = useRef<HTMLInputElement>(null);
+  const qrRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
   function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -45,10 +46,39 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   }
 
   async function saveQR() {
-    if (!memorial.bank_account_image_url) return;
     try {
-      const res = await fetch(memorial.bank_account_image_url);
-      const blob = await res.blob();
+      let blob: Blob | null = null;
+
+      if (memorial.bank_account_image_url) {
+        const res = await fetch(memorial.bank_account_image_url);
+        blob = await res.blob();
+      } else {
+        const svg = qrRef.current?.querySelector("svg");
+        if (!svg) return;
+
+        const svgText = new XMLSerializer().serializeToString(svg);
+        const svgBlob = new Blob([svgText], { type: "image/svg+xml;charset=utf-8" });
+        const svgUrl = URL.createObjectURL(svgBlob);
+        const image = document.createElement("img");
+        image.src = svgUrl;
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("QR image load failed"));
+        });
+
+        const canvas = document.createElement("canvas");
+        canvas.width = 720;
+        canvas.height = 720;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) throw new Error("Canvas unavailable");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(image, 48, 48, 624, 624);
+        URL.revokeObjectURL(svgUrl);
+        blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+      }
+
+      if (!blob) return;
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -56,7 +86,9 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       link.click();
       URL.revokeObjectURL(url);
     } catch {
-      window.open(memorial.bank_account_image_url, "_blank");
+      if (memorial.bank_account_image_url) {
+        window.open(memorial.bank_account_image_url, "_blank");
+      }
     }
     setSavedQR(true);
     setTimeout(() => setSavedQR(false), 2000);
@@ -106,7 +138,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             <div className="mt-3 flex items-stretch">
               {/* QR side */}
               <div className="shrink-0 pr-4 flex items-center justify-center">
-                <div className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden p-1.5">
+                <div ref={qrRef} className="relative w-28 h-28 rounded-xl gold-border bg-white flex items-center justify-center overflow-hidden p-1.5">
                   {promptpayPhone ? (
                     <PromptPayQR phone={promptpayPhone} />
                   ) : memorial.bank_account_image_url ? (
@@ -136,11 +168,11 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             </div>
 
             {/* Buttons row */}
-            <div className="mt-3 flex gap-2">
-              {memorial.bank_account_image_url && (
+            <div className="mt-3 flex flex-wrap justify-start gap-2">
+              {(promptpayPhone || memorial.bank_account_image_url) && (
                 <button
                   onClick={saveQR}
-                  className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
+                  className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
                 >
                   {savedQR ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Download className="w-3.5 h-3.5" />}
                   {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
@@ -148,7 +180,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               )}
               <button
                 onClick={copyAccount}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
+                className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
