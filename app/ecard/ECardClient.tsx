@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useRef, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -39,6 +39,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const [sharing, setSharing]     = useState(false);
   const [shared, setShared]       = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
+  const [memorialPhotoSrc, setMemorialPhotoSrc] = useState(memorial.photo_url ?? "");
 
   const requestedView = params.get("view");
   const activeView =
@@ -46,6 +47,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       ? requestedView
       : "ecard";
   const showAmount = activeView === "certificate";
+  const memorialPhotoCacheKey = useMemo(
+    () => `rrb:ecard:memorial-photo:${memorial.id}`,
+    [memorial.id]
+  );
 
   const deceasedName = memorial.name;
   const birthDate    = memorial.birth_date ? thaiDate(memorial.birth_date) : "";
@@ -117,12 +122,78 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   }
 
   useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setCardWidth(entry.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+    if (!memorial.photo_url) {
+      setMemorialPhotoSrc("");
+      return;
+    }
+
+    const cached = window.sessionStorage.getItem(memorialPhotoCacheKey);
+    if (cached) {
+      setMemorialPhotoSrc(cached);
+      return;
+    }
+
+    let cancelled = false;
+    setMemorialPhotoSrc(memorial.photo_url);
+
+    fetch(memorial.photo_url)
+      .then((response) => {
+        if (!response.ok) throw new Error("photo fetch failed");
+        return response.blob();
+      })
+      .then(
+        (blob) =>
+          new Promise<string>((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result));
+            reader.onerror = () => reject(new Error("photo read failed"));
+            reader.readAsDataURL(blob);
+          })
+      )
+      .then((dataUrl) => {
+        if (cancelled) return;
+        setMemorialPhotoSrc(dataUrl);
+        try {
+          window.sessionStorage.setItem(memorialPhotoCacheKey, dataUrl);
+        } catch {}
+      })
+      .catch(() => {
+        if (!cancelled) setMemorialPhotoSrc(memorial.photo_url ?? "");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [memorial.photo_url, memorialPhotoCacheKey]);
+
+  useEffect(() => {
+    if (activeView === "ai") return;
+
+    let ro: ResizeObserver | null = null;
+    let frame = 0;
+
+    const bindCardSize = () => {
+      const el = cardRef.current;
+      if (!el) {
+        frame = requestAnimationFrame(bindCardSize);
+        return;
+      }
+
+      const width = el.getBoundingClientRect().width;
+      if (width > 0) setCardWidth(width);
+
+      ro = new ResizeObserver(([entry]) => {
+        if (entry.contentRect.width > 0) setCardWidth(entry.contentRect.width);
+      });
+      ro.observe(el);
+    };
+
+    frame = requestAnimationFrame(bindCardSize);
+    return () => {
+      if (frame) cancelAnimationFrame(frame);
+      ro?.disconnect();
+    };
+  }, [activeView]);
 
   const s = cardWidth / 360;
   // sign proportions mirror SignPreview (BASE_W=288)
@@ -245,8 +316,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                   <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.12em", margin: 0 }}>แด่ผู้วายชนม์</p>
 
                   <div style={{ width: Math.round(64*s), height: Math.round(76*s), borderRadius: "50% / 45%", overflow: "hidden", border: "1.5px solid #e8c97a", boxShadow: "0 3px 10px rgba(184,134,11,0.10), 0 0 0 3px rgba(253,248,238,0.8), 0 0 0 5px rgba(201,168,76,0.10)" }}>
-                    {memorial.photo_url ? (
-                      <img src={memorial.photo_url} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin="anonymous" />
+                    {memorialPhotoSrc ? (
+                      <img src={memorialPhotoSrc} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin={memorialPhotoSrc.startsWith("data:") ? undefined : "anonymous"} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
                         <span style={{ display: "inline-flex", width: Math.round(30*s), height: Math.round(30*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>

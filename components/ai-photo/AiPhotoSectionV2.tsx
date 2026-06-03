@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
 import AiPhotoCarousel from "./AiPhotoCarousel";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
@@ -53,6 +53,7 @@ export default function AiPhotoSectionV2({
   donorName, donorPosition, condolenceText,
   deceasedName, funeralPlace, memorialId, donationId,
 }: Props) {
+  const draftReadyRef = useRef(false);
   const [templateKey, setTemplateKey] = useState<AiPhotoTemplateKey>("standing_with_label");
   const [donorFile, setDonorFile] = useState<File | null>(null);
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
@@ -66,6 +67,63 @@ export default function AiPhotoSectionV2({
   const [creditUsed, setCreditUsed] = useState(false);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const donorRef = useRef<HTMLInputElement>(null);
+  const draftKey = useMemo(
+    () =>
+      [
+        "rrb:ai-photo-draft",
+        memorialId,
+        donationId || "guest",
+        donorName || "anonymous",
+        deceasedName || "memorial",
+      ].join(":"),
+    [memorialId, donationId, donorName, deceasedName]
+  );
+
+  useEffect(() => {
+    draftReadyRef.current = false;
+    try {
+      const raw = window.sessionStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as {
+          templateKey?: AiPhotoTemplateKey;
+          donorPreview?: string | null;
+          images?: string[];
+          selectedIdx?: number;
+          consent?: boolean;
+          creditUsed?: boolean;
+          existingImageUrl?: string | null;
+        };
+
+        if (draft.templateKey) setTemplateKey(draft.templateKey);
+        if (draft.donorPreview) setDonorPreview(draft.donorPreview);
+        if (Array.isArray(draft.images)) setImages(draft.images);
+        if (typeof draft.selectedIdx === "number") setSelectedIdx(draft.selectedIdx);
+        if (typeof draft.consent === "boolean") setConsent(draft.consent);
+        if (typeof draft.creditUsed === "boolean") setCreditUsed(draft.creditUsed);
+        if (typeof draft.existingImageUrl === "string") setExistingImageUrl(draft.existingImageUrl);
+      }
+    } catch {}
+    draftReadyRef.current = true;
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftReadyRef.current) return;
+
+    try {
+      window.sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          templateKey,
+          donorPreview,
+          images,
+          selectedIdx,
+          consent,
+          creditUsed,
+          existingImageUrl,
+        })
+      );
+    } catch {}
+  }, [draftKey, templateKey, donorPreview, images, selectedIdx, consent, creditUsed, existingImageUrl]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];

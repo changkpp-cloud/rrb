@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useMemo, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import IosPageHeader from "@/components/IosPageHeader";
@@ -34,6 +34,7 @@ export default function MockWreathPage() {
 function MockWreathInner() {
   const params = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const draftReadyRef = useRef(false);
 
   const [donorPhoto, setDonorPhoto] = useState<File | null>(null);
   const [donorPhotoPreview, setDonorPhotoPreview] = useState("");
@@ -51,6 +52,16 @@ function MockWreathInner() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [shared, setShared] = useState(false);
+  const draftKey = useMemo(
+    () =>
+      [
+        "rrb:mock-wreath-draft",
+        params.get("donation_id") || "guest",
+        params.get("name") || "anonymous",
+        params.get("deceased_name") || "memorial",
+      ].join(":"),
+    [params]
+  );
 
   const selectedTemplate =
     AI_PHOTO_TEMPLATES.find((template) => template.templateKey === templateKey) ??
@@ -73,6 +84,69 @@ function MockWreathInner() {
       }),
     [templateKey, donorName, donorPosition, condolenceText, deceasedName, funeralPlace]
   );
+
+  useEffect(() => {
+    draftReadyRef.current = false;
+    try {
+      const raw = window.sessionStorage.getItem(draftKey);
+      if (raw) {
+        const draft = JSON.parse(raw) as {
+          donorPhotoPreview?: string;
+          templateKey?: AiPhotoTemplateKey;
+          donorName?: string;
+          donorPosition?: string;
+          condolenceText?: string;
+          deceasedName?: string;
+          funeralPlace?: string;
+          generatedImages?: string[];
+          selectedImage?: string;
+        };
+
+        if (draft.donorPhotoPreview) setDonorPhotoPreview(draft.donorPhotoPreview);
+        if (draft.templateKey) setTemplateKey(draft.templateKey);
+        if (typeof draft.donorName === "string") setDonorName(draft.donorName);
+        if (typeof draft.donorPosition === "string") setDonorPosition(draft.donorPosition);
+        if (typeof draft.condolenceText === "string") setCondolenceText(draft.condolenceText);
+        if (typeof draft.deceasedName === "string") setDeceasedName(draft.deceasedName);
+        if (typeof draft.funeralPlace === "string") setFuneralPlace(draft.funeralPlace);
+        if (Array.isArray(draft.generatedImages)) setGeneratedImages(draft.generatedImages);
+        if (typeof draft.selectedImage === "string") setSelectedImage(draft.selectedImage);
+      }
+    } catch {}
+    draftReadyRef.current = true;
+  }, [draftKey]);
+
+  useEffect(() => {
+    if (!draftReadyRef.current) return;
+
+    try {
+      window.sessionStorage.setItem(
+        draftKey,
+        JSON.stringify({
+          donorPhotoPreview,
+          templateKey,
+          donorName,
+          donorPosition,
+          condolenceText,
+          deceasedName,
+          funeralPlace,
+          generatedImages,
+          selectedImage,
+        })
+      );
+    } catch {}
+  }, [
+    draftKey,
+    donorPhotoPreview,
+    templateKey,
+    donorName,
+    donorPosition,
+    condolenceText,
+    deceasedName,
+    funeralPlace,
+    generatedImages,
+    selectedImage,
+  ]);
 
   function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
