@@ -366,7 +366,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                     {memorial.age > 0 && <span style={{ whiteSpace: "nowrap" }}>อายุ {memorial.age} ปี</span>}
                   </p>
                 )}
-                <div style={{ textAlign: "center", marginTop: Math.round(1*s) }}>
+                <div style={{ textAlign: "center", marginTop: Math.round(11*s) }}>
                   <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(13*s), margin: 0, letterSpacing: "0.02em", lineHeight: 1.35 }}>
                     ❖ ฌาปนกิจ {ceremonyDate} ❖
                   </p>
