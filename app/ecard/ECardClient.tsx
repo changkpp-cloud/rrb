@@ -257,96 +257,142 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               {showAmount ? "อีการ์ดแสดงยอดเงิน" : "E-Card ขอบคุณ ไม่แสดงยอดเงิน"}
             </p>
 
-            {/* E-card — fixed 1080×1350 px saved (360×450 element × pixelRatio 3) */}
+            {/* E-card — 1080×1350 px saved (360×450 × pixelRatio 3) */}
             <div
               ref={cardRef}
               style={{
                 width: "100%",
                 height: Math.round(cardWidth * 5 / 4),
-                background: "linear-gradient(170deg,#fdf8ee 0%,#f5e4b5 35%,#fdf8ee 65%,#eedfa8 100%)",
-                border: "1.5px solid #e8c97a",
-                borderRadius: 0,
-                boxShadow: "0 8px 32px rgba(184,134,11,0.10)",
-                display: "flex",
-                flexDirection: "column",
+                background: "linear-gradient(165deg,#fefaf0 0%,#fdf4de 40%,#fefaf0 70%,#fdf0d0 100%)",
+                border: `${Math.round(2*s)}px solid #c9a050`,
+                position: "relative",
                 overflow: "hidden",
                 fontFamily: "'Sarabun', sans-serif",
+                boxShadow: "0 8px 32px rgba(184,134,11,0.12)",
+                display: "flex",
+                flexDirection: "column",
               }}
             >
-              {/* Header — 50px element = 150px saved */}
-              <div style={{ background: "linear-gradient(90deg,#c4a052,#e0c070,#eacf80,#e0c070,#c4a052)", padding: `${Math.round(15*s)}px ${Math.round(16*s)}px`, display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(8*s), flexShrink: 0 }}>
-                <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full" /></span>
-                <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(15*s), letterSpacing: "0.22em", fontFamily: "'Sarabun', sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
-                <span style={{ display: "inline-flex", width: Math.round(20*s), height: Math.round(20*s), color: "rgba(255,255,255,0.9)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+              {/* Inner thin border frame */}
+              <div style={{ position: "absolute", inset: Math.round(5*s), border: `0.5px solid rgba(201,160,80,0.30)`, pointerEvents: "none", zIndex: 5 }} />
+
+              {/* Corner floral — top right */}
+              <ECardCornerFloral s={s} topRight />
+              {/* Corner floral — bottom left */}
+              <ECardCornerFloral s={s} />
+
+              {/* ── Brand badge (pill) ── */}
+              <div style={{ display: "flex", justifyContent: "center", paddingTop: Math.round(20*s), paddingBottom: Math.round(4*s), flexShrink: 0, position: "relative", zIndex: 6 }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: Math.round(7*s), background: "linear-gradient(90deg,#c4a052,#d8b860,#e4ca70,#d8b860,#c4a052)", border: `${Math.round(1.5*s)}px solid rgba(180,140,40,0.5)`, borderRadius: 999, padding: `${Math.round(6*s)}px ${Math.round(18*s)}px`, boxShadow: `0 ${Math.round(2*s)}px ${Math.round(8*s)}px rgba(180,140,40,0.20)` }}>
+                  <span style={{ display: "inline-flex", width: Math.round(17*s), height: Math.round(17*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full" /></span>
+                  <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(13*s), letterSpacing: "0.18em", fontFamily: "'Sarabun',sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
+                  <span style={{ display: "inline-flex", width: Math.round(17*s), height: Math.round(17*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+                </div>
               </div>
 
-              {/* ── Content (safe zone) — fills remaining space between header and bottom zone ── */}
-              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "space-evenly", padding: `0 ${Math.round(16*s)}px`, overflow: "hidden" }}>
-
-                {/* ส่วนที่ 1: ผู้มอบ */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(4*s), width: "100%" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s) }}>
-                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
-                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", letterSpacing: "0.1em", margin: 0 }}>เจ้าภาพขอขอบคุณ</p>
-                    <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "#e0c070" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
-                  </div>
-                  <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(22*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>
-                    {name || "ชื่อ หรือ องค์กร"}
-                  </p>
-                  {title && (
-                    <p style={{ fontSize: Math.round(12*s), color: "#92400e", margin: 0, textAlign: "center", lineHeight: 1.4 }}>{title}</p>
-                  )}
-                  <p style={{ fontSize: Math.round(12*s), color: "#92400e", textAlign: "center", lineHeight: 1.6, margin: 0 }}>
-                    {showAmount
-                      ? <>ร่วมมอบหรีดร่วมบุญ <span style={{ fontWeight: 700, color: "#78350f" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span></>
-                      : "ร่วมมอบหรีดร่วมบุญ"
-                    }
-                  </p>
+              {/* ── Donor section ── */}
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", padding: `${Math.round(12*s)}px ${Math.round(20*s)}px ${Math.round(10*s)}px`, position: "relative", zIndex: 6 }}>
+                {/* Section label */}
+                <div style={{ display: "flex", alignItems: "center", gap: Math.round(6*s), marginBottom: Math.round(6*s) }}>
+                  <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(24*s), background: "rgba(201,160,80,0.35)" }} />
+                  <span style={{ fontSize: Math.round(10*s), color: "#92400e", letterSpacing: "0.10em", fontFamily: "'Sarabun',sans-serif", whiteSpace: "nowrap" }}>❖ เจ้าภาพขอขอบคุณ ❖</span>
+                  <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(24*s), background: "rgba(201,160,80,0.35)" }} />
                 </div>
+                {/* Donor name — large */}
+                <p style={{ fontWeight: 800, color: "#4a1f08", fontSize: Math.round(32*s), lineHeight: 1.2, margin: 0, textAlign: "center", letterSpacing: "-0.01em" }}>
+                  {name || "ชื่อ หรือ องค์กร"}
+                </p>
+                {/* Title */}
+                {title && (
+                  <p style={{ fontSize: Math.round(13*s), color: "#78350f", fontWeight: 600, margin: `${Math.round(4*s)}px 0 0`, textAlign: "center", lineHeight: 1.4 }}>{title}</p>
+                )}
+                {/* Action label */}
+                <p style={{ fontSize: Math.round(11*s), color: "#92400e", textAlign: "center", lineHeight: 1.7, margin: `${Math.round(4*s)}px 0 0` }}>
+                  {showAmount
+                    ? <>ขอแสดงความอาลัย และร่วมมอบหรีดร่วมบุญ{" "}<span style={{ fontWeight: 700, color: "#5c2d0e" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span></>
+                    : <>ขอแสดงความอาลัย<br />ร่วมมอบหรีดร่วมบุญ</>
+                  }
+                </p>
+              </div>
 
-                {/* Divider */}
-                <div style={{ display: "flex", alignItems: "center", gap: Math.round(8*s), width: "100%" }}>
-                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to right, transparent, #e0c070)" }} />
-                  <span style={{ color: "#e0c070", fontSize: Math.round(13*s) }}>❖</span>
-                  <div style={{ flex: 1, height: 1, background: "linear-gradient(to left, transparent, #e0c070)" }} />
-                </div>
+              {/* ── Gold divider ── */}
+              <div style={{ display: "flex", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, marginBottom: Math.round(10*s), position: "relative", zIndex: 6 }}>
+                <div style={{ flex: 1, height: Math.round(0.75*s), background: "linear-gradient(to right,transparent,#c9a050 30%,#e0c070 50%,#c9a050 70%,transparent)" }} />
+                <div style={{ width: Math.round(10*s), height: Math.round(10*s), background: "linear-gradient(135deg,#c9a050,#e8c070)", transform: "rotate(45deg)", margin: `0 ${Math.round(8*s)}px`, boxShadow: `0 0 ${Math.round(4*s)}px rgba(201,160,80,0.40)` }} />
+                <div style={{ flex: 1, height: Math.round(0.75*s), background: "linear-gradient(to left,transparent,#c9a050 30%,#e0c070 50%,#c9a050 70%,transparent)" }} />
+              </div>
 
-                {/* ส่วนที่ 2: ผู้วายชนม์ */}
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: Math.round(5*s) }}>
-                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.12em", margin: 0 }}>แด่ผู้วายชนม์</p>
+              {/* ── Deceased section ── */}
+              <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, position: "relative", zIndex: 6 }}>
+                <p style={{ fontSize: Math.round(10*s), color: "#a16207", letterSpacing: "0.12em", margin: `0 0 ${Math.round(8*s)}px`, fontFamily: "'Sarabun',sans-serif" }}>❖ แด่ผู้วายชนม์ ❖</p>
 
-                  <div style={{ width: Math.round(64*s), height: Math.round(76*s), borderRadius: "50% / 45%", overflow: "hidden", border: "1.5px solid #e8c97a", boxShadow: "0 3px 10px rgba(184,134,11,0.10), 0 0 0 3px rgba(253,248,238,0.8), 0 0 0 5px rgba(201,168,76,0.10)" }}>
+                {/* Photo with floral frame */}
+                <div style={{ position: "relative", marginBottom: Math.round(10*s) }}>
+                  {/* Floral wreath SVG behind photo */}
+                  <svg width={Math.round(120*s)} height={Math.round(60*s)} viewBox="0 0 120 60"
+                    style={{ position: "absolute", bottom: Math.round(-8*s), left: "50%", transform: "translateX(-50%)", zIndex: 1 }}>
+                    {/* Left rose */}
+                    <g transform="translate(22,32)">
+                      {[0,60,120,180,240,300].map((a,i)=><ellipse key={i} cx="0" cy="-9" rx="6" ry="10" fill="#f5edd8" opacity={0.88-i*0.04} transform={`rotate(${a})`}/>)}
+                      <circle cx="0" cy="0" r="4" fill="#eed888"/>
+                    </g>
+                    {/* Right rose */}
+                    <g transform="translate(98,32)">
+                      {[0,60,120,180,240,300].map((a,i)=><ellipse key={i} cx="0" cy="-9" rx="6" ry="10" fill="#f5edd8" opacity={0.88-i*0.04} transform={`rotate(${a})`}/>)}
+                      <circle cx="0" cy="0" r="4" fill="#eed888"/>
+                    </g>
+                    {/* Center ornament */}
+                    <polygon points="60,22 62,28 68,28 63,31 65,37 60,34 55,37 57,31 52,28 58,28" fill="#c9a050" opacity="0.65"/>
+                    {/* Small accent flowers */}
+                    <circle cx="38" cy="44" r="3" fill="#f8f2e0" stroke="#e0c060" strokeWidth="0.4" opacity="0.85"/>
+                    <circle cx="82" cy="44" r="3" fill="#f8f2e0" stroke="#e0c060" strokeWidth="0.4" opacity="0.85"/>
+                    <circle cx="50" cy="50" r="2" fill="#f8f2e0" opacity="0.75"/>
+                    <circle cx="70" cy="50" r="2" fill="#f8f2e0" opacity="0.75"/>
+                    {/* Stems */}
+                    <path d="M 36 38 Q 30 30 22 25" stroke="#b89040" strokeWidth="0.8" fill="none" opacity="0.4"/>
+                    <path d="M 84 38 Q 90 30 98 25" stroke="#b89040" strokeWidth="0.8" fill="none" opacity="0.4"/>
+                    <path d="M 42 46 Q 38 42 34 38" stroke="#b89040" strokeWidth="0.6" fill="none" opacity="0.35"/>
+                    <path d="M 78 46 Q 82 42 86 38" stroke="#b89040" strokeWidth="0.6" fill="none" opacity="0.35"/>
+                  </svg>
+                  {/* Oval photo */}
+                  <div style={{ width: Math.round(84*s), height: Math.round(100*s), borderRadius: "50% / 45%", overflow: "hidden", border: `${Math.round(2*s)}px solid #e8c97a`, boxShadow: `0 ${Math.round(3*s)}px ${Math.round(14*s)}px rgba(184,134,11,0.15), 0 0 0 ${Math.round(4*s)}px rgba(253,248,238,0.85), 0 0 0 ${Math.round(7*s)}px rgba(201,168,76,0.18)`, position: "relative", zIndex: 2 }}>
                     {memorialPhotoSrc ? (
                       <img src={memorialPhotoSrc} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin={memorialPhotoSrc.startsWith("data:") ? undefined : "anonymous"} />
                     ) : (
                       <div style={{ width: "100%", height: "100%", background: "#fef3c7", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <span style={{ display: "inline-flex", width: Math.round(30*s), height: Math.round(30*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
+                        <span style={{ display: "inline-flex", width: Math.round(36*s), height: Math.round(36*s), color: "#e0c070" }}><LotusIcon className="w-full h-full" /></span>
                       </div>
                     )}
                   </div>
-
-                  <div style={{ textAlign: "center" }}>
-                    <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(16*s), lineHeight: 1.3, margin: 0 }}>{deceasedName}</p>
-                    {(birthDate || deathDate) && (
-                      <p style={{ fontSize: Math.round(10*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.7 }}>
-                        {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
-                      </p>
-                    )}
-                    {memorial.age > 0 && (
-                      <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(2*s)}px 0 0` }}>อายุ {memorial.age} ปี</p>
-                    )}
-                    <p style={{ fontSize: Math.round(13*s), color: "#92400e", fontWeight: 600, margin: `${Math.round(6*s)}px 0 0` }}>ฌาปนกิจ {ceremonyDate}</p>
-                    {ceremonyLocation && <p style={{ fontSize: Math.round(10*s), color: "#a16207", margin: `${Math.round(2*s)}px 0 0` }}>{ceremonyLocation}</p>}
-                  </div>
                 </div>
 
+                {/* Deceased info */}
+                <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(20*s), lineHeight: 1.3, margin: 0, textAlign: "center" }}>{deceasedName}</p>
+                {(birthDate || deathDate) && (
+                  <p style={{ fontSize: Math.round(10*s), color: "#92400e", margin: `${Math.round(4*s)}px 0 0`, lineHeight: 1.7, textAlign: "center" }}>
+                    {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
+                  </p>
+                )}
+                {memorial.age > 0 && (
+                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(2*s)}px 0 0` }}>อายุ {memorial.age} ปี</p>
+                )}
               </div>
 
-              {/* ── Bottom zone — 50px element = 150px saved, ทองเข้มเหมือน header ── */}
-              <div style={{ height: Math.round(50*s), flexShrink: 0, background: "linear-gradient(90deg,#c4a052,#e0c070,#eacf80,#e0c070,#c4a052)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(10*s) }}>
-                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full" /></span>
-                <span style={{ color: "rgba(255,255,255,0.45)", fontSize: Math.round(10*s), letterSpacing: "0.35em" }}>❖ ❖ ❖</span>
-                <span style={{ display: "inline-flex", width: Math.round(16*s), height: Math.round(16*s), color: "rgba(255,255,255,0.5)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
+              {/* ── Ceremony section ── */}
+              <div style={{ textAlign: "center", padding: `${Math.round(8*s)}px ${Math.round(16*s)}px ${Math.round(10*s)}px`, borderTop: `${Math.round(0.75*s)}px solid rgba(201,160,80,0.30)`, position: "relative", zIndex: 6 }}>
+                <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(15*s), margin: 0, letterSpacing: "0.02em" }}>
+                  ❖ ฌาปนกิจ {ceremonyDate} ❖
+                </p>
+                {ceremonyLocation && (
+                  <p style={{ fontSize: Math.round(10*s), color: "#a16207", margin: `${Math.round(4*s)}px 0 0`, lineHeight: 1.5 }}>{ceremonyLocation}</p>
+                )}
+              </div>
+
+              {/* ── Bottom gold strip ── */}
+              <div style={{ height: Math.round(36*s), flexShrink: 0, background: "linear-gradient(90deg,#c4a052,#d8b860,#e4ca70,#d8b860,#c4a052)", display: "flex", alignItems: "center", justifyContent: "center", gap: Math.round(12*s), position: "relative", zIndex: 6 }}>
+                <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "rgba(255,255,255,0.55)" }}><LotusIcon className="w-full h-full" /></span>
+                <span style={{ color: "rgba(255,255,255,0.42)", fontSize: Math.round(9*s), letterSpacing: "0.40em" }}>❖ ❖ ❖</span>
+                <span style={{ display: "inline-flex", width: Math.round(14*s), height: Math.round(14*s), color: "rgba(255,255,255,0.55)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
               </div>
             </div>
 
@@ -411,6 +457,60 @@ function MenuLink({
       {icon}
       <span>{label}</span>
     </Link>
+  );
+}
+
+function ECardCornerFloral({ s, topRight = false }: { s: number; topRight?: boolean }) {
+  const size = Math.round(108 * s);
+  return (
+    <div style={{
+      position: "absolute",
+      top: topRight ? 0 : undefined,
+      bottom: topRight ? undefined : 0,
+      right: topRight ? 0 : undefined,
+      left: topRight ? undefined : 0,
+      width: size, height: size,
+      pointerEvents: "none", zIndex: 3,
+    }}>
+      <svg width={size} height={size} viewBox="0 0 108 108"
+           style={{ display: "block", transform: topRight ? "none" : "rotate(180deg)" }}>
+        {/* Gold stems */}
+        <path d="M106 2 Q82 36 56 56" stroke="#c4a050" strokeWidth="1.2" fill="none" opacity="0.40"/>
+        <path d="M100 2 Q78 32 54 50" stroke="#b89040" strokeWidth="0.8" fill="none" opacity="0.30"/>
+        <path d="M106 12 Q88 42 68 60" stroke="#c4a050" strokeWidth="0.7" fill="none" opacity="0.25"/>
+        {/* Eucalyptus leaves */}
+        <ellipse cx="88" cy="44" rx="5" ry="10" fill="#cfc888" opacity="0.38" transform="rotate(28 88 44)"/>
+        <ellipse cx="95" cy="35" rx="4" ry="8" fill="#c8c080" opacity="0.30" transform="rotate(18 95 35)"/>
+        <ellipse cx="80" cy="52" rx="4" ry="8" fill="#d0ca88" opacity="0.28" transform="rotate(38 80 52)"/>
+        {/* Large rose */}
+        <g transform="translate(78,22)">
+          {[0,51,102,154,206,257,309].map((a,i)=>(
+            <ellipse key={i} cx="0" cy="-14" rx="9" ry="16"
+              fill={i%2===0?"#f5edd8":"#efe5cc"} opacity={0.90-i*0.04}
+              transform={`rotate(${a})`}/>
+          ))}
+          <circle cx="0" cy="0" r="6" fill="#e8d090"/>
+        </g>
+        {/* Medium rose */}
+        <g transform="translate(40,55)">
+          {[0,60,120,180,240,300].map((a,i)=>(
+            <ellipse key={i} cx="0" cy="-10" rx="7" ry="11"
+              fill="#faf3e2" opacity={0.88-i*0.04}
+              transform={`rotate(${a})`}/>
+          ))}
+          <circle cx="0" cy="0" r="4.5" fill="#edd888"/>
+        </g>
+        {/* Small accent flowers */}
+        <circle cx="57" cy="18" r="4" fill="#f8f2e2" stroke="#e0c060" strokeWidth="0.4" opacity="0.88"/>
+        <circle cx="65" cy="10" r="3" fill="#f8f2e2" stroke="#e0c060" strokeWidth="0.4" opacity="0.82"/>
+        <circle cx="50" cy="28" r="2.5" fill="#f8f2e2" stroke="#e0c060" strokeWidth="0.3" opacity="0.75"/>
+        <circle cx="72" cy="22" r="2" fill="#f8f2e2" opacity="0.68"/>
+        {/* Gypsophila tiny dots */}
+        {[[62,30],[68,38],[56,36],[74,28],[60,40]].map(([cx,cy],i)=>(
+          <circle key={i} cx={cx} cy={cy} r="1.8" fill="#faf8f0" stroke="#e8d880" strokeWidth="0.3" opacity={0.72-i*0.05}/>
+        ))}
+      </svg>
+    </div>
   );
 }
 
