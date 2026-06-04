@@ -54,6 +54,8 @@ export async function POST(req: NextRequest) {
     "ร่วมอาลัยและร่วมทำบุญ";
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
+  const donorGender = (form.get("donor_gender") as string | null) ?? "female";
+  const donorAgeRange = (form.get("donor_age_range") as string | null) ?? "";
 
   const supabase = createAdminClient();
 
@@ -117,6 +119,8 @@ export async function POST(req: NextRequest) {
     condolenceText,
     deceasedName,
     funeralPlace,
+    donorGender,
+    donorAgeRange,
     promptTemplate: promptOverride,
     negativePrompt: negativeOverride,
   });
