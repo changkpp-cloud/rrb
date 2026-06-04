@@ -360,13 +360,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {/* Deceased info */}
                 <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(19*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
                 {(birthDate || deathDate || memorial.age > 0) && (
-                  <p style={{ fontSize: Math.round(11*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.45, textAlign: "center" }}>
-                    {birthDate && <>ชาตะ {birthDate}{(deathDate || memorial.age > 0) ? "  ·  " : ""}</>}
-                    {deathDate && <>มรณะ {deathDate}{memorial.age > 0 ? "  ·  " : ""}</>}
-                    {memorial.age > 0 && <>อายุ {memorial.age} ปี</>}
+                  <p style={{ fontSize: Math.round(9.2*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.35, textAlign: "center", whiteSpace: "nowrap", maxWidth: "100%" }}>
+                    {birthDate && <>ชาตะ {birthDate}{(deathDate || memorial.age > 0) ? " · " : ""}</>}
+                    {deathDate && <>มรณะ {deathDate}{memorial.age > 0 ? " · " : ""}</>}
+                    {memorial.age > 0 && <span style={{ whiteSpace: "nowrap" }}>อายุ {memorial.age} ปี</span>}
                   </p>
                 )}
-                <div style={{ textAlign: "center", marginTop: Math.round(2*s) }}>
+                <div style={{ textAlign: "center", marginTop: Math.round(1*s) }}>
                   <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(13*s), margin: 0, letterSpacing: "0.02em", lineHeight: 1.35 }}>
                     ❖ ฌาปนกิจ {ceremonyDate} ❖
                   </p>
