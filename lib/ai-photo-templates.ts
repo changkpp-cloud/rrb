@@ -198,11 +198,12 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   const donorGender = input.donorGender?.trim() || "female";
   const donorAgeRange = input.donorAgeRange?.trim() || "35–50 years old";
 
-  // Build plaque text (skip empty position line)
+  // Build plaque text from the 2 printed fields only
+  // Field 1: ชื่อ หรือ หน่วยงาน → donorName
+  // Field 2: ตำแหน่ง หรือ ข้อความอาลัย → donorPosition
   const plaqueLines = [
     input.donorName?.trim() || "ผู้ร่วมบุญ",
-    input.donorPosition?.trim() || "",
-    input.condolenceText?.trim() || "ร่วมอาลัยและร่วมทำบุญ",
+    input.donorPosition?.trim(),
   ].filter(Boolean).join("\n");
 
   const replacements: Record<string, string> = {
@@ -265,15 +266,13 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   return parts.join("\n");
 }
 
-// Build plaque text for display outside of prompt building
+// Build plaque text (2 fields only — matches the print-name form)
 export function buildPlaqueText(input: {
   donorName: string;
   donorPosition?: string;
-  condolenceText?: string;
 }) {
   return [
     input.donorName?.trim() || "ผู้ร่วมบุญ",
-    input.donorPosition?.trim() || "",
-    input.condolenceText?.trim() || "ร่วมอาลัยและร่วมทำบุญ",
+    input.donorPosition?.trim(),
   ].filter(Boolean).join("\n");
 }

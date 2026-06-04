@@ -56,9 +56,7 @@ export async function POST(req: NextRequest) {
   const donorName =
     (form.get("donor_name") as string | null) ?? "ผู้ร่วมบุญ";
   const donorPosition = (form.get("donor_position") as string | null) ?? "";
-  const condolenceText =
-    (form.get("condolence_text") as string | null) ??
-    "ร่วมอาลัยและร่วมทำบุญ";
+  const condolenceText = (form.get("condolence_text") as string | null) ?? "";
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
   const donorGender = (form.get("donor_gender") as string | null) ?? "female";
