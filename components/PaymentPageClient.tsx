@@ -172,12 +172,12 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             {/* Buttons row */}
             <div className="mt-3 flex flex-wrap justify-start gap-2">
               {(promptpayPhone || memorial.bank_account_image_url) && (
-                <Button variant="secondary" size="sm" onClick={saveQR}>
+                <Button variant="secondary" size="sm" onClick={saveQR} className="border border-gold-200 bg-white">
                   {savedQR ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Download className="w-3.5 h-3.5" />}
                   {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
                 </Button>
               )}
-              <Button variant="secondary" size="sm" onClick={copyAccount}>
+              <Button variant="secondary" size="sm" onClick={copyAccount} className="border border-gold-200 bg-white">
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
               </Button>
@@ -192,7 +192,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             <div className="mt-3">
               {slipPreview ? (
                 <label className="block cursor-pointer">
-                  <div className="w-full rounded-xl overflow-hidden border-2 border-emerald-300 ring-2 ring-emerald-100 bg-cream-50 flex justify-center transition-all">
+                  <div className="w-full rounded-xl overflow-hidden border border-gold-200 bg-cream-50 flex justify-center transition-all">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={slipPreview}
