@@ -78,7 +78,7 @@ function PrintDoneInner() {
 
             <Link
               href={buildECardHref("ecard")}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <ImageIcon className="w-4 h-4" />
               E-Card ขอบคุณ
@@ -86,7 +86,7 @@ function PrintDoneInner() {
 
             <Link
               href={buildECardHref("certificate")}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
+              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <FileText className="w-4 h-4" />
               เอกสารมอบหรีด

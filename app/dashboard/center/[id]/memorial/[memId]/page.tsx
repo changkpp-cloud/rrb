@@ -19,6 +19,7 @@ import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
 import VerifyDonationButton from "./VerifyDonationButton";
+import StatusBadge from "@/components/ui/StatusBadge";
 
 const SYSTEM_FEE = 100;
 
@@ -45,17 +46,6 @@ const NAMEPLATE_LABEL: Record<string, string> = {
   posted: "ติดบอร์ดแล้ว",
 };
 
-const STATUS_LABEL: Record<string, string> = {
-  pending: "รอตรวจ",
-  confirmed: "ยืนยัน",
-  rejected: "ปฏิเสธ",
-};
-
-const STATUS_COLOR: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700",
-  confirmed: "bg-emerald-50 text-emerald-700",
-  rejected: "bg-red-50 text-red-600",
-};
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", {
@@ -265,9 +255,13 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
             </div>
             <div className="text-right shrink-0">
               <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
-              <span className={`text-[9px] px-1.5 py-0.5 rounded-full ${STATUS_COLOR[d.status]}`}>
-                {mode === "nameplate" || mode === "donor" ? NAMEPLATE_LABEL[d.nameplate_status] : STATUS_LABEL[d.status]}
-              </span>
+              {mode === "verify" ? (
+                <StatusBadge status={d.status as "pending" | "confirmed" | "rejected"} className="mt-0.5" />
+              ) : (
+                <span className="mt-0.5 inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gold-50 border border-gold-200 text-gold-600">
+                  {NAMEPLATE_LABEL[d.nameplate_status] ?? d.nameplate_status}
+                </span>
+              )}
             </div>
           </div>
           {d.slip_url && (

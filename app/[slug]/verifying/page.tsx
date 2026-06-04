@@ -54,7 +54,10 @@ function VerifyingInner() {
               <div className="relative flex items-center justify-center">
                 <div className="absolute w-32 h-32 rounded-full border-4 border-transparent animate-spin" style={{ borderTopColor: "#c9a84c", borderRightColor: "#e8c05a44", animationDuration: "1.2s" }} />
                 <div className="absolute w-24 h-24 rounded-full border-2 border-transparent animate-spin" style={{ borderTopColor: "#b8860b", borderLeftColor: "#c9a84c66", animationDuration: "1.8s", animationDirection: "reverse" }} />
-                <div className="w-16 h-16 rounded-full bg-cream-100 border border-gold-200 flex items-center justify-center">
+                <div
+                  className="w-16 h-16 rounded-full bg-cream-50 gold-border flex items-center justify-center"
+                  style={{ boxShadow: "inset 0 2px 8px rgba(176,120,32,0.08), 0 2px 12px rgba(176,120,32,0.12)" }}
+                >
                   <LotusIcon className="w-8 h-8 text-gold-500 animate-pulse" />
                 </div>
               </div>
@@ -68,7 +71,13 @@ function VerifyingInner() {
                   const isDone = i < stepIndex;
                   return (
                     <div key={step} className={`flex items-center gap-3 px-4 py-2.5 rounded-xl transition-all duration-500 ${isActive ? "bg-gold-50 border border-gold-300" : isDone ? "bg-cream-100 border border-gold-100" : "opacity-30"}`}>
-                      <div className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${isActive ? "bg-gold-500 animate-pulse scale-125" : isDone ? "bg-gold-400" : "bg-gold-200"}`} />
+                      {isDone ? (
+                        <svg viewBox="0 0 12 12" className="w-3 h-3 text-gold-500 shrink-0" fill="none">
+                          <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      ) : (
+                        <div className={`w-2 h-2 rounded-full shrink-0 transition-all duration-300 ${isActive ? "bg-gold-500 animate-pulse scale-125" : "bg-gold-200"}`} />
+                      )}
                       <span className={`text-xs font-medium transition-colors duration-300 ${isActive ? "text-gold-800" : isDone ? "text-gold-600" : "text-gold-300"}`}>{step}</span>
                       {isActive && (<span className="ml-auto flex gap-0.5">{[0, 1, 2].map((d) => (<span key={d} className="w-1 h-1 rounded-full bg-gold-400 animate-bounce" style={{ animationDelay: `${d * 0.15}s` }} />))}</span>)}
                     </div>

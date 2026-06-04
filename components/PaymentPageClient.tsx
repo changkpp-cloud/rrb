@@ -7,6 +7,8 @@ import Image from "next/image";
 import { Copy, Check, CloudUpload, Download } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import PromptPayQR from "./PromptPayQR";
+import Button from "@/components/ui/Button";
+import LoadingOverlay from "@/components/ui/LoadingOverlay";
 import type { Memorial } from "@/lib/supabase/types";
 
 const SYSTEM_FEE = 100;
@@ -170,21 +172,15 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             {/* Buttons row */}
             <div className="mt-3 flex flex-wrap justify-start gap-2">
               {(promptpayPhone || memorial.bank_account_image_url) && (
-                <button
-                  onClick={saveQR}
-                  className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
-                >
-                  {savedQR ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Download className="w-3.5 h-3.5" />}
+                <Button variant="secondary" size="sm" onClick={saveQR}>
+                  {savedQR ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Download className="w-3.5 h-3.5" />}
                   {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
-                </button>
+                </Button>
               )}
-              <button
-                onClick={copyAccount}
-                className="inline-flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl gold-border bg-cream-50 hover:bg-cream-100 active:scale-95 transition-all text-sm text-gold-700 font-semibold shadow-sm"
-              >
-                {copied ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
+              <Button variant="secondary" size="sm" onClick={copyAccount}>
+                {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
-              </button>
+              </Button>
             </div>
           </Card>
 
@@ -196,7 +192,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             <div className="mt-3">
               {slipPreview ? (
                 <label className="block cursor-pointer">
-                  <div className="w-full rounded-xl overflow-hidden border border-gold-200 bg-cream-50 flex justify-center">
+                  <div className="w-full rounded-xl overflow-hidden border-2 border-emerald-300 ring-2 ring-emerald-100 bg-cream-50 flex justify-center transition-all">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={slipPreview}
@@ -237,13 +233,18 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               </div>
             )}
 
-            <button
-              onClick={handleVerify}
-              disabled={!slipFile || parsedAmount <= 0 || verifying}
-              className="mt-3 w-full gold-gradient text-white font-semibold py-3 rounded-xl disabled:opacity-50 transition-opacity"
-            >
-              {verifying ? "กำลังตรวจสอบสลิป" : "ตรวจสอบสลิป"}
-            </button>
+            <div className="mt-3">
+              <Button
+                fullWidth
+                variant="primary"
+                size="lg"
+                loading={verifying}
+                disabled={!slipFile || parsedAmount <= 0}
+                onClick={handleVerify}
+              >
+                ตรวจสอบสลิป
+              </Button>
+            </div>
 
           </Card>
 
@@ -252,6 +253,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
           <div className="h-2" />
         </div>
       </main>
+      <LoadingOverlay show={verifying && !verified} message="กำลังตรวจสอบสลิป..." />
       {verified && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-gold-900/25 backdrop-blur-sm">
           <div className="w-full max-w-xs rounded-3xl bg-cream-50 gold-border card-shadow px-7 py-8 text-center">
