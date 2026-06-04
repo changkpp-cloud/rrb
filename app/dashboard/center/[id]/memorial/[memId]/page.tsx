@@ -44,6 +44,7 @@ const NAMEPLATE_LABEL: Record<string, string> = {
   queued: "รอพิมพ์",
   printed: "พิมพ์แล้ว",
   posted: "ติดบอร์ดแล้ว",
+  error:  "พิมพ์ไม่สำเร็จ",
 };
 
 
@@ -71,6 +72,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const printQueue = confirmed.filter((d) => d.nameplate_status === "pending" || d.nameplate_status === "queued");
   const printed = confirmed.filter((d) => d.nameplate_status === "printed");
   const posted = confirmed.filter((d) => d.nameplate_status === "posted");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const printError = confirmed.filter((d) => (d.nameplate_status as any) === "error");
   const total = confirmed.reduce((s, d) => s + d.amount, 0);
   const netAmount = Math.max(total - SYSTEM_FEE, 0);
 
@@ -120,7 +123,26 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
         <section id="print" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Printer} title="คิวพิมพ์ป้าย" subtitle={`${printQueue.length} รอพิมพ์ · ${printed.length} พิมพ์แล้ว · ${posted.length} ติดบอร์ดแล้ว`} />
-          {printQueue.length === 0 && printed.length === 0 ? (
+          {printError.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 space-y-1">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
+                <p className="text-sm font-semibold text-red-700">ปริ้นไม่สำเร็จ {printError.length} รายการ</p>
+              </div>
+              <p className="text-[11px] text-red-600 leading-relaxed">
+                กรุณาติดต่อเจ้าหน้าที่หรือพิมพ์ใหม่ด้วยตนเองที่เครื่องพิมพ์
+              </p>
+              <div className="space-y-1.5 pt-1">
+                {printError.map((d) => (
+                  <div key={d.id} className="flex items-center justify-between text-xs text-red-700 bg-red-100 rounded-xl px-3 py-2">
+                    <span className="font-semibold">{d.donor_name}</span>
+                    {d.donor_title && <span className="text-red-500">{d.donor_title}</span>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {printQueue.length === 0 && printed.length === 0 && printError.length === 0 ? (
             <Empty icon={Printer} text="ไม่มีคิวพิมพ์ป้ายค้าง" />
           ) : (
             <DonationList donations={[...printQueue, ...printed]} mode="nameplate" />

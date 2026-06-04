@@ -6,6 +6,68 @@ import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Check, User, Briefcase } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
+/**
+ * สร้างภาพป้ายชื่อความละเอียดสูง (1440×400 px) โดยใช้ Canvas API
+ * ใช้สัดส่วนเดียวกับ SignPreview (BASE_W 288 : BASE_H 80 = 3.6 : 1)
+ * ฟอนต์ Sarabun ถูกโหลดแล้วจาก layout.tsx
+ */
+async function generateNameplatePng(donorName: string, donorTitle: string): Promise<string> {
+  await document.fonts.ready;
+
+  const W = 1440;
+  const H = 400;
+  const canvas = document.createElement("canvas");
+  canvas.width = W;
+  canvas.height = H;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+
+  // Background gradient
+  const bg = ctx.createLinearGradient(0, 0, W, H);
+  bg.addColorStop(0, "#fdf8ee");
+  bg.addColorStop(1, "#f9f0d8");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // Outer gold border
+  ctx.strokeStyle = "#c9a84c";
+  ctx.lineWidth = 6;
+  ctx.strokeRect(3, 3, W - 6, H - 6);
+
+  // Inner gold border
+  ctx.strokeStyle = "rgba(201,168,76,0.45)";
+  ctx.lineWidth = 2;
+  ctx.strokeRect(18, 18, W - 36, H - 36);
+
+  const hasTitle = Boolean(donorTitle.trim());
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  // Auto-fit donor name
+  let namePx = 168;
+  ctx.font = `800 ${namePx}px Sarabun, "Noto Sans Thai", sans-serif`;
+  while (ctx.measureText(donorName).width > W - 80 && namePx > 40) {
+    namePx -= 4;
+    ctx.font = `800 ${namePx}px Sarabun, "Noto Sans Thai", sans-serif`;
+  }
+  ctx.fillStyle = "#4d3318";
+  ctx.fillText(donorName, W / 2, hasTitle ? H * 0.36 : H * 0.50);
+
+  // Auto-fit title / condolence
+  if (hasTitle) {
+    let titlePx = Math.round(namePx * 0.54);
+    ctx.font = `500 ${titlePx}px Sarabun, "Noto Sans Thai", sans-serif`;
+    while (ctx.measureText(donorTitle).width > W - 120 && titlePx > 24) {
+      titlePx -= 2;
+      ctx.font = `500 ${titlePx}px Sarabun, "Noto Sans Thai", sans-serif`;
+    }
+    ctx.fillStyle = "#78350f";
+    ctx.fillText(donorTitle, W / 2, H * 0.71);
+  }
+
+  return canvas.toDataURL("image/png");
+}
+
 export default function SlugPrintNamePage() {
   return (
     <Suspense>
@@ -51,6 +113,24 @@ function PrintNameInner() {
         const data = await res.json();
         donationId = data?.donation?.id ?? "";
       } catch {}
+    }
+
+    // ── Fire-and-forget: generate nameplate image → send to print API ──
+    if (donationId) {
+      generateNameplatePng(trimmedName, trimmedTitle)
+        .then((imageDataUrl) =>
+          fetch("/api/print-nameplate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              donationId,
+              donorName: trimmedName,
+              donorTitle: trimmedTitle,
+              imageDataUrl,
+            }),
+          })
+        )
+        .catch(() => {});
     }
 
     const q = new URLSearchParams({ name: trimmedName, title: trimmedTitle, amount });
