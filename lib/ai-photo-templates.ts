@@ -87,19 +87,26 @@ The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use war
 
 The main subject wears formal black funeral attire, elegant and respectful, with no colorful clothing. Show the person holding one realistic long horizontal Thai condolence plaque. The plaque must be similar in size to a traditional Thai wreath name tag, not oversized. The plaque must have an ivory cream background, a thin gold border, and small dried floral decorations at the corners.
 
-Very important: the text on the held plaque must come only from {PLAQUE_PRINT_TEXT}. This is the exact text that was sent to the printer for the real condolence plaque. Do not create, add, summarize, translate, rewrite, decorate, or invent any extra text. Do not add condolence wording unless it already exists inside {PLAQUE_PRINT_TEXT}.
+The text on the held plaque must come only from {PLAQUE_PRINT_TEXT}. This is the exact text that was sent to the printer for the real condolence plaque. Do not create, add, summarize, translate, rewrite, decorate, or invent any extra text. Do not add condolence wording unless it already exists inside {PLAQUE_PRINT_TEXT}.
 
 The held plaque must contain only this exact printed plaque text:
 
 {PLAQUE_PRINT_TEXT}
 
-Show text only on the physical plaque being held by the person. Do not add any subtitle, floating text, text overlay, lower-third title, black rectangle, dark transparent text panel, caption box, or duplicated text anywhere else in the image. Do not place any text at the bottom of the image, in front of the person, over the person's body, or over the photo. This must look like a real event photograph, not a poster, not a banner, and not a graphic design layout.
+Very important:
+Show text only on the physical plaque being held by the person.
+Do not add any subtitle, floating text, text overlay, lower-third title, black rectangle, dark transparent text panel, caption box, poster text, duplicated text, or any graphic text element anywhere else in the image.
+Do not place any text at the bottom of the image, in front of the person, over the body, over the plaque, or over the photo.
+Do not repeat the plaque text outside the plaque.
+Do not show any black box or dark text background.
+This must look like a real event photograph, not a poster, not a banner, and not a graphic design layout.
 
 Use a professional event photography style. Show full upper body, with the plaque clearly visible and the memorial board visible behind the subject. Use soft natural lighting, shallow depth of field, realistic skin texture, realistic hands and fingers. The mood must be sincere, calm, solemn, and respectful. The subject should not smile broadly.
 
-Negative constraints: no cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos, no subtitle overlay, no caption box, no black text panel, no extra typography outside the held plaque, no duplicated plaque text, no added condolence message outside {PLAQUE_PRINT_TEXT}.
+Negative constraints:
+no cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos, no subtitle overlay, no caption box, no black text panel, no extra typography outside the held plaque, no duplicated plaque text, no added condolence message outside {PLAQUE_PRINT_TEXT}, no black rectangle, no dark overlay box.
 
-If needed, refine the result while keeping the same person, pose, clothing, lighting, funeral atmosphere, plaque, and overall composition. Improve only the face identity using the provided face reference and make the face more accurate while preserving the real jawline, eyes, nose, hairstyle, age, and skin tone. Also ensure the plaque text is clean, centered, elegant, readable, and appears only on the held plaque. Do not change the background, pose, clothing, or composition.`,
+If needed, refine the result while keeping the same person, pose, clothing, lighting, funeral atmosphere, plaque, and overall composition. Improve only the face identity using the provided face reference and make the face more accurate while preserving the real jawline, eyes, nose, hairstyle, age, and skin tone. Also ensure the plaque text is clean, centered, elegant, readable, and appears only on the held plaque. Do not change the background, pose, clothing, or composition. Remove any black box, dark overlay, caption box, or extra text outside the physical plaque.`,
     negativePrompt: "",
   },
   {
