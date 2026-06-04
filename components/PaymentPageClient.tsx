@@ -172,12 +172,12 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             {/* Buttons row */}
             <div className="mt-3 flex flex-wrap justify-start gap-2">
               {(promptpayPhone || memorial.bank_account_image_url) && (
-                <Button variant="secondary" size="sm" onClick={saveQR} className="border border-gold-200 bg-white">
+                <Button variant="secondary" size="sm" onClick={saveQR} className="!border-[0.5px] !border-gold-200 bg-white">
                   {savedQR ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Download className="w-3.5 h-3.5" />}
                   {savedQR ? "บันทึกแล้ว" : "บันทึก QR โค้ด"}
                 </Button>
               )}
-              <Button variant="secondary" size="sm" onClick={copyAccount} className="border border-gold-200 bg-white">
+              <Button variant="secondary" size="sm" onClick={copyAccount} className="!border-[0.5px] !border-gold-200 bg-white">
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                 {copied ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
               </Button>
