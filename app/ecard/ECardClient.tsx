@@ -359,24 +359,21 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
                 {/* Deceased info */}
                 <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(19*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
-                {(birthDate || deathDate) && (
-                  <p style={{ fontSize: Math.round(11*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.55, textAlign: "center" }}>
-                    {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
+                {(birthDate || deathDate || memorial.age > 0) && (
+                  <p style={{ fontSize: Math.round(11*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.45, textAlign: "center" }}>
+                    {birthDate && <>ชาตะ {birthDate}{(deathDate || memorial.age > 0) ? "  ·  " : ""}</>}
+                    {deathDate && <>มรณะ {deathDate}{memorial.age > 0 ? "  ·  " : ""}</>}
+                    {memorial.age > 0 && <>อายุ {memorial.age} ปี</>}
                   </p>
                 )}
-              </div>
-
-              {/* ── Ceremony section (อายุ ติดกับ ฌาปนกิจ) ── */}
-              <div style={{ textAlign: "center", padding: `${Math.round(4*s)}px ${Math.round(16*s)}px ${Math.round(5*s)}px`, borderTop: `${Math.round(0.75*s)}px solid rgba(201,160,80,0.30)`, position: "relative", zIndex: 6 }}>
-                {memorial.age > 0 && (
-                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `0 0 ${Math.round(1*s)}px` }}>อายุ {memorial.age} ปี</p>
-                )}
-                <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(13*s), margin: 0, letterSpacing: "0.02em" }}>
-                  ❖ ฌาปนกิจ {ceremonyDate} ❖
-                </p>
-                {ceremonyLocation && (
-                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.45 }}>{ceremonyLocation}</p>
-                )}
+                <div style={{ textAlign: "center", marginTop: Math.round(2*s) }}>
+                  <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(13*s), margin: 0, letterSpacing: "0.02em", lineHeight: 1.35 }}>
+                    ❖ ฌาปนกิจ {ceremonyDate} ❖
+                  </p>
+                  {ceremonyLocation && (
+                    <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(1*s)}px 0 0`, lineHeight: 1.35 }}>{ceremonyLocation}</p>
+                  )}
+                </div>
               </div>
 
               {/* ── Bottom gold strip ── */}
