@@ -316,9 +316,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
 
               {/* ── Gold divider ── */}
-              <div style={{ display: "flex", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, marginBottom: Math.round(6*s), position: "relative", zIndex: 6 }}>
+              <div style={{ display: "flex", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, marginBottom: Math.round(3*s), position: "relative", zIndex: 6 }}>
                 <div style={{ flex: 1, height: Math.round(0.75*s), background: "linear-gradient(to right,transparent,#c9a050 30%,#e0c070 50%,#c9a050 70%,transparent)" }} />
-                <div style={{ width: Math.round(8*s), height: Math.round(8*s), background: "linear-gradient(135deg,#c9a050,#e8c070)", transform: "rotate(45deg)", margin: `0 ${Math.round(7*s)}px`, boxShadow: `0 0 ${Math.round(3*s)}px rgba(201,160,80,0.40)` }} />
+                <div style={{ width: Math.round(7*s), height: Math.round(7*s), background: "linear-gradient(135deg,#c9a050,#e8c070)", transform: "rotate(45deg)", margin: `0 ${Math.round(5*s)}px`, boxShadow: `0 0 ${Math.round(3*s)}px rgba(201,160,80,0.35)` }} />
                 <div style={{ flex: 1, height: Math.round(0.75*s), background: "linear-gradient(to left,transparent,#c9a050 30%,#e0c070 50%,#c9a050 70%,transparent)" }} />
               </div>
 
@@ -358,7 +358,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 </div>
 
                 {/* Deceased info */}
-                <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(19*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
+                <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(17*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
                 {(birthDate || deathDate) && (
                   <p style={{ fontSize: Math.round(9*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.6, textAlign: "center" }}>
                     {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
