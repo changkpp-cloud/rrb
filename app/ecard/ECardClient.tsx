@@ -295,7 +295,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {/* Section label */}
                 <div style={{ display: "flex", alignItems: "center", gap: Math.round(5*s), marginBottom: Math.round(4*s) }}>
                   <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(20*s), background: "rgba(201,160,80,0.35)" }} />
-                  <span style={{ fontSize: Math.round(9*s), color: "#92400e", letterSpacing: "0.08em", fontFamily: "'Sarabun',sans-serif", whiteSpace: "nowrap" }}>❖ เจ้าภาพขอขอบคุณ ❖</span>
+                  <span style={{ fontSize: Math.round(11*s), color: "#92400e", letterSpacing: "0.08em", fontFamily: "'Sarabun',sans-serif", whiteSpace: "nowrap" }}>❖ เจ้าภาพขอขอบคุณ ❖</span>
                   <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(20*s), background: "rgba(201,160,80,0.35)" }} />
                 </div>
                 {/* Donor name — large */}
@@ -304,10 +304,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 </p>
                 {/* Title */}
                 {title && (
-                  <p style={{ fontSize: Math.round(12*s), color: "#78350f", fontWeight: 600, margin: `${Math.round(2*s)}px 0 0`, textAlign: "center", lineHeight: 1.3 }}>{title}</p>
+                  <p style={{ fontSize: Math.round(13*s), color: "#78350f", fontWeight: 600, margin: `${Math.round(2*s)}px 0 0`, textAlign: "center", lineHeight: 1.3 }}>{title}</p>
                 )}
                 {/* Action label */}
-                <p style={{ fontSize: Math.round(10*s), color: "#92400e", textAlign: "center", lineHeight: 1.55, margin: `${Math.round(3*s)}px 0 0` }}>
+                <p style={{ fontSize: Math.round(11*s), color: "#92400e", textAlign: "center", lineHeight: 1.5, margin: `${Math.round(3*s)}px 0 0` }}>
                   {showAmount
                     ? <>ขอแสดงความอาลัย · ร่วมมอบหรีดร่วมบุญ{" "}<span style={{ fontWeight: 700, color: "#5c2d0e" }}>{amount ? parseInt(amount).toLocaleString() : "500"} บาท</span></>
                     : <>ขอแสดงความอาลัย · ร่วมมอบหรีดร่วมบุญ</>
@@ -324,7 +324,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
               {/* ── Deceased section ── */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, position: "relative", zIndex: 6, overflow: "hidden" }}>
-                <p style={{ fontSize: Math.round(9*s), color: "#a16207", letterSpacing: "0.10em", margin: `0 0 ${Math.round(5*s)}px`, fontFamily: "'Sarabun',sans-serif" }}>❖ แด่ผู้วายชนม์ ❖</p>
+                <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.10em", margin: `0 0 ${Math.round(5*s)}px`, fontFamily: "'Sarabun',sans-serif" }}>❖ แด่ผู้วายชนม์ ❖</p>
 
                 {/* Photo with floral frame */}
                 <div style={{ position: "relative", marginBottom: Math.round(6*s) }}>
@@ -360,22 +360,22 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {/* Deceased info */}
                 <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(19*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
                 {(birthDate || deathDate) && (
-                  <p style={{ fontSize: Math.round(9*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.6, textAlign: "center" }}>
+                  <p style={{ fontSize: Math.round(11*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.55, textAlign: "center" }}>
                     {birthDate && <>ชาตะ {birthDate}{deathDate ? "  ·  " : ""}</>}{deathDate && <>มรณะ {deathDate}</>}
                   </p>
                 )}
-                {memorial.age > 0 && (
-                  <p style={{ fontSize: Math.round(10*s), color: "#a16207", margin: `${Math.round(2*s)}px 0 ${Math.round(3*s)}px` }}>อายุ {memorial.age} ปี</p>
-                )}
               </div>
 
-              {/* ── Ceremony section ── */}
-              <div style={{ textAlign: "center", padding: `${Math.round(4*s)}px ${Math.round(16*s)}px ${Math.round(5*s)}px`, borderTop: `${Math.round(0.75*s)}px solid rgba(201,160,80,0.30)`, position: "relative", zIndex: 6, marginTop: Math.round(2*s) }}>
+              {/* ── Ceremony section (อายุ ติดกับ ฌาปนกิจ) ── */}
+              <div style={{ textAlign: "center", padding: `${Math.round(4*s)}px ${Math.round(16*s)}px ${Math.round(5*s)}px`, borderTop: `${Math.round(0.75*s)}px solid rgba(201,160,80,0.30)`, position: "relative", zIndex: 6 }}>
+                {memorial.age > 0 && (
+                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `0 0 ${Math.round(1*s)}px` }}>อายุ {memorial.age} ปี</p>
+                )}
                 <p style={{ fontWeight: 700, color: "#78350f", fontSize: Math.round(13*s), margin: 0, letterSpacing: "0.02em" }}>
                   ❖ ฌาปนกิจ {ceremonyDate} ❖
                 </p>
                 {ceremonyLocation && (
-                  <p style={{ fontSize: Math.round(9*s), color: "#a16207", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.45 }}>{ceremonyLocation}</p>
+                  <p style={{ fontSize: Math.round(11*s), color: "#a16207", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.45 }}>{ceremonyLocation}</p>
                 )}
               </div>
 
