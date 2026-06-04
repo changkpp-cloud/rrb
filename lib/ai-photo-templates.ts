@@ -79,54 +79,27 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
       "donor_age_range",
     ],
     sortOrder: 1,
-    promptTemplate: `{DONOR_NAME}
-{DONOR_POSITION}
-{CONDOLENCE_TEXT}
+    promptTemplate: `Create a highly realistic ceremonial Thai funeral memorial photo for the "หรีดร่วมบุญ Zero Waste" project.
 
-Create a highly realistic ceremonial Thai funeral memorial photo for the "หรีดร่วมบุญ Zero Waste" project.
+Generate a vertical portrait image of a {DONOR_GENDER} Thai person, around {DONOR_AGE_RANGE}, standing in front of a luxurious reusable memorial condolence board inside a respectful Thai funeral hall during an evening Buddhist memorial ceremony. Use {DONOR_FACE_REFERENCE} as the face reference and preserve the real facial identity, facial structure, hairstyle, skin tone, age, and natural expression as closely as possible.
 
-Scene:
-A respectful Thai funeral hall during an evening Buddhist memorial ceremony. The atmosphere is calm, elegant, dignified, and solemn. The color tone is warm ivory, cream, beige, soft gold, and natural dried flowers. In the background, there is a luxurious reusable memorial board decorated with premium dried flowers in cream and gold tones. The board contains multiple long horizontal condolence name plaques, arranged neatly and beautifully.
+The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use warm ivory, cream, beige, soft gold, and natural dried flower tones. In the background, show a beautiful reusable memorial board decorated with premium dried flowers in cream and gold tones. The board should have multiple long horizontal condolence plaques arranged neatly and elegantly.
 
-Main subject:
-A {DONOR_GENDER} Thai person, age around {DONOR_AGE_RANGE}, standing in front of the memorial board and holding one long horizontal condolence plaque. Use {DONOR_FACE_REFERENCE} as the face reference. Preserve the person's real facial identity, facial structure, hairstyle, skin tone, age, and natural expression as closely as possible.
+The main subject wears formal black funeral attire, elegant and respectful, with no colorful clothing. Show the person holding one realistic long horizontal Thai condolence plaque. The plaque must be similar in size to a traditional Thai wreath name tag, not oversized. The plaque must have an ivory cream background, a thin gold border, and small dried floral decorations at the corners.
 
-Clothing:
-The person wears formal black funeral attire, elegant and respectful. No colorful clothing.
+Very important: the text on the held plaque must come only from {PLAQUE_PRINT_TEXT}. This is the exact text that was sent to the printer for the real condolence plaque. Do not create, add, summarize, translate, rewrite, decorate, or invent any extra text. Do not add condolence wording unless it already exists inside {PLAQUE_PRINT_TEXT}.
 
-Plaque:
-The person is holding a realistic long horizontal Thai condolence plaque, similar in size to a traditional wreath name tag, not oversized. The plaque is ivory cream with a thin gold border and small dried floral decorations at the corners. The Thai text must be clear, centered, elegant, and readable.
+The held plaque must contain only this exact printed plaque text:
 
-Text on plaque:
-"{DONOR_NAME}
-{DONOR_POSITION}
-{CONDOLENCE_TEXT}"
+{PLAQUE_PRINT_TEXT}
 
-Composition:
-Vertical portrait image, professional event photography style, full upper body visible, the plaque clearly visible, memorial board visible behind the subject. Soft natural lighting, shallow depth of field, realistic skin texture, realistic hands and fingers.
+Show text only on the physical plaque being held by the person. Do not add any subtitle, floating text, text overlay, lower-third title, black rectangle, dark transparent text panel, caption box, or duplicated text anywhere else in the image. Do not place any text at the bottom of the image, in front of the person, over the person's body, or over the photo. This must look like a real event photograph, not a poster, not a banner, and not a graphic design layout.
 
-Mood:
-Respectful, calm, solemn, sincere, not smiling, not dramatic, not fantasy.
+Use a professional event photography style. Show full upper body, with the plaque clearly visible and the memorial board visible behind the subject. Use soft natural lighting, shallow depth of field, realistic skin texture, realistic hands and fingers. The mood must be sincere, calm, solemn, and respectful. The subject should not smile broadly.
 
-Negative constraints:
-No cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos.
+Negative constraints: no cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos, no subtitle overlay, no caption box, no black text panel, no extra typography outside the held plaque, no duplicated plaque text, no added condolence message outside {PLAQUE_PRINT_TEXT}.
 
-Refine this image while keeping the same composition, background, lighting, clothing, plaque, and funeral atmosphere.
-
-Improve only the face identity of the main person using the provided face reference. Preserve the real facial structure, hairstyle, age, skin tone, jawline, eyes, nose, and natural expression more accurately.
-
-Do not change the pose, clothing, plaque, Thai funeral background, color tone, or overall composition. Keep the image realistic, solemn, elegant, and respectful.
-
-Keep the same image, same person, same pose, same lighting, and same funeral background.
-
-Fix only the long horizontal condolence plaque. Make the plaque ivory cream with a thin gold border and elegant Thai typography. The text must be centered, clear, and readable.
-
-Correct plaque text:
-"{DONOR_NAME}
-{DONOR_POSITION}
-{CONDOLENCE_TEXT}"
-
-Do not change the person's face, body, clothing, pose, or background.`,
+If needed, refine the result while keeping the same person, pose, clothing, lighting, funeral atmosphere, plaque, and overall composition. Improve only the face identity using the provided face reference and make the face more accurate while preserving the real jawline, eyes, nose, hairstyle, age, and skin tone. Also ensure the plaque text is clean, centered, elegant, readable, and appears only on the held plaque. Do not change the background, pose, clothing, or composition.`,
     negativePrompt: "",
   },
   {
@@ -236,7 +209,8 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     // Old-style [token] — backward-compat with templates 2–4
     "[deceased_name]": input.deceasedName?.trim() || "ผู้วายชนม์",
     "[funeral_place]": input.funeralPlace?.trim() || "ศาลางานศพไทย",
-    // New-style {TOKEN} — used in template 1
+    // New-style {TOKEN}
+    "{PLAQUE_PRINT_TEXT}": plaqueLines,
     "{DONOR_NAME}": input.donorName?.trim() || "ผู้ร่วมบุญ",
     "{DONOR_POSITION}": input.donorPosition?.trim() || "",
     "{CONDOLENCE_TEXT}": input.condolenceText?.trim() || "ร่วมอาลัยและร่วมทำบุญ",
@@ -259,7 +233,9 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
 
   // New-style prompts (template 1) already include negative constraints and mood
   // in the body — skip appending the generic suffix to avoid duplication.
-  const isNewStyle = template.promptTemplate.includes("{DONOR_NAME}");
+  const isNewStyle =
+    template.promptTemplate.includes("{PLAQUE_PRINT_TEXT}") ||
+    template.promptTemplate.includes("{DONOR_GENDER}");
 
   if (isNewStyle) {
     // Append host person instruction if provided
