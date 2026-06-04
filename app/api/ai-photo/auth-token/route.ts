@@ -31,10 +31,17 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const serviceUrl = process.env.AI_SERVICE_URL;
-  if (!serviceUrl) {
+  const externalServiceUrl = process.env.AI_SERVICE_URL;
+  const isLocalMode = !externalServiceUrl;
+
+  // Local mode: use OPENAI_API_KEY directly via built-in service route
+  if (isLocalMode && !process.env.OPENAI_API_KEY) {
+    const where =
+      process.env.NODE_ENV === "production"
+        ? "Vercel > Settings > Environment Variables"
+        : ".env.local";
     return NextResponse.json(
-      { error: "AI_SERVICE_URL ยังไม่ได้ตั้งค่าใน environment variables" },
+      { error: `ไม่มี OPENAI_API_KEY กรุณาตั้งค่าใน ${where}` },
       { status: 503 }
     );
   }
@@ -142,11 +149,25 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  const token = createServiceToken();
+  // Determine service URL and token
+  let token: string;
+  let resolvedServiceUrl: string;
+
+  if (isLocalMode) {
+    // Use the built-in local service route (calls OpenAI directly)
+    const siteBase =
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      (process.env.NODE_ENV === "production" ? "" : "http://localhost:3000");
+    resolvedServiceUrl = `${siteBase}/api/ai-photo/service/generate`;
+    token = "local-dev";
+  } else {
+    token = createServiceToken();
+    resolvedServiceUrl = `${externalServiceUrl}/generate`;
+  }
 
   return NextResponse.json({
     token,
-    serviceUrl: `${serviceUrl}/generate`,
+    serviceUrl: resolvedServiceUrl,
     prompt,
     templateKey: template.templateKey,
     donationId,
