@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import SiteHeader from "@/components/SiteHeader";
 import MemorialProfile from "@/components/MemorialProfile";
 import HideFloatingBack from "@/components/HideFloatingBack";
@@ -7,6 +8,86 @@ import SiteFooter from "@/components/SiteFooter";
 import { getMemorialBySlug } from "@/lib/memorial";
 
 export const revalidate = 60;
+
+type SlugParams = { params: Promise<{ slug: string }> };
+
+function getSiteUrl() {
+  return (process.env.NEXT_PUBLIC_SITE_URL || "https://rrb-teal.vercel.app").replace(/\/$/, "");
+}
+
+function absoluteUrl(url: string | null | undefined) {
+  if (!url) return undefined;
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${getSiteUrl()}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+function formatMetadataDate(dateValue: string | null | undefined) {
+  if (!dateValue) return null;
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return null;
+  return new Intl.DateTimeFormat("th-TH-u-ca-buddhist", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
+function buildShareDescription(memorial: Awaited<ReturnType<typeof getMemorialBySlug>>) {
+  if (!memorial) return "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ กับหรีดร่วมบุญ Zero Waste";
+
+  const birthDate = formatMetadataDate(memorial.birth_date);
+  const deathDate = formatMetadataDate(memorial.death_date);
+  const ceremonyDate = formatMetadataDate(memorial.ceremony_date);
+  const ceremonyPlace = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
+  const ceremonyTime = memorial.ceremony_time ? ` เวลา ${memorial.ceremony_time} น.` : "";
+
+  return [
+    birthDate ? `ชาตะ ${birthDate}` : null,
+    deathDate ? `มรณะ ${deathDate}` : null,
+    memorial.age ? `อายุ ${memorial.age} ปี` : null,
+    ceremonyDate ? `กำหนดพิธี ${ceremonyDate}${ceremonyTime}${ceremonyPlace ? ` ณ ${ceremonyPlace}` : ""}` : null,
+  ].filter(Boolean).join(" · ");
+}
+
+export async function generateMetadata({ params }: SlugParams): Promise<Metadata> {
+  const { slug } = await params;
+  const memorial = await getMemorialBySlug(slug);
+  const siteUrl = getSiteUrl();
+  const pageUrl = `${siteUrl}/${slug}`;
+
+  if (!memorial) {
+    return {
+      title: "หรีดร่วมบุญ Zero Waste",
+      description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ กับหรีดร่วมบุญ Zero Waste",
+      alternates: { canonical: pageUrl },
+    };
+  }
+
+  const title = `${memorial.name} | หรีดร่วมบุญ Zero Waste`;
+  const description = buildShareDescription(memorial);
+  const imageUrl = absoluteUrl(memorial.photo_url);
+  const images = imageUrl ? [{ url: imageUrl, alt: memorial.name }] : undefined;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: pageUrl },
+    openGraph: {
+      title,
+      description,
+      url: pageUrl,
+      siteName: "หรีดร่วมบุญ Zero Waste",
+      type: "website",
+      images,
+    },
+    twitter: {
+      card: imageUrl ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: imageUrl ? [imageUrl] : undefined,
+    },
+  };
+}
 
 export default async function SlugPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
