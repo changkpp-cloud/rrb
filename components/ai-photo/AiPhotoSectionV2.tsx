@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import AiPhotoCarousel from "./AiPhotoCarousel";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
@@ -49,6 +49,14 @@ interface Props {
   donationId?: string;
 }
 
+type AiPhotoJobState = {
+  jobId: string;
+  jobUrl: string;
+  status: "pending" | "processing" | "completed" | "failed";
+  imageUrl: string | null;
+  error?: string | null;
+};
+
 function requestAiPhotoNotificationPermission() {
   if (typeof window === "undefined" || !("Notification" in window)) return;
   if (Notification.permission === "default") {
@@ -90,6 +98,8 @@ export default function AiPhotoSectionV2({
   const [error, setError] = useState("");
   const [creditUsed, setCreditUsed] = useState(false);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
+  const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
+  const [copiedJobUrl, setCopiedJobUrl] = useState(false);
   const donorRef = useRef<HTMLInputElement>(null);
   const draftKey = useMemo(
     () =>
@@ -118,6 +128,7 @@ export default function AiPhotoSectionV2({
           consent?: boolean;
           creditUsed?: boolean;
           existingImageUrl?: string | null;
+          activeJob?: AiPhotoJobState | null;
         };
 
         if (draft.templateKey) setTemplateKey(draft.templateKey);
@@ -129,6 +140,7 @@ export default function AiPhotoSectionV2({
         if (typeof draft.consent === "boolean") setConsent(draft.consent);
         if (typeof draft.creditUsed === "boolean") setCreditUsed(draft.creditUsed);
         if (typeof draft.existingImageUrl === "string") setExistingImageUrl(draft.existingImageUrl);
+        if (draft.activeJob) setActiveJob(draft.activeJob);
       }
     } catch {}
     draftReadyRef.current = true;
@@ -150,10 +162,11 @@ export default function AiPhotoSectionV2({
           consent,
           creditUsed,
           existingImageUrl,
+          activeJob,
         })
       );
     } catch {}
-  }, [draftKey, templateKey, donorPreview, donorGender, donorAgeRange, images, selectedIdx, consent, creditUsed, existingImageUrl]);
+  }, [draftKey, templateKey, donorPreview, donorGender, donorAgeRange, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -256,6 +269,125 @@ export default function AiPhotoSectionV2({
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
     }
     setGenerating(false);
+  }
+
+
+  useEffect(() => {
+    if (!activeJob) return;
+    if (activeJob.status !== "pending" && activeJob.status !== "processing") return;
+
+    const jobId = activeJob.jobId;
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    async function pollJob() {
+      try {
+        const res = await fetch(`/api/ai-photo/jobs/${jobId}`, {
+          cache: "no-store",
+        });
+        const data = await res.json();
+        if (cancelled) return;
+
+        if (res.ok) {
+          const nextJob = data as AiPhotoJobState;
+          setActiveJob(nextJob);
+
+          if (nextJob.status === "completed" && nextJob.imageUrl) {
+            setImages([nextJob.imageUrl]);
+            setSelectedIdx(0);
+            if (donationId) {
+              setCreditUsed(true);
+              setExistingImageUrl(nextJob.imageUrl);
+            }
+            notifyAiPhotoComplete();
+            setGenerating(false);
+            return;
+          }
+
+          if (nextJob.status === "failed") {
+            setError(nextJob.error || "Image generation failed. Please try again.");
+            setGenerating(false);
+            return;
+          }
+
+          timer = setTimeout(pollJob, 7000);
+        }
+      } catch {
+        if (!cancelled) timer = setTimeout(pollJob, 10000);
+      }
+    }
+
+    timer = setTimeout(pollJob, 5000);
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [activeJob, donationId]);
+
+  async function handleGenerateJob() {
+    if (!donorFile) { setError("Please attach a donor photo first."); return; }
+    if (!consent) { setError("Please confirm photo usage consent first."); return; }
+    requestAiPhotoNotificationPermission();
+    setGenerating(true); setError(""); setImages([]);
+
+    try {
+      const jobForm = new FormData();
+      if (donationId) jobForm.append("donation_id", donationId);
+      jobForm.append("memorial_id", memorialId);
+      jobForm.append("template_key", templateKey);
+      jobForm.append("donor_name", donorName || "ผู้ร่วมบุญ");
+      jobForm.append("donor_position", donorPosition ?? "");
+      jobForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
+      jobForm.append("deceased_name", deceasedName ?? "");
+      jobForm.append("funeral_place", funeralPlace ?? "");
+      jobForm.append("donor_gender", donorGender);
+      jobForm.append("donor_age_range", donorAgeRange || "35-50 years old");
+      jobForm.append("donor_photo", donorFile);
+      if (hostPerson?.id) jobForm.append("host_person_id", hostPerson.id);
+
+      const res = await fetch("/api/ai-photo/jobs", {
+        method: "POST",
+        body: jobForm,
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Could not start image generation job.");
+
+      const nextJob = data as AiPhotoJobState;
+      setActiveJob(nextJob);
+
+      if (nextJob.status === "completed" && nextJob.imageUrl) {
+        setImages([nextJob.imageUrl]);
+        setSelectedIdx(0);
+        if (donationId) {
+          setCreditUsed(true);
+          setExistingImageUrl(nextJob.imageUrl);
+        }
+        setGenerating(false);
+      }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unexpected error");
+      setGenerating(false);
+    }
+  }
+
+  async function copyJobUrl() {
+    if (!activeJob?.jobUrl) return;
+    await navigator.clipboard.writeText(activeJob.jobUrl);
+    setCopiedJobUrl(true);
+    setTimeout(() => setCopiedJobUrl(false), 1800);
+  }
+
+  async function shareJobUrl() {
+    if (!activeJob?.jobUrl) return;
+    if (navigator.share) {
+      await navigator.share({
+        title: "AI wreath photo",
+        text: "Open this link to check the generated wreath photo status.",
+        url: activeJob.jobUrl,
+      });
+      return;
+    }
+    await copyJobUrl();
   }
 
 
@@ -400,12 +532,57 @@ export default function AiPhotoSectionV2({
         </div>
       )}
 
+
+
+      {activeJob && (
+        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 space-y-2">
+          <div className="flex items-start gap-2">
+            {activeJob.status === "completed" ? (
+              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
+            ) : (
+              <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-emerald-600" />
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-emerald-800">
+                {activeJob.status === "completed"
+                  ? "Image ready"
+                  : "Server generation started"}
+              </p>
+              <p className="mt-0.5 break-all text-[10px] text-emerald-700">
+                {activeJob.jobUrl}
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={copyJobUrl}
+              className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
+            >
+              <Copy className="h-3.5 w-3.5" />
+              {copiedJobUrl ? "Copied" : "Copy link"}
+            </button>
+            <button
+              type="button"
+              onClick={shareJobUrl}
+              className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white"
+            >
+              <Share2 className="h-3.5 w-3.5" />
+              Share link
+            </button>
+          </div>
+          <p className="text-[10px] text-emerald-700">
+            Save this link in LINE or social media, then open it later to check whether the image is ready.
+          </p>
+        </div>
+      )}
+
       {/* Generate button */}
       <div className="space-y-1">
         {donationId && (
           <p className="text-[10px] text-gold-500 text-center">สร้างภาพที่ระลึกได้ฟรี 1 ภาพสำหรับรายการร่วมบุญนี้</p>
         )}
-        <button type="button" onClick={handleGenerate}
+        <button type="button" onClick={handleGenerateJob}
           disabled={!donorFile || !consent || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
