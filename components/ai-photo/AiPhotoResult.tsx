@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Check, Download, Share2 } from "lucide-react";
+import { downloadOrOpenImage, isSocialInAppBrowser, openUrl } from "@/lib/browser-actions";
 
 interface Props {
   images: string[];
@@ -24,6 +25,15 @@ export default function AiPhotoResult({
   async function handleDownload() {
     if (!mainImg) return;
     setDownloading(true);
+    if (isSocialInAppBrowser()) {
+      try {
+        await downloadOrOpenImage(mainImg, `hreed-ruam-bun-ai-${donorName || "photo"}.png`);
+        window.alert("เปิดภาพแล้ว กรุณากดค้างที่รูปเพื่อบันทึกลงเครื่อง");
+      } finally {
+        setDownloading(false);
+      }
+      return;
+    }
     try {
       const filename = `หรีดร่วมบุญ-AI-${donorName || "photo"}.png`;
       if (mainImg.startsWith("data:")) {
@@ -59,7 +69,7 @@ export default function AiPhotoResult({
     const shareText = `#หรีดร่วมบุญ #ZeroWaste`;
     const shareUrl = window.location.href;
 
-    if (navigator.share) {
+    if (navigator.share && !isSocialInAppBrowser()) {
       try {
         if (mainImg) {
           const res = await fetch(mainImg);
@@ -95,7 +105,7 @@ export default function AiPhotoResult({
     }
 
     const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
-    window.open(lineUrl, "_blank", "noopener");
+    openUrl(lineUrl);
     setShared(true);
     setTimeout(() => setShared(false), 2500);
     setSharing(false);

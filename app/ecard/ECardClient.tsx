@@ -9,6 +9,7 @@ import LotusIcon from "@/components/LotusIcon";
 import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
+import { isSocialInAppBrowser, openImageForManualSave, openUrl } from "@/lib/browser-actions";
 
 const SIGN_W = 260;
 const SIGN_H = 72;
@@ -73,8 +74,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       : `E-Card ขอบคุณ — ${name}${title ? ` · ${title}` : ""}`;
     const shareText = `ร่วมมอบหรีดร่วมบุญในงานของ ${deceasedName} 🌸\n#หรีดร่วมบุญ #ZeroWaste`;
 
-    // Try Web Share API (works natively on mobile LINE browser)
-    if (navigator.share) {
+    // Try Web Share API in full browsers; social in-app browsers often block file sharing.
+    if (navigator.share && !isSocialInAppBrowser()) {
       try {
         // Try sharing the card as an image file first
         if (cardRef.current && !sharing) {
@@ -100,7 +101,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
     // Fallback: open LINE share URL
     const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
-    window.open(lineUrl, "_blank", "noopener");
+    openUrl(lineUrl);
     setShared(true); setTimeout(() => setShared(false), 2500);
     setSharing(false);
   }
@@ -111,6 +112,12 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     try {
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+      if (isSocialInAppBrowser()) {
+        await openImageForManualSave(dataUrl);
+        window.alert("เปิดภาพแล้ว กรุณากดค้างที่รูปเพื่อบันทึกลงเครื่อง");
+        setSaving(false);
+        return;
+      }
       const link = document.createElement("a");
       link.download = showAmount
         ? `เอกสารมอบหรีด-${name || "document"}.png`
