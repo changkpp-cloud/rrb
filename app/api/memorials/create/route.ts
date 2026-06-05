@@ -76,7 +76,7 @@ export async function POST(req: NextRequest) {
 
     const bankName          = (form.get("bank_name") as string) || "ธนาคารกรุงไทย\nKrungthai Bank";
     const bankAccountNumber = (form.get("bank_account_number") as string) || "";
-    const bankAccountName   = (form.get("bank_account_name") as string) || "มูลนิธิ หรีดร่วมบุญ ESG Zero Waste";
+    const bankAccountName   = (form.get("bank_account_name") as string) || "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
 
     const hostBankName          = (form.get("host_bank_name") as string) || null;
     const hostBankAccountNumber = (form.get("host_bank_account_number") as string) || null;

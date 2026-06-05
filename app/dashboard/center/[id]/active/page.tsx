@@ -89,7 +89,7 @@ export default async function CenterActivePage({ params }: { params: Promise<{ i
           </div>
           <div>
             <p className="text-xl font-bold text-gold-800">{rows.length}</p>
-            <p className="text-[11px] text-gold-500">งานที่กำลังเปิดรับบริจาคและดำเนินการ</p>
+            <p className="text-[11px] text-gold-500">งานที่กำลังเปิดรับร่วมทำบุญและดำเนินการ</p>
           </div>
         </div>
 
@@ -147,4 +147,3 @@ function Mini({
     </div>
   );
 }
-

@@ -158,7 +158,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
         <CenterDashboardScrollNav />
 
         <section id="open" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Plus} title="1. เปิดงานศพใหม่" subtitle="สร้างงานใหม่และเริ่มรับบริจาคในศูนย์นี้" />
+          <SectionHeader icon={Plus} title="1. เปิดงานศพใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
           <Link
             href={`/dashboard/center/${id}/create`}
             className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl gold-gradient text-white font-bold text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
@@ -196,9 +196,9 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
         </section>
 
         <section id="reports" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={BarChart3} title="4. รายงานศูนย์" subtitle="สรุปยอดบริจาค งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
+          <SectionHeader icon={BarChart3} title="4. รายงานศูนย์" subtitle="สรุปยอดร่วมทำบุญ งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
           <div className="grid grid-cols-2 gap-3">
-            <Metric icon={Banknote} label="ยอดบริจาค" value={`${totalAmount.toLocaleString()} บาท`} tone="amber" />
+            <Metric icon={Banknote} label="ยอดร่วมทำบุญ" value={`${totalAmount.toLocaleString()} บาท`} tone="amber" />
             <Metric icon={Users} label="ผู้ร่วมบุญ" value={totalDonors.toLocaleString()} tone="blue" />
             <Metric icon={CheckCircle2} label="งานปิดแล้ว" value={closedRows.length.toLocaleString()} tone="emerald" />
             <Metric icon={Leaf} label="ลดขยะประมาณ" value={`${(totalDonors * 2).toLocaleString()} กก.`} tone="gold" />

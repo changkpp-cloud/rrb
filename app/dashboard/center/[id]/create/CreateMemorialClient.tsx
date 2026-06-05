@@ -21,7 +21,7 @@ interface Result {
 
 const CENTRAL_BANK    = "ธนาคารกรุงไทย";
 const CENTRAL_ACCOUNT = "6200358257";
-const CENTRAL_NAME    = "มูลนิธิ หรีดร่วมบุญ ESG Zero Waste";
+const CENTRAL_NAME    = "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
 const SERVICE_FEE     = 100;
 
 // ── QR Code Component ──────────────────────────────────────────────────────
