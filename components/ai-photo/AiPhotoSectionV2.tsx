@@ -365,8 +365,8 @@ export default function AiPhotoSectionV2({
         setGenerating(false);
       }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Unexpected error");
-      setGenerating(false);
+      console.warn("AI photo server job failed; falling back to direct generation.", e);
+      await handleGenerate();
     }
   }
 

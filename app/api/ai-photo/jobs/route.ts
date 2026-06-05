@@ -130,6 +130,7 @@ export async function POST(req: NextRequest) {
     });
 
   if (insertError) {
+    console.error("AI photo job insert failed", insertError);
     return NextResponse.json({ error: "สร้างงานเจนภาพไม่สำเร็จ" }, { status: 500 });
   }
 
