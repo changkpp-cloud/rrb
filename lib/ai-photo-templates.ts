@@ -81,9 +81,9 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
     sortOrder: 1,
     promptTemplate: `Create a highly realistic ceremonial Thai funeral memorial photo for the "หรีดร่วมบุญ Zero Waste" project.
 
-Generate a vertical portrait image of a {DONOR_GENDER} Thai person, around {DONOR_AGE_RANGE}, standing in front of a luxurious reusable memorial condolence board inside a respectful Thai funeral hall during an evening Buddhist memorial ceremony. Use {DONOR_FACE_REFERENCE} as the face reference and preserve the real facial identity, facial structure, hairstyle, skin tone, age, and natural expression as closely as possible.
+Generate a vertical portrait image of a {DONOR_GENDER} Thai person, around {DONOR_AGE_RANGE}, standing in front of a public memorial profile display for {DECEASED_NAME} inside a respectful Thai funeral hall during an evening Buddhist memorial ceremony. Use {DONOR_FACE_REFERENCE} as the face reference and preserve the real facial identity, facial structure, hairstyle, skin tone, age, and natural expression as closely as possible.
 
-The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use warm ivory, cream, beige, soft gold, and natural dried flower tones. In the background, show a beautiful reusable memorial board decorated with premium dried flowers in cream and gold tones. The board should have multiple long horizontal condolence plaques arranged neatly and elegantly.
+The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use warm ivory, cream, beige, soft gold, and natural dried flower tones. In the background, show a memorial profile backdrop similar to the first public donation page: a framed deceased portrait, cream and gold information area for {DECEASED_NAME}, Buddhist funeral venue details at {TEMPLE_NAME}, and premium dried flowers in cream and gold tones. This background must be a real physical funeral display behind the person, not a digital overlay.
 
 The main subject wears formal black funeral attire, elegant and respectful, with no colorful clothing. Show the person holding one realistic long horizontal Thai condolence plaque. The plaque must be similar in size to a traditional Thai wreath name tag, not oversized. The plaque must have an ivory cream background, a thin gold border, and small dried floral decorations at the corners.
 
@@ -99,6 +99,7 @@ Do not add any subtitle, floating text, text overlay, lower-third title, black r
 Do not place any text at the bottom of the image, in front of the person, over the body, over the plaque, or over the photo.
 Do not repeat the plaque text outside the plaque.
 Do not show any black box or dark text background.
+Keep the memorial profile information in the background soft, distant, and secondary. It may suggest the deceased portrait and memorial information layout, but it must not create a readable foreground caption or any overlay text.
 This must look like a real event photograph, not a poster, not a banner, and not a graphic design layout.
 
 Use a professional event photography style. Show full upper body, with the plaque clearly visible and the memorial board visible behind the subject. Use soft natural lighting, shallow depth of field, realistic skin texture, realistic hands and fingers. The mood must be sincere, calm, solemn, and respectful. The subject should not smile broadly.
@@ -199,6 +200,28 @@ export function buildWreathLabelText(input: {
     .join("\n");
 }
 
+function buildStandingWithLabelMandatoryRules(input: {
+  deceasedName?: string;
+  funeralPlace?: string;
+  plaqueText: string;
+}) {
+  const deceasedName = input.deceasedName?.trim() || "the deceased person";
+  const funeralPlace = input.funeralPlace?.trim() || "the Thai funeral hall";
+
+  return `
+MANDATORY FINAL COMPOSITION RULES FOR THE STANDING PLAQUE PHOTO:
+The final image must be a real event-style photograph only. It must not look like a poster, edited social graphic, e-card, app screen, or design mockup.
+
+There must be exactly one readable text area in the whole image: the physical cream-and-gold condolence plaque held by the person. That held plaque must contain only this exact printed text:
+${input.plaqueText}
+
+Never create a black rectangle, dark translucent bar, lower-third caption, subtitle panel, name caption, title card, sticker, floating label, app overlay, or any graphic text box anywhere in the image. Do not duplicate the plaque text over the person's body, over the bottom of the image, or over the plaque.
+
+The background behind the standing person must resemble the public memorial profile area from the first donation page: a calm Thai Buddhist memorial display for ${deceasedName}, with a framed deceased portrait, cream/gold memorial information board, flower arrangements, and funeral venue context at ${funeralPlace}. The memorial information display must be a real physical background element, not a digital overlay. Keep any background writing soft, distant, blurred, or unreadable so it does not compete with the held plaque.
+
+If the model tries to add any text outside the held plaque, remove it. If the model tries to add a black or dark caption box, remove it completely.`;
+}
+
 export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   const template = getAiPhotoTemplate(input.templateKey);
 
@@ -246,6 +269,14 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     template.promptTemplate.includes("{DONOR_GENDER}");
 
   if (isNewStyle) {
+    if (template.templateKey === "standing_with_label") {
+      prompt += `\n\n${buildStandingWithLabelMandatoryRules({
+        deceasedName: input.deceasedName,
+        funeralPlace: input.funeralPlace,
+        plaqueText: plaqueLines,
+      })}`;
+    }
+
     // Append host person instruction if provided
     if (input.hostPersonName && input.hostPersonRole) {
       prompt += `\n\n${buildHostPersonInstruction(input.hostPersonName, input.hostPersonRole)}`;
