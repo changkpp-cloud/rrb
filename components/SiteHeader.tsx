@@ -8,16 +8,14 @@ export default function SiteHeader() {
       {/* Dynamic Island — dark floating pill */}
       <div className="ios-dynamic-island flex items-center gap-2.5 px-5 py-[9px]">
         <LotusIcon className="w-[14px] h-[14px] text-gold-300 opacity-90" />
-        <div className="flex items-baseline gap-[7px]">
+        <div className="flex items-baseline gap-2">
           <span
-            className="font-bold text-white leading-none"
-            style={{ fontSize: "13px", letterSpacing: "-0.01em" }}
+            className="text-sm font-bold text-white leading-none"
           >
             หรีดร่วมบุญ
           </span>
           <span
-            className="text-gold-400 uppercase leading-none"
-            style={{ fontSize: "8px", letterSpacing: "0.28em" }}
+            className="text-sm font-bold text-gold-400 uppercase leading-none"
           >
             Zero Waste
           </span>

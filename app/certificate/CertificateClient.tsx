@@ -73,8 +73,8 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
           <div className="flex items-center gap-2">
             <LotusIcon className="w-6 h-6 text-gold-600" />
             <div className="text-center">
-              <h1 className="text-lg font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-              <p className="text-[9px] font-medium text-gold-500 tracking-[0.25em] uppercase -mt-0.5">Zero Waste</p>
+              <h1 className="text-xl font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
+              <p className="text-base font-bold text-gold-500 uppercase leading-none">Zero Waste</p>
             </div>
             <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
           </div>
