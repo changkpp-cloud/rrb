@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
 import AiPhotoCarousel from "./AiPhotoCarousel";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
-import AiPhotoResult, { type AiPhotoOverlayData } from "./AiPhotoResult";
+import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
 const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
@@ -47,6 +47,28 @@ interface Props {
   funeralPlace?: string;
   memorialId: string;
   donationId?: string;
+}
+
+function requestAiPhotoNotificationPermission() {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission === "default") {
+    Notification.requestPermission().catch(() => {});
+  }
+}
+
+function notifyAiPhotoComplete() {
+  if (typeof window === "undefined" || !("Notification" in window)) return;
+  if (Notification.permission !== "granted") return;
+
+  const notification = new Notification("ภาพมอบหรีดพร้อมแล้ว", {
+    body: "กลับมาที่หน้านี้เพื่อบันทึกภาพหรือแชร์ LINE",
+    tag: "rrb-ai-photo-ready",
+  });
+
+  notification.onclick = () => {
+    window.focus();
+    notification.close();
+  };
 }
 
 export default function AiPhotoSectionV2({
@@ -153,6 +175,7 @@ export default function AiPhotoSectionV2({
   async function handleGenerate() {
     if (!donorFile) { setError("กรุณาแนบรูปผู้มอบก่อน"); return; }
     if (!consent) { setError("กรุณายืนยันสิทธิ์การใช้รูปภาพก่อน"); return; }
+    requestAiPhotoNotificationPermission();
     setGenerating(true); setError(""); setImages([]);
 
     try {
@@ -228,17 +251,13 @@ export default function AiPhotoSectionV2({
 
       setImages(imgs); setSelectedIdx(0);
       if (donationId) { setCreditUsed(true); setExistingImageUrl(imgs[0]); }
+      notifyAiPhotoComplete();
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
     }
     setGenerating(false);
   }
 
-  const overlayData: AiPhotoOverlayData = {
-    donorName: donorName || "ผู้ร่วมบุญ",
-    donorPosition,
-    condolenceText,
-  };
 
   // ── Credit used + existing image ──
   if (creditUsed && (images.length > 0 || existingImageUrl)) {
@@ -259,7 +278,6 @@ export default function AiPhotoSectionV2({
             selectedIdx={Math.min(selectedIdx, displayImages.length - 1)}
             onSelect={setSelectedIdx}
             donorName={donorName}
-            overlayData={overlayData}
           />
         )}
       </div>
@@ -394,7 +412,7 @@ export default function AiPhotoSectionV2({
           {generating ? "กำลังสร้างภาพ AI..." : "สร้างภาพที่ระลึก"}
         </button>
         {generating && (
-          <p className="text-[10px] text-gold-500 text-center animate-pulse">AI กำลังประมวลผล อาจใช้เวลา 30–90 วินาที...</p>
+          <p className="text-[10px] text-gold-500 text-center animate-pulse">AI กำลังประมวลผล อาจใช้เวลา 30–90 วินาที สามารถเปลี่ยนไปหน้าอื่นในแอพได้ เมื่อเสร็จระบบจะแจ้งเตือนถ้าเบราว์เซอร์อนุญาต</p>
         )}
       </div>
 
@@ -405,7 +423,6 @@ export default function AiPhotoSectionV2({
           selectedIdx={selectedIdx}
           onSelect={setSelectedIdx}
           donorName={donorName}
-          overlayData={overlayData}
         />
       )}
     </div>

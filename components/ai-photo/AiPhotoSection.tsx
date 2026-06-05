@@ -5,7 +5,6 @@ import {
   Camera, CheckCircle2, ImageIcon, Loader2, Sparkles, XCircle,
 } from "lucide-react";
 import AiPhotoResult from "./AiPhotoResult";
-import type { AiPhotoOverlayData } from "./AiPhotoResult";
 import AiPhotoTemplateSelector from "./AiPhotoTemplateSelector";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
@@ -236,11 +235,6 @@ export default function AiPhotoSection({
     setGenerating(false);
   }
 
-  const overlayData: AiPhotoOverlayData = {
-    donorName: donorName || "ผู้ร่วมบุญ",
-    donorPosition,
-    condolenceText,
-  };
 
   // ── Credit check state: still loading ──────────────────────────────
   if (donationId && credit.status === "checking") {
@@ -275,7 +269,6 @@ export default function AiPhotoSection({
             selectedIdx={Math.min(selectedIdx, displayImages.length - 1)}
             onSelect={setSelectedIdx}
             donorName={donorName}
-            overlayData={overlayData}
           />
         )}
       </div>
@@ -426,7 +419,6 @@ export default function AiPhotoSection({
           selectedIdx={selectedIdx}
           onSelect={setSelectedIdx}
           donorName={donorName}
-          overlayData={overlayData}
         />
       )}
     </div>

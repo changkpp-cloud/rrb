@@ -216,6 +216,7 @@ There must be exactly one readable text area in the whole image: the physical cr
 ${input.plaqueText}
 
 Never create a black rectangle, dark translucent bar, lower-third caption, subtitle panel, name caption, title card, sticker, floating label, app overlay, or any graphic text box anywhere in the image. Do not duplicate the plaque text over the person's body, over the bottom of the image, or over the plaque.
+The held plaque itself must stay ivory or cream with a thin gold border. Never cover the held plaque with a black strip, dark transparent strip, shadow label, or any dark backing behind the plaque text.
 
 The background behind the standing person must resemble the public memorial profile area from the first donation page: a calm Thai Buddhist memorial display for ${deceasedName}, with a framed deceased portrait, cream/gold memorial information board, flower arrangements, and funeral venue context at ${funeralPlace}. The memorial information display must be a real physical background element, not a digital overlay. Keep any background writing soft, distant, blurred, or unreadable so it does not compete with the held plaque.
 
