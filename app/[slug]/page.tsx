@@ -6,14 +6,11 @@ import CeremonyInfo from "@/components/CeremonyInfo";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
 import { getMemorialBySlug } from "@/lib/memorial";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const revalidate = 60;
 
 type SlugParams = { params: Promise<{ slug: string }> };
-
-function getSiteUrl() {
-  return (process.env.NEXT_PUBLIC_SITE_URL || "https://rrb-teal.vercel.app").replace(/\/$/, "");
-}
 
 function absoluteUrl(url: string | null | undefined) {
   if (!url) return undefined;

@@ -154,7 +154,7 @@ export async function POST(req: NextRequest) {
   if (isLocalMode) {
     // Use the built-in local service route (calls OpenAI directly)
     const siteBase =
-      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
       (process.env.NODE_ENV === "production" ? "" : "http://localhost:3000");
     resolvedServiceUrl = `${siteBase}/api/ai-photo/service/generate`;
     token = "local-dev";

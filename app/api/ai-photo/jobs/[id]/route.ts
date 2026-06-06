@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getSiteUrl } from "@/lib/site-url";
 
 function absoluteJobUrl(req: NextRequest, jobId: string) {
   const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ||
+    getSiteUrl() ||
     req.headers.get("origin") ||
     new URL(req.url).origin;
   return `${origin}/ai-photo/jobs/${jobId}`;

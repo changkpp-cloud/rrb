@@ -7,6 +7,7 @@ import {
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 import { processAiPhotoJob } from "@/lib/ai-photo-jobs";
+import { getSiteUrl } from "@/lib/site-url";
 
 export const maxDuration = 300;
 
@@ -20,7 +21,7 @@ function extFromFile(file: File) {
 
 function absoluteJobUrl(req: NextRequest, jobId: string) {
   const origin =
-    process.env.NEXT_PUBLIC_SITE_URL ||
+    getSiteUrl() ||
     req.headers.get("origin") ||
     new URL(req.url).origin;
   return `${origin}/ai-photo/jobs/${jobId}`;
