@@ -149,7 +149,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
       />
 
       <main className="max-w-lg mx-auto px-4 pt-5 pb-24 space-y-6">
-        <CenterDashboardScrollNav />
+        <CenterDashboardScrollNav
+          open={
 
         <section id="open" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={Plus} title="1. เปิดงานใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
@@ -161,7 +162,9 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             เปิดงานศพใหม่
           </Link>
         </section>
+          }
 
+          active={
         <section id="active" className="scroll-mt-24 space-y-3">
           <SectionHeader
             icon={ScrollText}
@@ -178,7 +181,9 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             </div>
           )}
         </section>
+          }
 
+          reports={
         <section id="reports" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={BarChart3} title="3. รายงานศูนย์" subtitle="สรุปยอดร่วมทำบุญ งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
           <div className="grid grid-cols-2 gap-3">
@@ -191,7 +196,9 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             ดูงานศพที่ปิดแล้วทั้งหมด
           </Link>
         </section>
+          }
 
+          settings={
         <section id="settings" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={Settings} title="4. ตั้งค่าศูนย์" subtitle="ข้อมูลหลักของศูนย์บริหารประจำตำบล" />
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
@@ -202,6 +209,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             <InfoRow label="สถานะศูนย์" value={center.status || "-"} />
           </div>
         </section>
+          }
+        />
 
         <div className="h-4" />
       </main>
