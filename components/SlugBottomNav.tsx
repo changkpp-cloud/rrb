@@ -30,8 +30,7 @@ function readPaidData(slug: string): PaidData | null {
 interface Tab {
   label: string;
   Icon: React.ElementType;
-  segment: string | null;
-  requiresPaid: boolean;
+  isActive: (pathname: string, slug: string) => boolean;
   getHref: (slug: string, paid: PaidData | null) => string;
 }
 
@@ -39,22 +38,19 @@ const TABS: Tab[] = [
   {
     label: "หน้าแรก",
     Icon: Home,
-    segment: null,
-    requiresPaid: false,
+    isActive: (p, slug) => p === `/${slug}`,
     getHref: (slug) => `/${slug}`,
   },
   {
     label: "ชำระเงิน",
     Icon: Banknote,
-    segment: "payment",
-    requiresPaid: false,
+    isActive: (p, slug) => p === `/${slug}/payment`,
     getHref: (slug) => `/${slug}/payment`,
   },
   {
     label: "กรอกชื่อ",
     Icon: Tag,
-    segment: "print-name",
-    requiresPaid: true,
+    isActive: (p, slug) => p === `/${slug}/print-name`,
     getHref: (slug, paid) =>
       paid
         ? `/${slug}/print-name?memorial_id=${paid.memorial_id}&slip_url=${encodeURIComponent(paid.slip_url)}&amount=${paid.amount}`
@@ -63,16 +59,14 @@ const TABS: Tab[] = [
   {
     label: "ขอบคุณ",
     Icon: Heart,
-    segment: "ecard",
-    requiresPaid: true,
+    isActive: (p, slug) => p === `/${slug}/ecard`,
     getHref: (slug) => `/${slug}/ecard`,
   },
   {
     label: "แดชบอร์ด",
     Icon: LayoutDashboard,
-    segment: "overview",
-    requiresPaid: false,
-    getHref: (slug) => `/${slug}/overview`,
+    isActive: (p) => p.startsWith("/dashboard"),
+    getHref: () => "/dashboard",
   },
 ];
 
@@ -93,11 +87,6 @@ export default function SlugBottomNav({ slug }: Props) {
     return () => window.removeEventListener("rrb-payment-done", onDone);
   }, [slug]);
 
-  function isActive(segment: string | null) {
-    if (segment === null) return pathname === `/${slug}`;
-    return pathname === `/${slug}/${segment}`;
-  }
-
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-40 border-t border-gold-200 bg-white/95 backdrop-blur-md"
@@ -105,7 +94,7 @@ export default function SlugBottomNav({ slug }: Props) {
     >
       <div className="mx-auto flex max-w-lg">
         {TABS.map((tab) => {
-          const active = isActive(tab.segment);
+          const active = tab.isActive(pathname, slug);
           const href = tab.getHref(slug, paid);
           const Icon = tab.Icon;
 
