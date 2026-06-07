@@ -463,7 +463,7 @@ export default function CreateMemorialClient({ centerId }: Props) {
                   className="mt-0.5 w-4 h-4 accent-gold-600 shrink-0"
                 />
                 <span className="text-xs text-amber-800 leading-relaxed">
-                  <span className="font-semibold">ยืนยัน</span> ว่าเจ้าภาพได้ให้ความยินยอมแก่ศูนย์บริหารในการเปิดหน้างานนี้ในระบบหรีดร่วมบุญ Zero Waste แล้ว <span className="text-red-500 font-semibold">*</span>
+                  <span className="font-semibold">ยืนยัน</span> ว่าเจ้าภาพได้ให้ความยินยอมแก่ศูนย์บริหารในการเปิดหน้างานนี้ในระบบแล้ว <span className="text-red-500 font-semibold">*</span>
                 </span>
               </label>
             </div>

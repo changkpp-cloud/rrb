@@ -2,7 +2,6 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import IosPageHeader from "@/components/IosPageHeader";
 
 const STEPS = ["กำลังส่งข้อมูลป้าย", "กำลังประมวลผล", "ส่งพิมพ์สำเร็จ"];
 
@@ -52,7 +51,6 @@ function PrintingInner() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
       <main className="flex-1 flex flex-col items-center justify-center px-6 py-10">
         <div className="w-full max-w-sm bg-cream-50 rounded-3xl gold-border card-shadow px-6 py-10 flex flex-col items-center gap-6">
           {!showSuccess && (

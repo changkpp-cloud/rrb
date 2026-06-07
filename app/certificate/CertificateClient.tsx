@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
@@ -53,8 +53,8 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
   async function handleShare() {
     if (navigator.share) {
       await navigator.share({
-        title: "หลักฐานการมอบหรีดร่วมบุญ Zero Waste",
-        text: `${name || "ผู้ร่วมบุญ"} ได้ร่วมมอบหรีดร่วมบุญ Zero Waste`,
+        title: "หลักฐานการมอบเงินร่วมทำบุญ",
+        text: `${name || "ผู้ร่วมบุญ"} ได้ร่วมมอบเงินร่วมทำบุญ`,
         url: window.location.href,
       }).catch(() => {});
     } else {
@@ -67,22 +67,7 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
       className="min-h-dvh flex flex-col"
       style={{ background: "#ffffff" }}
     >
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="w-8" />
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-6 h-6 text-gold-600" />
-            <div className="text-center">
-              <h1 className="text-xl font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-              <p className="text-base font-bold text-gold-500 uppercase leading-none">Zero Waste</p>
-            </div>
-            <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
-
-      <main className="flex-1 overflow-y-auto">
+<main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
           {/* Certificate card */}
@@ -126,7 +111,7 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
 
               <div className="space-y-2 text-center">
                 <p className="text-xs text-gold-700 leading-relaxed">
-                  ได้ร่วมมอบ <span className="font-semibold text-gold-800">หรีดร่วมบุญ Zero Waste</span>
+                  ได้ร่วมมอบ <span className="font-semibold text-gold-800">เงินร่วมทำบุญ</span>
                 </p>
                 <p className="text-xs text-gold-700 leading-relaxed">
                   เป็นจำนวนเงิน <span className="font-semibold text-gold-800">{amountDisplay || "—"}</span>

@@ -1,11 +1,10 @@
-﻿"use client";
+"use client";
 
 import { useRef, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Copy, Check, CloudUpload, Download } from "lucide-react";
-import IosPageHeader from "./IosPageHeader";
 import PromptPayQR from "./PromptPayQR";
 import Button from "@/components/ui/Button";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
@@ -131,8 +130,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
-
       {/* Scrollable content */}
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-4 space-y-4">

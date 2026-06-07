@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Building2, KeyRound, BarChart3 } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
 import SmartAppHeader from "@/components/SmartAppHeader";
 
 export default function DashboardPage() {
@@ -8,21 +7,9 @@ export default function DashboardPage() {
     <div className="min-h-screen px-4 pb-[76px] pt-[64px] sm:pb-[80px] sm:pt-[72px]">
       <SmartAppHeader />
       <div className="flex min-h-[calc(100vh-152px)] flex-col items-center justify-center">
-        <div className="w-full max-w-sm space-y-6">
-          {/* Logo */}
-          <div className="flex flex-col items-center gap-2">
-            <div className="flex items-center gap-2">
-              <LotusIcon className="w-7 h-7 text-gold-600" />
-              <div className="text-center">
-                <h1 className="text-2xl font-bold gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-                <p className="text-lg font-bold text-gold-500 uppercase leading-none">Zero Waste</p>
-              </div>
-              <LotusIcon className="w-7 h-7 text-gold-600 scale-x-[-1]" />
-            </div>
-            <p className="text-xs text-gold-500">เลือกประเภทการเข้าสู่ระบบ</p>
-          </div>
+        <div className="w-full max-w-sm space-y-5">
+          <p className="text-center text-sm font-semibold text-gold-600">เลือกประเภทการเข้าสู่ระบบ</p>
 
-          {/* Center login */}
           <Link
             href="/dashboard/center"
             className="block bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 hover:bg-cream-100 transition-colors active:scale-[0.98]"
@@ -40,7 +27,6 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* Host login */}
           <Link
             href="/dashboard/host"
             className="block bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 hover:bg-cream-100 transition-colors active:scale-[0.98]"
@@ -56,7 +42,6 @@ export default function DashboardPage() {
             </div>
           </Link>
 
-          {/* ESG Admin login */}
           <Link
             href="/dashboard/admin"
             className="block bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 hover:bg-cream-100 transition-colors active:scale-[0.98]"
@@ -71,10 +56,6 @@ export default function DashboardPage() {
               </div>
             </div>
           </Link>
-
-          <p className="text-center text-[11px] text-gold-300">
-            หรีดร่วมบุญ Zero Waste · ลดขยะพวงหรีด เปลี่ยนเป็นบุญ
-          </p>
         </div>
       </div>
     </div>

@@ -1,10 +1,9 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Check, User, Briefcase } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintNamePage() {
   return (
@@ -41,22 +40,7 @@ function PrintNameInner() {
       className="min-h-dvh flex flex-col"
       style={{ background: "#ffffff" }}
     >
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
-        <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
-          <div className="w-8" />
-          <div className="flex items-center gap-2">
-            <LotusIcon className="w-6 h-6 text-gold-600" />
-            <div className="text-center">
-              <h1 className="text-xl font-bold leading-tight gold-gradient-text tracking-wide">หรีดร่วมบุญ</h1>
-              <p className="text-base font-bold text-gold-500 uppercase leading-none">Zero Waste</p>
-            </div>
-            <LotusIcon className="w-6 h-6 text-gold-600 scale-x-[-1]" />
-          </div>
-          <div className="w-8" />
-        </div>
-      </header>
-
-      <main className="flex-1 overflow-y-auto">
+<main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
 
           <SignPreview name={name} title={title} />

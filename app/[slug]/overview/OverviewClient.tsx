@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, CalendarDays, MapPin, UserRound, Info } from "lucide-react";
-import IosPageHeader from "@/components/IosPageHeader";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface PaidData {
@@ -88,8 +87,6 @@ export default function OverviewClient({ memorial, slug }: Props) {
 
   return (
     <div className="min-h-dvh flex flex-col bg-cream-50">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
-
       <main className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-lg px-4 py-4 space-y-4">
 

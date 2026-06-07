@@ -1,10 +1,9 @@
-﻿"use client";
+"use client";
 
 import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Home, FileText, Flower2, Image as ImageIcon } from "lucide-react";
-import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 
 export default function PrintDonePage() {
@@ -29,8 +28,6 @@ function PrintDoneInner() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
-
       <main className="flex-1 flex flex-col items-center justify-center px-4">
         <div className="w-full max-w-sm flex flex-col items-center gap-5">
 

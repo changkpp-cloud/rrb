@@ -29,7 +29,7 @@ function formatMetadataDate(dateValue: string | null | undefined) {
 }
 
 function buildShareDescription(memorial: Awaited<ReturnType<typeof getMemorialBySlug>>) {
-  if (!memorial) return "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ กับหรีดร่วมบุญ Zero Waste";
+  if (!memorial) return "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ";
 
   const birthDate = formatMetadataDate(memorial.birth_date);
   const deathDate = formatMetadataDate(memorial.death_date);
@@ -53,13 +53,13 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
 
   if (!memorial) {
     return {
-      title: "หรีดร่วมบุญ Zero Waste",
-      description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ กับหรีดร่วมบุญ Zero Waste",
+      title: "หน้ารำลึกผู้วายชนม์",
+      description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ",
       alternates: { canonical: pageUrl },
     };
   }
 
-  const title = `${memorial.name} | หรีดร่วมบุญ Zero Waste`;
+  const title = `${memorial.name} | หน้ารำลึกผู้วายชนม์`;
   const description = buildShareDescription(memorial);
   const imageUrl = absoluteUrl(memorial.photo_url);
   const images = imageUrl ? [{ url: imageUrl, alt: memorial.name }] : undefined;
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
       title,
       description,
       url: pageUrl,
-      siteName: "หรีดร่วมบุญ Zero Waste",
+      siteName: "หน้ารำลึกผู้วายชนม์",
       type: "website",
       images,
     },

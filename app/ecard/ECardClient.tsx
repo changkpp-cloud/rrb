@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useRef, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Camera, Check, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
 import { isSocialInAppBrowser, openImageForManualSave, openUrl } from "@/lib/browser-actions";
@@ -210,8 +209,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   return (
     <>
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
-
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-5 space-y-5">
 
@@ -292,7 +289,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               <div style={{ display: "flex", justifyContent: "center", paddingTop: Math.round(12*s), paddingBottom: Math.round(2*s), flexShrink: 0, position: "relative", zIndex: 6 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: Math.round(7*s), background: "linear-gradient(90deg,#c4a052,#d8b860,#e4ca70,#d8b860,#c4a052)", border: `${Math.round(1.5*s)}px solid rgba(180,140,40,0.5)`, borderRadius: 999, padding: `${Math.round(5*s)}px ${Math.round(16*s)}px`, boxShadow: `0 ${Math.round(2*s)}px ${Math.round(8*s)}px rgba(180,140,40,0.20)` }}>
                   <span style={{ display: "inline-flex", width: Math.round(15*s), height: Math.round(15*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full" /></span>
-                  <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(12*s), letterSpacing: "0.16em", fontFamily: "'Sarabun',sans-serif" }}>หรีดร่วมบุญ · Zero Waste</span>
+                  <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(12*s), letterSpacing: "0.16em", fontFamily: "'Sarabun',sans-serif" }}>ด้วยความอาลัย</span>
                   <span style={{ display: "inline-flex", width: Math.round(15*s), height: Math.round(15*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                 </div>
               </div>

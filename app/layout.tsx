@@ -3,12 +3,11 @@ import "./globals.css";
 import FloatingBackButton from "@/components/FloatingBackButton";
 
 export const metadata: Metadata = {
-  title: "หรีดร่วมบุญ - Zero Waste",
-  description:
-    "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ แพลตฟอร์มหรีดร่วมบุญ Zero Waste สำหรับงานศพไทย",
+  title: "ระบบร่วมทำบุญออนไลน์",
+  description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ สำหรับงานศพไทย",
   keywords: ["หรีดร่วมบุญ", "งานศพ", "zero waste", "ทำบุญ", "พวงหรีด"],
   openGraph: {
-    title: "หรีดร่วมบุญ - Zero Waste",
+    title: "ระบบร่วมทำบุญออนไลน์",
     description: "เปลี่ยนพวงหรีดที่อยู่ไม่กี่วัน ให้กลายเป็นเงินช่วยเจ้าภาพและข้อมูลลดขยะที่วัดผลได้",
     type: "website",
   },

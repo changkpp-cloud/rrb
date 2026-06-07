@@ -4,7 +4,6 @@ import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Check, User, Briefcase, Lock } from "lucide-react";
-import IosPageHeader from "@/components/IosPageHeader";
 
 /**
  * สร้างภาพป้ายชื่อความละเอียดสูง (1440×400 px) โดยใช้ Canvas API
@@ -145,8 +144,6 @@ function PrintNameInner() {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <IosPageHeader title="หรีดร่วมบุญ" subtitle="Zero Waste" />
-
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
           <SignPreview name={name} title={title} />
