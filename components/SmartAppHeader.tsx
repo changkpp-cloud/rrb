@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { CreditCard, Heart, Home, LayoutDashboard, Tag } from "lucide-react";
 import LotusIcon from "./LotusIcon";
-import useRafScrollVisibility from "./useRafScrollVisibility";
 
 const NAV_ITEMS = [
   {
@@ -41,7 +41,42 @@ const NAV_ITEMS = [
 
 export default function SmartAppHeader() {
   const pathname = usePathname();
-  const hidden = useRafScrollVisibility();
+  const [hidden, setHidden] = useState(false);
+  const hiddenRef = useRef(false);
+  const tickingRef = useRef(false);
+
+  useEffect(() => {
+    function updateHeaderVisibility() {
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const viewportHeight = window.innerHeight;
+      const documentHeight = document.documentElement.scrollHeight;
+      const atTop = scrollTop <= 8;
+      const atBottom = scrollTop + viewportHeight >= documentHeight - 8;
+      const nextHidden = !(atTop || atBottom);
+
+      if (hiddenRef.current !== nextHidden) {
+        hiddenRef.current = nextHidden;
+        setHidden(nextHidden);
+      }
+
+      tickingRef.current = false;
+    }
+
+    function onScrollOrResize() {
+      if (tickingRef.current) return;
+      tickingRef.current = true;
+      window.requestAnimationFrame(updateHeaderVisibility);
+    }
+
+    updateHeaderVisibility();
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize);
+
+    return () => {
+      window.removeEventListener("scroll", onScrollOrResize);
+      window.removeEventListener("resize", onScrollOrResize);
+    };
+  }, []);
 
   return (
     <>
