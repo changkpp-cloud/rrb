@@ -104,8 +104,8 @@ export default function SmartAppHeader() {
         className="fixed inset-x-0 bottom-0 z-50 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
-        <div className="mx-auto w-full max-w-6xl overflow-x-auto px-3 py-2 sm:px-6">
-          <div className="flex min-w-max items-center gap-2 sm:min-w-0 sm:justify-center">
+        <div className="mx-auto w-full max-w-6xl px-1.5 py-1.5 sm:px-6 sm:py-2">
+          <div className="grid w-full grid-cols-5 gap-1 sm:gap-2">
             {NAV_ITEMS.map((item) => {
               const active = item.isActive(pathname);
               const Icon = item.icon;
@@ -115,14 +115,14 @@ export default function SmartAppHeader() {
                   key={item.href}
                   href={item.href}
                   aria-current={active ? "page" : undefined}
-                  className={`inline-flex min-h-11 shrink-0 items-center justify-center gap-2 rounded-full border px-4 text-sm font-bold transition-colors sm:min-w-28 ${
+                  className={`flex min-h-[52px] min-w-0 flex-col items-center justify-center gap-0.5 rounded-2xl border px-1 text-center text-[10px] font-bold leading-none transition-colors sm:min-h-11 sm:flex-row sm:gap-2 sm:rounded-full sm:px-4 sm:text-sm ${
                     active
                       ? "border-gold-500 bg-gold-100 text-gold-900 shadow-sm"
                       : "border-gold-200/70 bg-white/65 text-gold-700 hover:border-gold-300 hover:bg-white/90"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${active ? "text-gold-700" : "text-gold-500"}`} />
-                  <span>{item.label}</span>
+                  <Icon className={`h-4 w-4 shrink-0 sm:h-4 sm:w-4 ${active ? "text-gold-700" : "text-gold-500"}`} />
+                  <span className="block max-w-full truncate">{item.label}</span>
                 </Link>
               );
             })}
