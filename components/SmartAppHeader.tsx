@@ -101,7 +101,9 @@ export default function SmartAppHeader() {
       </header>
 
       <nav
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md"
+        className={`fixed inset-x-0 bottom-0 z-50 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md transition-transform duration-500 ease-out will-change-transform ${
+          hidden ? "translate-y-full" : "translate-y-0"
+        }`}
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto w-full max-w-6xl px-1.5 py-1.5 sm:px-6 sm:py-2">
