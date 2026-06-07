@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import CenterDashboardScrollNav from "@/components/CenterDashboardScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
+import CreateMemorialClient from "./create/CreateMemorialClient";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
@@ -156,11 +157,14 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           <SectionHeader icon={Plus} title="1. เปิดงานใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
           <Link
             href={`/dashboard/center/${id}/create`}
-            className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl gold-gradient text-white font-bold text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+            className="hidden"
+            aria-hidden="true"
+            tabIndex={-1}
           >
             <Plus className="w-5 h-5" />
             เปิดงานศพใหม่
           </Link>
+          <CreateMemorialClient centerId={id} embedded />
         </section>
           }
 

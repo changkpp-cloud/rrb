@@ -10,7 +10,10 @@ import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
 
-interface Props { centerId: string; }
+interface Props {
+  centerId: string;
+  embedded?: boolean;
+}
 
 interface Result {
   eventCode: string;
@@ -59,7 +62,7 @@ function QRCodeDisplay({ url }: { url: string }) {
 }
 
 // ── Success Screen ─────────────────────────────────────────────────────────
-function SuccessScreen({ result, centerId }: { result: Result; centerId: string }) {
+function SuccessScreen({ embedded = false, result, centerId }: { embedded?: boolean; result: Result; centerId: string }) {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const publicUrl = typeof window !== "undefined"
@@ -73,7 +76,7 @@ function SuccessScreen({ result, centerId }: { result: Result; centerId: string 
   }
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className={embedded ? "flex flex-col" : "min-h-screen flex flex-col"}>
       <IosPageHeader title="เปิดงานสำเร็จ" />
 
       <main className="flex-1 overflow-y-auto">
@@ -233,7 +236,7 @@ const inputClass = "w-full px-3 py-2.5 rounded-xl gold-border bg-white text-gold
 const inputReadonly = `${inputClass} opacity-50 cursor-not-allowed`;
 
 // ── Main Form ──────────────────────────────────────────────────────────────
-export default function CreateMemorialClient({ centerId }: Props) {
+export default function CreateMemorialClient({ centerId, embedded = false }: Props) {
   const [submitting, setSubmitting]   = useState(false);
   const [result, setResult]           = useState<Result | null>(null);
   const [error, setError]             = useState("");
@@ -335,11 +338,11 @@ export default function CreateMemorialClient({ centerId }: Props) {
     setSubmitting(false);
   }
 
-  if (result) return <SuccessScreen result={result} centerId={centerId} />;
+  if (result) return <SuccessScreen embedded={embedded} result={result} centerId={centerId} />;
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
+    <div className={embedded ? "flex flex-col" : "min-h-screen flex flex-col"} style={{ background: "#ffffff" }}>
+      {!embedded && <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LotusIcon className="w-5 h-5 text-gold-600" />
@@ -351,10 +354,10 @@ export default function CreateMemorialClient({ centerId }: Props) {
           </div>
           <div className="w-8" />
         </div>
-      </header>
+      </header>}
 
-      <main className="flex-1 overflow-y-auto">
-        <form onSubmit={handleSubmit} className="max-w-lg mx-auto px-4 py-5 space-y-4">
+      <main className={embedded ? "" : "flex-1 overflow-y-auto"}>
+        <form onSubmit={handleSubmit} className={embedded ? "space-y-4" : "max-w-lg mx-auto px-4 py-5 space-y-4"}>
 
           {/* Instruction banner */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs text-emerald-700 leading-relaxed">
