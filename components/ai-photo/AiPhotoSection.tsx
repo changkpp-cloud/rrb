@@ -354,22 +354,6 @@ export default function AiPhotoSection({
       {/* Template selector */}
       <AiPhotoTemplateSelector selected={templateKey} onChange={setTemplateKey} />
 
-      {/* Context info */}
-      {(donorName || deceasedName) && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 space-y-0.5">
-          {donorName && (
-            <p className="text-[11px] text-blue-700">
-              ผู้มอบ: <strong>{donorName}</strong>
-              {donorPosition ? ` · ${donorPosition}` : ""}
-            </p>
-          )}
-          {deceasedName && (
-            <p className="text-[11px] text-blue-600">งานของ: <strong>{deceasedName}</strong></p>
-          )}
-          {funeralPlace && <p className="text-[11px] text-blue-500">{funeralPlace}</p>}
-        </div>
-      )}
-
       {/* Generate button */}
       <div className="space-y-1">
         <button

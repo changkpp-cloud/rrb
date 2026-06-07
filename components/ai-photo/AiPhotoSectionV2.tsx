@@ -88,8 +88,6 @@ export default function AiPhotoSectionV2({
   const [donorFile, setDonorFile] = useState<File | null>(null);
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
-  const [donorGender, setDonorGender] = useState<"male" | "female">("female");
-  const [donorAgeRange, setDonorAgeRange] = useState("");
   const [hostPerson, setHostPerson] = useState<MemorialPerson | null>(null);
   const [consent, setConsent] = useState(false);
   const [generating, setGenerating] = useState(false);
@@ -121,8 +119,6 @@ export default function AiPhotoSectionV2({
         const draft = JSON.parse(raw) as {
           templateKey?: AiPhotoTemplateKey;
           donorPreview?: string | null;
-          donorGender?: "male" | "female";
-          donorAgeRange?: string;
           images?: string[];
           selectedIdx?: number;
           consent?: boolean;
@@ -133,8 +129,6 @@ export default function AiPhotoSectionV2({
 
         if (draft.templateKey) setTemplateKey(draft.templateKey);
         if (draft.donorPreview) setDonorPreview(draft.donorPreview);
-        if (draft.donorGender) setDonorGender(draft.donorGender);
-        if (typeof draft.donorAgeRange === "string") setDonorAgeRange(draft.donorAgeRange);
         if (Array.isArray(draft.images)) setImages(draft.images);
         if (typeof draft.selectedIdx === "number") setSelectedIdx(draft.selectedIdx);
         if (typeof draft.consent === "boolean") setConsent(draft.consent);
@@ -155,8 +149,6 @@ export default function AiPhotoSectionV2({
         JSON.stringify({
           templateKey,
           donorPreview,
-          donorGender,
-          donorAgeRange,
           images,
           selectedIdx,
           consent,
@@ -166,7 +158,7 @@ export default function AiPhotoSectionV2({
         })
       );
     } catch {}
-  }, [draftKey, templateKey, donorPreview, donorGender, donorAgeRange, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
+  }, [draftKey, templateKey, donorPreview, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -202,8 +194,8 @@ export default function AiPhotoSectionV2({
       tokenForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
       tokenForm.append("deceased_name", deceasedName ?? "");
       tokenForm.append("funeral_place", funeralPlace ?? "");
-      tokenForm.append("donor_gender", donorGender);
-      tokenForm.append("donor_age_range", donorAgeRange || "35–50 years old");
+      tokenForm.append("donor_gender", "female");
+      tokenForm.append("donor_age_range", "35-50 years old");
       if (hostPerson?.id) tokenForm.append("host_person_id", hostPerson.id);
 
       const tokenRes = await fetch("/api/ai-photo/auth-token", { method: "POST", body: tokenForm });
@@ -340,8 +332,8 @@ export default function AiPhotoSectionV2({
       jobForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
       jobForm.append("deceased_name", deceasedName ?? "");
       jobForm.append("funeral_place", funeralPlace ?? "");
-      jobForm.append("donor_gender", donorGender);
-      jobForm.append("donor_age_range", donorAgeRange || "35-50 years old");
+      jobForm.append("donor_gender", "female");
+      jobForm.append("donor_age_range", "35-50 years old");
       jobForm.append("donor_photo", donorFile);
       if (hostPerson?.id) jobForm.append("host_person_id", hostPerson.id);
 
@@ -455,65 +447,12 @@ export default function AiPhotoSectionV2({
         </button>
       </div>
 
-      {/* Step 2b: Gender + Age (template 1 only uses these, but collect for all) */}
-      {templateKey === "standing_with_label" && (
-        <div className="grid grid-cols-2 gap-3">
-          {/* Gender */}
-          <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-gold-700">เพศผู้มอบ</p>
-            <div className="flex gap-2">
-              {(["female", "male"] as const).map((g) => (
-                <button
-                  key={g}
-                  type="button"
-                  onClick={() => setDonorGender(g)}
-                  className={[
-                    "flex-1 py-2 rounded-xl text-xs font-semibold transition-all border-2 active:scale-[0.97]",
-                    donorGender === g
-                      ? "gold-gradient text-white border-transparent shadow-sm"
-                      : "bg-cream-50 border-gold-300 text-gold-700 hover:bg-cream-100",
-                  ].join(" ")}
-                >
-                  {g === "female" ? "หญิง" : "ชาย"}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* Age range */}
-          <div className="space-y-1.5">
-            <p className="text-xs font-semibold text-gold-700">ช่วงอายุ (ไม่บังคับ)</p>
-            <select
-              value={donorAgeRange}
-              onChange={(e) => setDonorAgeRange(e.target.value)}
-              className="w-full px-3 py-2 rounded-xl gold-border bg-white text-gold-800 text-xs focus:outline-none focus:ring-2 focus:ring-gold-400"
-            >
-              <option value="">ไม่ระบุ</option>
-              <option value="18–25 years old">18–25 ปี</option>
-              <option value="26–35 years old">26–35 ปี</option>
-              <option value="36–45 years old">36–45 ปี</option>
-              <option value="46–55 years old">46–55 ปี</option>
-              <option value="56–65 years old">56–65 ปี</option>
-              <option value="65+ years old">65+ ปี</option>
-            </select>
-          </div>
-        </div>
-      )}
-
       {/* Step 3: Host/family picker */}
       <HostPersonPicker
         memorialId={memorialId}
         selectedId={hostPerson?.id ?? null}
         onChange={setHostPerson}
       />
-
-      {/* Context preview */}
-      {(donorName || deceasedName) && (
-        <div className="bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5 space-y-0.5">
-          {donorName && <p className="text-[11px] text-blue-700">ผู้มอบ: <strong>{donorName}</strong>{donorPosition ? ` · ${donorPosition}` : ""}</p>}
-          {deceasedName && <p className="text-[11px] text-blue-600">งานของ: <strong>{deceasedName}</strong></p>}
-          {funeralPlace && <p className="text-[11px] text-blue-500">{funeralPlace}</p>}
-        </div>
-      )}
 
       {/* Consent */}
       <label className="flex items-start gap-2.5 cursor-pointer">
