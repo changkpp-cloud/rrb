@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import SiteHeader from "@/components/SiteHeader";
 import MemorialProfile from "@/components/MemorialProfile";
 import HideFloatingBack from "@/components/HideFloatingBack";
 import CeremonyInfo from "@/components/CeremonyInfo";
@@ -126,7 +125,6 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         }} />
       </div>
       <div className="relative z-10 min-h-screen flex flex-col">
-        <SiteHeader />
         <main className="flex-1">
           <MemorialProfile memorial={memorial} />
           <CeremonyInfo memorial={memorial} />
