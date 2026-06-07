@@ -260,7 +260,7 @@ export default function AiPhotoSection({
         <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
           <p className="text-xs text-emerald-700 font-medium">
-            สร้างภาพที่ระลึกเรียบร้อยแล้ว — บันทึกหรือแชร์ภาพด้านล่าง
+            แชร์
           </p>
         </div>
         {displayImages.length > 0 && (

@@ -65,7 +65,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     return `${basePath}/ecard?${q.toString()}`;
   }
 
-  async function handleShareLine() {
+  async function handleShare() {
     setSharing(true);
     const shareUrl = window.location.href;
     const shareTitle = showAmount
@@ -398,13 +398,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {saving ? "กำลังบันทึก..." : "บันทึกภาพ"}
               </button>
               <button
-                onClick={handleShareLine}
+                onClick={handleShare}
                 disabled={saving || sharing}
                 className="flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-semibold border-2 border-gold-300 bg-white text-gold-700 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
                 style={{ borderColor: shared ? "#00b900" : undefined, color: shared ? "#00b900" : undefined }}
               >
                 {shared ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-                {shared ? "แชร์แล้ว!" : "แชร์ LINE"}
+                แชร์
               </button>
             </div>
           </div>

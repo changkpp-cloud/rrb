@@ -69,7 +69,7 @@ function notifyAiPhotoComplete() {
   if (Notification.permission !== "granted") return;
 
   const notification = new Notification("ภาพมอบหรีดพร้อมแล้ว", {
-    body: "กลับมาที่หน้านี้เพื่อบันทึกภาพหรือแชร์ LINE",
+    body: "แชร์",
     tag: "rrb-ai-photo-ready",
   });
 
@@ -568,11 +568,11 @@ export default function AiPhotoSectionV2({
               className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white"
             >
               <Share2 className="h-3.5 w-3.5" />
-              Share link
+              แชร์
             </button>
           </div>
           <p className="text-[10px] text-emerald-700">
-            Save this link in LINE or social media, then open it later to check whether the image is ready.
+            แชร์
           </p>
         </div>
       )}

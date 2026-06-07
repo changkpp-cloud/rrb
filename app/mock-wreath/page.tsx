@@ -442,7 +442,7 @@ function MockWreathInner() {
                   <p className="text-sm font-bold text-gold-800">ใช้เวลา 2–5 นาทีในการเจนภาพ</p>
                 </div>
                 <p className="text-xs leading-5 text-gold-600">
-                  แชร์ลิงค์นี้เพื่อกลับมาเข้าหน้านี้ใหม่และรับภาพที่เจนสำเร็จแล้ว
+                  แชร์
                 </p>
                 <div className="flex items-center gap-2 rounded-xl border border-gold-200 bg-cream-50 px-3 py-2">
                   <Link2 className="h-3.5 w-3.5 shrink-0 text-gold-400" />
@@ -469,7 +469,7 @@ function MockWreathInner() {
                     className="flex items-center justify-center gap-2 rounded-xl gold-gradient py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
                   >
                     <Share2 className="h-4 w-4" />
-                    แชร์ลิงค์
+                    แชร์
                   </button>
                 </div>
               </div>

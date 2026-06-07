@@ -150,7 +150,7 @@ export default function CertificateClient({ memorial }: { memorial: Memorial }) 
               className="flex-1 flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gold-400 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 active:scale-[0.98] transition-all shadow-sm"
             >
               <Share2 className="w-4 h-4" />
-              แชร์หลักฐาน
+              แชร์
             </button>
           </div>
 

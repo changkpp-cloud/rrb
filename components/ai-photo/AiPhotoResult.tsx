@@ -63,7 +63,7 @@ export default function AiPhotoResult({
     setDownloading(false);
   }
 
-  async function handleShareLine() {
+  async function handleShare() {
     setSharing(true);
     const shareTitle = `ภาพที่ระลึก AI — ${donorName ?? "ผู้ร่วมบุญ"} ร่วมมอบหรีดร่วมบุญ 🌸`;
     const shareText = `#หรีดร่วมบุญ #ZeroWaste`;
@@ -178,7 +178,7 @@ export default function AiPhotoResult({
         </button>
         <button
           type="button"
-          onClick={handleShareLine}
+          onClick={handleShare}
           disabled={downloading || sharing}
           className="flex items-center justify-center gap-2 py-3 rounded-xl border-2 text-sm font-semibold transition-all active:scale-[0.98] disabled:opacity-40"
           style={{
@@ -188,7 +188,7 @@ export default function AiPhotoResult({
           }}
         >
           {shared ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
-          {shared ? "แชร์แล้ว!" : "แชร์ LINE"}
+          แชร์
         </button>
       </div>
     </div>

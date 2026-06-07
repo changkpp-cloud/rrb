@@ -97,7 +97,7 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
                 </p>
                 <p className="text-[11px] text-gold-500">
                   {isDone
-                    ? "กดบันทึกภาพหรือแชร์ LINE ได้ด้านล่าง"
+                    ? "แชร์"
                     : isFailed
                     ? job?.error ?? "กรุณาลองสร้างใหม่อีกครั้ง"
                     : "หน้านี้จะอัปเดตสถานะอัตโนมัติ สามารถบันทึกลิงก์ไว้กลับมาดูภายหลังได้"}
@@ -120,7 +120,7 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
                 className="flex items-center justify-center gap-2 rounded-xl gold-gradient px-3 py-2.5 text-xs font-bold text-white"
               >
                 <Share2 className="h-4 w-4" />
-                แชร์ลิงก์
+                แชร์
               </button>
             </div>
           </div>
