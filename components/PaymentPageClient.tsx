@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { Copy, Check, CloudUpload, Download } from "lucide-react";
@@ -10,6 +10,7 @@ import PromptPayQR from "./PromptPayQR";
 import Button from "@/components/ui/Button";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
 import type { Memorial } from "@/lib/supabase/types";
+import { savePaidData } from "@/components/SlugBottomNav";
 
 const SYSTEM_FEE = 100;
 
@@ -31,6 +32,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const fileRef = useRef<HTMLInputElement>(null);
   const qrRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { slug } = useParams<{ slug: string }>();
 
   function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -119,6 +121,9 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       slip_url: slipUrl,
     });
     setVerified(true);
+    if (slug) {
+      savePaidData(slug, { memorial_id: memorial.id, slip_url: slipUrl, amount: String(parsedAmount) });
+    }
     setTimeout(() => {
       router.push(`${basePath}/print-name?${q.toString()}`);
     }, 1000);
@@ -250,7 +255,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
 
 
 
-          <div className="h-2" />
+          <div className="h-20" />
         </div>
       </main>
       <LoadingOverlay show={verifying && !verified} message="กำลังตรวจสอบสลิป..." />

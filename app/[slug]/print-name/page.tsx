@@ -3,7 +3,7 @@
 import { Suspense, useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { Check, User, Briefcase } from "lucide-react";
+import { Check, User, Briefcase, Lock } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
 /**
@@ -88,6 +88,7 @@ function PrintNameInner() {
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [printSuccess, setPrintSuccess] = useState(false);
+  const locked = !memorial_id;
 
   async function handleSend() {
     const trimmedName = name.trim();
@@ -149,13 +150,19 @@ function PrintNameInner() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-3 space-y-3">
           <SignPreview name={name} title={title} />
+          {locked && (
+            <div className="flex items-center gap-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <Lock className="h-4 w-4 shrink-0 text-amber-500" />
+              กรุณาแนบสลิปการโอนเงินก่อน จึงจะกรอกชื่อป้ายได้
+            </div>
+          )}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-3">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2 text-gold-700">
                 <User className="w-4 h-4" />
                 <span className="text-sm font-semibold">ชื่อ หรือ องค์กร</span>
               </div>
-              <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm" />
+              <input type="text" value={name} onChange={(e) => setName(e.target.value)} disabled={locked} className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
             <div className="h-px bg-gold-200/50" />
             <div className="space-y-1.5">
@@ -163,16 +170,16 @@ function PrintNameInner() {
                 <Briefcase className="w-4 h-4" />
                 <span className="text-sm font-semibold">ตำแหน่ง หรือ ข้อความแสดงอาลัย</span>
               </div>
-              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm" />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={locked} className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed" />
             </div>
           </div>
-          <button onClick={() => setShowModal(true)} disabled={!name.trim()} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+          <button onClick={() => setShowModal(true)} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
             แสดงก่อนส่งพิมพ์
           </button>
           <Link href={`/${slug}/payment`} className="flex items-center justify-center w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm">
             ย้อนกลับ
           </Link>
-          <div className="h-1" />
+          <div className="h-20" />
         </div>
       </main>
 
