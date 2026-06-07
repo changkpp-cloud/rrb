@@ -4,16 +4,12 @@ import {
   AlertTriangle,
   BarChart3,
   Banknote,
-  Boxes,
   CheckCircle2,
   ChevronRight,
-  ClipboardCheck,
   Leaf,
   Plus,
-  Printer,
   ScrollText,
   Settings,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 import CenterDashboardScrollNav from "@/components/CenterDashboardScrollNav";
@@ -143,8 +139,6 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const totalDonors = summaries.reduce((sum, row) => sum + row.confirmed, 0);
   const pendingSlipCount = summaries.reduce((sum, row) => sum + row.pendingSlip, 0);
   const pendingPrintCount = summaries.reduce((sum, row) => sum + row.nameplatePending + row.nameplateQueued, 0);
-  const printedCount = summaries.reduce((sum, row) => sum + row.nameplatePrinted, 0);
-  const postedCount = summaries.reduce((sum, row) => sum + row.nameplatePosted, 0);
 
   return (
     <div className="min-h-screen bg-white">
@@ -154,11 +148,11 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
         backHref="/dashboard/center"
       />
 
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
+      <main className="max-w-lg mx-auto px-4 pt-5 pb-24 space-y-6">
         <CenterDashboardScrollNav />
 
-        <section id="open" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Plus} title="1. เปิดงานศพใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
+        <section id="open" className="scroll-mt-24 space-y-3">
+          <SectionHeader icon={Plus} title="1. เปิดงานใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
           <Link
             href={`/dashboard/center/${id}/create`}
             className="flex items-center justify-center gap-2 w-full py-4 rounded-2xl gold-gradient text-white font-bold text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
@@ -168,10 +162,10 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           </Link>
         </section>
 
-        <section id="active" className="scroll-mt-36 space-y-3">
+        <section id="active" className="scroll-mt-24 space-y-3">
           <SectionHeader
             icon={ScrollText}
-            title="2. งานศพที่เปิดอยู่"
+            title="2. งานเปิดอยู่"
             subtitle={`${activeRows.length} งาน · ${pendingSlipCount} สลิปรอตรวจ · ${pendingPrintCount} ป้ายรอพิมพ์`}
           />
           {activeRows.length === 0 ? (
@@ -185,18 +179,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           )}
         </section>
 
-        <section id="board" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Boxes} title="3. จัดการบอร์ดและอุปกรณ์" subtitle="ดูภาพรวมสถานะป้ายและงานที่ต้องติดบอร์ด" />
-          <div className="grid grid-cols-2 gap-3">
-            <Metric icon={Printer} label="รอพิมพ์ป้าย" value={pendingPrintCount.toLocaleString()} tone="amber" />
-            <Metric icon={ClipboardCheck} label="พิมพ์แล้ว" value={printedCount.toLocaleString()} tone="blue" />
-            <Metric icon={CheckCircle2} label="ติดบอร์ดแล้ว" value={postedCount.toLocaleString()} tone="emerald" />
-            <Metric icon={Boxes} label="งานที่เปิดอยู่" value={activeRows.length.toLocaleString()} tone="gold" />
-          </div>
-        </section>
-
-        <section id="reports" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={BarChart3} title="4. รายงานศูนย์" subtitle="สรุปยอดร่วมทำบุญ งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
+        <section id="reports" className="scroll-mt-24 space-y-3">
+          <SectionHeader icon={BarChart3} title="3. รายงานศูนย์" subtitle="สรุปยอดร่วมทำบุญ งานที่ปิดแล้ว และผลลัพธ์ Zero Waste ของศูนย์" />
           <div className="grid grid-cols-2 gap-3">
             <Metric icon={Banknote} label="ยอดร่วมทำบุญ" value={`${totalAmount.toLocaleString()} บาท`} tone="amber" />
             <Metric icon={Users} label="ผู้ร่วมบุญ" value={totalDonors.toLocaleString()} tone="blue" />
@@ -208,21 +192,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           </Link>
         </section>
 
-        <section id="staff" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Users} title="5. เจ้าหน้าที่ศูนย์" subtitle="ข้อมูลผู้ใช้งานศูนย์และสิทธิ์การเข้าถึงของเจ้าหน้าที่" />
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 flex items-start gap-3">
-            <ShieldCheck className="w-5 h-5 text-gold-600 shrink-0 mt-0.5" />
-            <div>
-              <p className="text-sm font-semibold text-gold-800">เจ้าหน้าที่ที่เข้าสู่ระบบ</p>
-              <p className="text-[11px] text-gold-500 mt-0.5">
-                {access.user ? `${access.user.display_name} · ${roleLabel(access.role)}` : "ใช้รหัสศูนย์แบบเดิม"}
-              </p>
-            </div>
-          </div>
-        </section>
-
-        <section id="settings" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Settings} title="6. ตั้งค่าศูนย์" subtitle="ข้อมูลหลักของศูนย์บริหารประจำตำบล" />
+        <section id="settings" className="scroll-mt-24 space-y-3">
+          <SectionHeader icon={Settings} title="4. ตั้งค่าศูนย์" subtitle="ข้อมูลหลักของศูนย์บริหารประจำตำบล" />
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
             <InfoRow label="ชื่อศูนย์" value={center.name} />
             <InfoRow label="ผู้จัดการ" value={center.manager_name || "-"} />

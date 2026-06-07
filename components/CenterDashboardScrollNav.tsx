@@ -1,16 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BarChart3, Boxes, Plus, ScrollText, Settings, Users } from "lucide-react";
+import { BarChart3, Plus, ScrollText, Settings } from "lucide-react";
 
-type SectionId = "open" | "active" | "board" | "reports" | "staff" | "settings";
+type SectionId = "open" | "active" | "reports" | "settings";
 
 const ITEMS: { id: SectionId; label: string; icon: React.ElementType }[] = [
-  { id: "open", label: "เปิดงานศพใหม่", icon: Plus },
-  { id: "active", label: "งานศพที่เปิดอยู่", icon: ScrollText },
-  { id: "board", label: "บอร์ด/อุปกรณ์", icon: Boxes },
+  { id: "open", label: "เปิดงานใหม่", icon: Plus },
+  { id: "active", label: "งานเปิดอยู่", icon: ScrollText },
   { id: "reports", label: "รายงานศูนย์", icon: BarChart3 },
-  { id: "staff", label: "เจ้าหน้าที่", icon: Users },
   { id: "settings", label: "ตั้งค่าศูนย์", icon: Settings },
 ];
 
@@ -28,7 +26,7 @@ export default function CenterDashboardScrollNav() {
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
         if (visible?.target.id) setActive(visible.target.id as SectionId);
       },
-      { rootMargin: "-96px 0px -55% 0px", threshold: [0.12, 0.35, 0.6] },
+      { rootMargin: "-96px 0px -45% 0px", threshold: [0.12, 0.35, 0.6] },
     );
 
     sections.forEach((section) => observer.observe(section));
@@ -40,8 +38,12 @@ export default function CenterDashboardScrollNav() {
   }
 
   return (
-    <nav className="sticky top-[76px] z-30 -mx-4 bg-white/92 backdrop-blur-md border-y border-gold-100 px-4 py-2">
-      <div className="grid grid-cols-3 gap-1.5">
+    <nav
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-gold-200 bg-white/95 px-1.5 py-1.5 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md"
+      style={{ paddingBottom: "max(env(safe-area-inset-bottom), 6px)" }}
+      aria-label="เมนูแดชบอร์ดศูนย์บริหาร"
+    >
+      <div className="mx-auto grid w-full max-w-lg grid-cols-4 gap-1.5">
         {ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
@@ -49,14 +51,16 @@ export default function CenterDashboardScrollNav() {
               key={id}
               type="button"
               onClick={() => scrollTo(id)}
-              className={`min-h-[58px] rounded-xl border px-1.5 py-2 transition-colors ${
+              className={`flex min-h-[50px] min-w-0 flex-col items-center justify-center rounded-xl border px-0.5 py-1.5 text-center transition-colors ${
                 isActive
-                  ? "bg-gold-600 border-gold-600 text-white shadow-sm"
-                  : "bg-cream-50 border-gold-200 text-gold-600 hover:bg-gold-50"
+                  ? "border-gold-600 bg-gold-600 text-white shadow-sm"
+                  : "border-gold-200 bg-cream-50 text-gold-600 hover:bg-gold-50"
               }`}
             >
-              <Icon className="w-4 h-4 mx-auto mb-1" />
-              <span className="block text-[10px] font-semibold leading-tight">{label}</span>
+              <Icon className="mb-0.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" />
+              <span className="block max-w-full truncate text-[9px] font-semibold leading-tight sm:text-[11px]">
+                {label}
+              </span>
             </button>
           );
         })}
