@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Banknote, Tag, Heart, LayoutDashboard } from "lucide-react";
+import { Home, Banknote, Tag, Heart, LayoutDashboard } from "lucide-react";
 
 export interface PaidData {
   memorial_id: string;
@@ -35,6 +35,12 @@ interface Tab {
 }
 
 const TABS: Tab[] = [
+  {
+    label: "หน้าแรก",
+    Icon: Home,
+    isActive: (p, slug) => p === `/${slug}`,
+    getHref: (slug) => `/${slug}`,
+  },
   {
     label: "ชำระเงิน",
     Icon: Banknote,
