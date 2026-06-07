@@ -1,6 +1,5 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import AdminNav from "@/components/AdminNav";
 
 export default async function AdminProtectedLayout({ children }: { children: React.ReactNode }) {
   const cookieStore = await cookies();
@@ -10,7 +9,6 @@ export default async function AdminProtectedLayout({ children }: { children: Rea
   }
   return (
     <div className="min-h-screen" style={{ background: "#ffffff" }}>
-      <AdminNav />
       <main className="max-w-4xl mx-auto px-4 py-5">
         {children}
       </main>

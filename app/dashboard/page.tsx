@@ -1,12 +1,10 @@
 import Link from "next/link";
 import { Building2, KeyRound, BarChart3 } from "lucide-react";
-import SmartAppHeader from "@/components/SmartAppHeader";
 
 export default function DashboardPage() {
   return (
-    <div className="min-h-screen px-4 pb-[76px] pt-[64px] sm:pb-[80px] sm:pt-[72px]">
-      <SmartAppHeader />
-      <div className="flex min-h-[calc(100vh-152px)] flex-col items-center justify-center">
+    <div className="min-h-[calc(100vh-140px)] px-4">
+      <div className="flex min-h-[calc(100vh-140px)] flex-col items-center justify-center">
         <div className="w-full max-w-sm space-y-5">
           <p className="text-center text-sm font-semibold text-gold-600">เลือกประเภทการเข้าสู่ระบบ</p>
 
