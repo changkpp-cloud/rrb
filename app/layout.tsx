@@ -5,11 +5,11 @@ import FloatingBackButton from "@/components/FloatingBackButton";
 export const metadata: Metadata = {
   title: "หรีดร่วมบุญ - Zero Waste",
   description:
-    "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ — แพลตฟอร์มหรีดดิจิทัลเพื่อสิ่งแวดล้อม",
-  keywords: ["หรีด", "งานศพ", "zero waste", "ทำบุญ", "หรีดร่วมบุญ"],
+    "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ แพลตฟอร์มหรีดร่วมบุญ Zero Waste สำหรับงานศพไทย",
+  keywords: ["หรีดร่วมบุญ", "งานศพ", "zero waste", "ทำบุญ", "พวงหรีด"],
   openGraph: {
     title: "หรีดร่วมบุญ - Zero Waste",
-    description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ",
+    description: "เปลี่ยนพวงหรีดที่อยู่ไม่กี่วัน ให้กลายเป็นเงินช่วยเจ้าภาพและข้อมูลลดขยะที่วัดผลได้",
     type: "website",
   },
 };
@@ -30,13 +30,10 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen antialiased">
-
-        {/* iOS 17 — minimal ambient glow */}
         <div
           aria-hidden="true"
           style={{ position: "fixed", inset: 0, zIndex: 0, pointerEvents: "none", overflow: "hidden" }}
         >
-          {/* Soft top warmth */}
           <div style={{
             position: "absolute", top: "-18%", left: "50%",
             transform: "translateX(-50%)",
@@ -44,7 +41,6 @@ export default function RootLayout({
             background: "radial-gradient(ellipse at center top, rgba(245,222,170,0.28) 0%, rgba(232,200,140,0.10) 38%, transparent 62%)",
             filter: "blur(36px)",
           }} />
-          {/* Warm bottom accent */}
           <div style={{
             position: "absolute", bottom: "5%", left: "50%",
             transform: "translateX(-50%)",
@@ -54,12 +50,10 @@ export default function RootLayout({
           }} />
         </div>
 
-        {/* Page content sits above decorative layer */}
         <div style={{ position: "relative", zIndex: 1 }}>
           {children}
         </div>
 
-        {/* Global floating back button — bottom-right, all pages */}
         <FloatingBackButton />
       </body>
     </html>
