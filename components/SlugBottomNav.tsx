@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Banknote, Tag, Heart, LayoutDashboard, Lock } from "lucide-react";
+import { Home, Banknote, Tag, Heart, LayoutDashboard } from "lucide-react";
 
 export interface PaidData {
   memorial_id: string;
@@ -70,9 +70,9 @@ const TABS: Tab[] = [
   {
     label: "แดชบอร์ด",
     Icon: LayoutDashboard,
-    segment: "printing",
-    requiresPaid: true,
-    getHref: (slug) => `/${slug}/printing`,
+    segment: "overview",
+    requiresPaid: false,
+    getHref: (slug) => `/${slug}/overview`,
   },
 ];
 
@@ -106,7 +106,6 @@ export default function SlugBottomNav({ slug }: Props) {
       <div className="mx-auto flex max-w-lg">
         {TABS.map((tab) => {
           const active = isActive(tab.segment);
-          const isLocked = tab.requiresPaid && !paid;
           const href = tab.getHref(slug, paid);
           const Icon = tab.Icon;
 
@@ -121,14 +120,7 @@ export default function SlugBottomNav({ slug }: Props) {
               {active && (
                 <span className="absolute top-0 left-3 right-3 h-0.5 rounded-b-full bg-gold-500" />
               )}
-              <span className="relative">
-                <Icon className={`h-5 w-5 ${active ? "text-gold-600" : "text-stone-400"}`} />
-                {isLocked && (
-                  <span className="absolute -right-2 -top-1.5 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-amber-100 ring-1 ring-white">
-                    <Lock className="h-2 w-2 text-amber-600" />
-                  </span>
-                )}
-              </span>
+              <Icon className={`h-5 w-5 ${active ? "text-gold-600" : "text-stone-400"}`} />
               <span className={`text-[10px] font-semibold leading-none ${active ? "text-gold-700" : "text-stone-400"}`}>
                 {tab.label}
               </span>
