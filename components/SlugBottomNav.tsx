@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Home, Banknote, Tag, Heart, LayoutDashboard } from "lucide-react";
+import { Home, Banknote, Tag, Heart } from "lucide-react";
 
 export interface PaidData {
   memorial_id: string;
@@ -61,12 +61,6 @@ const TABS: Tab[] = [
     Icon: Heart,
     isActive: (p, slug) => p === `/${slug}/ecard`,
     getHref: (slug) => `/${slug}/ecard`,
-  },
-  {
-    label: "แดชบอร์ด",
-    Icon: LayoutDashboard,
-    isActive: (p) => p.startsWith("/dashboard"),
-    getHref: () => "/dashboard",
   },
 ];
 

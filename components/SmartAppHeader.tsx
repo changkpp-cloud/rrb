@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { CreditCard, Heart, Home, LayoutDashboard, Tag } from "lucide-react";
+import { CreditCard, Heart, Home, Plus, Tag } from "lucide-react";
 import LotusIcon from "./LotusIcon";
 
 const NAV_ITEMS = [
@@ -30,12 +30,6 @@ const NAV_ITEMS = [
     href: "/evt-2026-rra8/ecard",
     icon: Heart,
     isActive: (pathname: string) => pathname === "/evt-2026-rra8/ecard",
-  },
-  {
-    label: "แดชบอร์ด",
-    href: "/dashboard",
-    icon: LayoutDashboard,
-    isActive: (pathname: string) => pathname === "/dashboard",
   },
 ];
 
@@ -86,7 +80,7 @@ export default function SmartAppHeader() {
         }`}
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-center px-4 sm:h-16 sm:px-6">
+        <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-center px-4 sm:h-16 sm:px-6">
           <Link href="/evt-2026-rra8" className="flex items-center gap-3" aria-label="หรีดร่วมบุญ Zero Waste">
             <LotusIcon className="h-6 w-6 text-gold-600 sm:h-7 sm:w-7" />
             <div className="text-center leading-none">
@@ -96,6 +90,18 @@ export default function SmartAppHeader() {
               </p>
             </div>
             <LotusIcon className="h-6 w-6 scale-x-[-1] text-gold-600 sm:h-7 sm:w-7" />
+          </Link>
+          <Link
+            href="/dashboard"
+            aria-label="แดชบอร์ด"
+            title="แดชบอร์ด"
+            className={`absolute right-4 flex h-10 w-10 items-center justify-center rounded-full border transition-colors sm:right-6 ${
+              pathname.startsWith("/dashboard")
+                ? "border-gold-500 bg-gold-100 text-gold-800 shadow-sm"
+                : "border-gold-200 bg-white/70 text-gold-600 hover:border-gold-300 hover:bg-white"
+            }`}
+          >
+            <Plus className="h-5 w-5" strokeWidth={2.4} />
           </Link>
         </div>
       </header>
@@ -107,7 +113,7 @@ export default function SmartAppHeader() {
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto w-full max-w-6xl px-1.5 py-1.5 sm:px-6 sm:py-2">
-          <div className="grid w-full grid-cols-5 gap-1 sm:gap-2">
+          <div className="grid w-full grid-cols-4 gap-1 sm:gap-2">
             {NAV_ITEMS.map((item) => {
               const active = item.isActive(pathname);
               const Icon = item.icon;
