@@ -30,6 +30,22 @@ export async function getMemorials(): Promise<Memorial[]> {
   }
 }
 
+export async function getActiveMemorials(): Promise<Memorial[]> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("memorials")
+      .select("*")
+      .eq("is_active", true)
+      .eq("funeral_status", "active")
+      .order("ceremony_date", { ascending: true })
+      .order("created_at", { ascending: false });
+    return (data as Memorial[] | null) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getMemorialById(id: string): Promise<Memorial | null> {
   try {
     const supabase = createAdminClient();
