@@ -176,9 +176,6 @@ function PrintNameInner() {
           <button onClick={() => setShowModal(true)} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
             แสดงก่อนส่งพิมพ์
           </button>
-          <Link href={`/${slug}/payment`} className="flex items-center justify-center w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm">
-            ย้อนกลับ
-          </Link>
           <div className="h-20" />
         </div>
       </main>
