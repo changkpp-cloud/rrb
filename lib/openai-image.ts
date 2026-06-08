@@ -56,12 +56,9 @@ function getImageSignal() {
 
 export function getOpenAIImageModel() {
   const model = process.env.OPENAI_IMAGE_MODEL || DEFAULT_OPENAI_IMAGE_MODEL;
-  if (!SUPPORTED_OPENAI_IMAGE_MODELS.has(model)) {
-    throw new Error(
-      `OPENAI_IMAGE_MODEL ต้องเป็น ${Array.from(SUPPORTED_OPENAI_IMAGE_MODELS).join(", ")}`
-    );
-  }
-  return model;
+  return SUPPORTED_OPENAI_IMAGE_MODELS.has(model)
+    ? model
+    : DEFAULT_OPENAI_IMAGE_MODEL;
 }
 
 export async function generateOpenAIImage(prompt: string, count = 1) {
