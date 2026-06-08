@@ -256,7 +256,7 @@ function MockWreathInner() {
       form.append("condolence_text", condolenceText);
       form.append("deceased_name", deceasedName);
       form.append("funeral_place", funeralPlace);
-      form.append("count", "1");
+      form.append("count", "2");
 
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), MOCK_WREATH_TIMEOUT_MS);
@@ -269,7 +269,7 @@ function MockWreathInner() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "สร้างภาพไม่สำเร็จ");
 
-      const images = (data.images ?? []).filter(Boolean) as string[];
+      const images = ((data.images ?? []).filter(Boolean) as string[]).slice(0, 2);
       setGeneratedImages(images);
       setSelectedImage(images[0] ?? "");
     } catch (err) {
@@ -575,7 +575,7 @@ function MockWreathInner() {
 
             {generatedImages.length > 0 && (
               <div className="space-y-3">
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 gap-2">
                   {generatedImages.map((imageUrl, index) => {
                     const isSelected = selectedImage === imageUrl;
                     return (
@@ -603,13 +603,6 @@ function MockWreathInner() {
                     );
                   })}
                 </div>
-
-                {selectedImage && (
-                  <div className="rounded-2xl overflow-hidden border border-gold-200 bg-cream-50">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={selectedImage} alt="ภาพที่เลือก" className="w-full object-cover" />
-                  </div>
-                )}
 
                 <div className="grid grid-cols-2 gap-2">
                   <button

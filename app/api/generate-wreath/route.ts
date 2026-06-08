@@ -45,10 +45,14 @@ async function handleTemplateForm(request: NextRequest) {
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
   const requestedCount = Number(form.get("count") ?? 1);
-  const count = donorPhoto && donorPhoto.size > 0 ? 1 : Math.min(
-    4,
-    Math.max(1, Number.isFinite(requestedCount) ? requestedCount : 1)
+  const normalizedCount = Math.max(
+    1,
+    Number.isFinite(requestedCount) ? requestedCount : 1
   );
+  const count =
+    donorPhoto && donorPhoto.size > 0
+      ? Math.min(2, normalizedCount)
+      : Math.min(4, normalizedCount);
 
   const template = getAiPhotoTemplate(templateKey);
   const { createAdminClient } = await import("@/lib/supabase/admin");
