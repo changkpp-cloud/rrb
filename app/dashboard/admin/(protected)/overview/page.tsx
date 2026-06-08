@@ -212,7 +212,7 @@ export default async function AdminOverviewPage() {
   );
 
   return (
-    <div className="space-y-5">
+    <div className="mx-auto max-w-lg space-y-6 pb-24">
       <section className="rounded-2xl border border-gold-200 bg-cream-50 px-4 py-4 card-shadow">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -231,15 +231,15 @@ export default async function AdminOverviewPage() {
         </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <section className="grid grid-cols-2 gap-3">
         <MetricCard icon={CircleDollarSign} label="ยอดร่วมบุญรวม" value={`${shortMoney(s.amount)} บาท`} sub={`เดือนนี้ ${shortMoney(s.amountThisMonth)} บาท`} />
         <MetricCard icon={Users} label="ผู้ร่วมบุญยืนยัน" value={s.donors.toLocaleString("th-TH")} sub={`เฉลี่ย ${Math.round(s.avgDonation).toLocaleString("th-TH")} บาท/รายการ`} />
         <MetricCard icon={Building2} label="ศูนย์ในระบบ" value={`${s.activeCenters}/${s.centers}`} sub="ศูนย์ active / ทั้งหมด" />
         <MetricCard icon={Leaf} label="ผลลัพธ์ ESG" value={`${s.wasteKg.toLocaleString("th-TH")} กก.`} sub={`${s.donors.toLocaleString("th-TH")} พวงหรีดที่ลดลง`} />
       </section>
 
-      <section className="grid gap-3 md:grid-cols-3">
-        <AnalyticPanel title="แนวโน้ม 6 เดือน" icon={LineChart} className="md:col-span-2">
+      <section className="grid gap-3">
+        <AnalyticPanel title="แนวโน้ม 6 เดือน" icon={LineChart}>
           <div className="flex h-36 items-end gap-2 pt-4">
             {data.trend.map((row) => (
               <div key={row.key} className="flex min-w-0 flex-1 flex-col items-center gap-1">
@@ -269,7 +269,7 @@ export default async function AdminOverviewPage() {
         </AnalyticPanel>
       </section>
 
-      <section className="grid gap-3 md:grid-cols-2">
+      <section className="grid gap-3">
         <AnalyticPanel title="สถานะงานศพทั้งระบบ" icon={ScrollText}>
           <StatusBar label="งานที่เปิดอยู่" value={s.activeMemorials} max={statusMax} tone="emerald" />
           <StatusBar label="งานที่ปิดแล้ว" value={s.closedMemorials} max={statusMax} tone="gold" />
