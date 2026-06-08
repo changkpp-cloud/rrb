@@ -10,6 +10,27 @@ import { checkRateLimit } from "@/lib/rate-limit";
 
 const TOKEN_TTL_SECONDS = 180; // 3 minutes — enough to reach the external service
 
+function getRequestOrigin(req: NextRequest) {
+  const origin = req.headers.get("origin");
+  if (origin) return origin.replace(/\/$/, "");
+
+  const forwardedProto = req.headers.get("x-forwarded-proto");
+  const forwardedHost = req.headers.get("x-forwarded-host");
+  if (forwardedHost) {
+    return `${forwardedProto || "https"}://${forwardedHost}`.replace(/\/$/, "");
+  }
+
+  const host = req.headers.get("host");
+  if (host) {
+    const protocol = host.includes("localhost") || host.startsWith("127.")
+      ? "http"
+      : "https";
+    return `${protocol}://${host}`.replace(/\/$/, "");
+  }
+
+  return new URL(req.url).origin.replace(/\/$/, "");
+}
+
 function createServiceToken(): string {
   const secret = process.env.AI_SERVICE_SECRET;
   if (!secret) throw new Error("AI_SERVICE_SECRET ยังไม่ได้ตั้งค่า");
@@ -147,21 +168,13 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Determine service URL and token
-  let token: string;
-  let resolvedServiceUrl: string;
-
-  if (isLocalMode) {
-    // Use the built-in local service route (calls OpenAI directly)
-    const siteBase =
-      process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-      (process.env.NODE_ENV === "production" ? "" : "http://localhost:3000");
-    resolvedServiceUrl = `${siteBase}/api/ai-photo/service/generate`;
-    token = "local-dev";
-  } else {
-    token = createServiceToken();
-    resolvedServiceUrl = `${externalServiceUrl}/generate`;
-  }
+  // Browsers must call our same-origin proxy route. Calling AI_SERVICE_URL
+  // directly from mobile browsers can fail with CORS and surface as
+  // "Failed to fetch" before the AI request even starts.
+  const requestOrigin = getRequestOrigin(req);
+  const siteBase = requestOrigin;
+  const token = isLocalMode ? "local-dev" : createServiceToken();
+  const resolvedServiceUrl = `${siteBase}/api/ai-photo/service/generate`;
 
   return NextResponse.json({
     token,

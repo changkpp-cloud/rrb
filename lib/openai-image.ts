@@ -16,6 +16,12 @@ const OPENAI_IMAGE_QUALITY_EDIT = "high"; // high for face-reference edits
 const OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
 const OPENAI_IMAGE_OUTPUT_COMPRESSION = 85;
 const OPENAI_IMAGE_TIMEOUT_MS = 180_000; // bumped for high-quality edit
+const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1.5";
+const SUPPORTED_OPENAI_IMAGE_MODELS = new Set([
+  "gpt-image-1.5",
+  "gpt-image-1",
+  "gpt-image-1-mini",
+]);
 
 function imageResultToUrl(item: OpenAIImageItem, outputFormat: string) {
   if (item.b64_json) return `data:image/${outputFormat};base64,${item.b64_json}`;
@@ -49,7 +55,13 @@ function getImageSignal() {
 }
 
 export function getOpenAIImageModel() {
-  return process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
+  const model = process.env.OPENAI_IMAGE_MODEL || DEFAULT_OPENAI_IMAGE_MODEL;
+  if (!SUPPORTED_OPENAI_IMAGE_MODELS.has(model)) {
+    throw new Error(
+      `OPENAI_IMAGE_MODEL ต้องเป็น ${Array.from(SUPPORTED_OPENAI_IMAGE_MODELS).join(", ")}`
+    );
+  }
+  return model;
 }
 
 export async function generateOpenAIImage(prompt: string, count = 1) {
