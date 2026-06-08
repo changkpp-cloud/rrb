@@ -7,8 +7,8 @@ import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
-const MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
-const MAX_DIM = 1536;
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_DIM = 2048;
 
 function canvasToBlob(canvas: HTMLCanvasElement, q: number) {
   return new Promise<Blob>((res, rej) =>
@@ -29,8 +29,8 @@ async function compressPhoto(file: File): Promise<File> {
     const canvas = document.createElement("canvas");
     canvas.width = w; canvas.height = h;
     canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
-    let blob = await canvasToBlob(canvas, 0.82);
-    for (const q of [0.74, 0.66, 0.58]) {
+    let blob = await canvasToBlob(canvas, 0.92);
+    for (const q of [0.86, 0.8, 0.72]) {
       if (blob.size <= MAX_UPLOAD_BYTES) break;
       blob = await canvasToBlob(canvas, q);
     }

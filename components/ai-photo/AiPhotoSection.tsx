@@ -24,8 +24,8 @@ type CreditState =
   | { status: "can_generate" }
   | { status: "used"; existingImageUrl: string | null };
 
-const AI_PHOTO_MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
-const AI_PHOTO_MAX_DIMENSION = 1536;
+const AI_PHOTO_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const AI_PHOTO_MAX_DIMENSION = 2048;
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {
@@ -66,8 +66,8 @@ async function compressAiPhotoUpload(file: File) {
     if (!ctx) throw new Error("ไม่สามารถเตรียมรูปก่อนส่งได้");
     ctx.drawImage(image, 0, 0, width, height);
 
-    let blob = await canvasToBlob(canvas, 0.82);
-    for (const quality of [0.74, 0.66, 0.58]) {
+    let blob = await canvasToBlob(canvas, 0.92);
+    for (const quality of [0.86, 0.8, 0.72]) {
       if (blob.size <= AI_PHOTO_MAX_UPLOAD_BYTES) break;
       blob = await canvasToBlob(canvas, quality);
     }

@@ -14,7 +14,7 @@ const OPENAI_IMAGE_SIZE = "1024x1536"; // portrait 2:3 — matches display aspec
 const OPENAI_IMAGE_QUALITY_GENERATE = "high";
 const OPENAI_IMAGE_QUALITY_EDIT = "high"; // high for face-reference edits
 const OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
-const OPENAI_IMAGE_OUTPUT_COMPRESSION = 85;
+const OPENAI_IMAGE_OUTPUT_COMPRESSION = 92;
 const OPENAI_IMAGE_TIMEOUT_MS = 180_000; // bumped for high-quality edit
 const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1.5";
 const SUPPORTED_OPENAI_IMAGE_MODELS = new Set([
@@ -94,6 +94,7 @@ export async function editOpenAIImage(prompt: string, image: File, count = 1) {
   body.append("n", String(count));
   body.append("size", OPENAI_IMAGE_SIZE);
   body.append("quality", OPENAI_IMAGE_QUALITY_EDIT);
+  body.append("input_fidelity", "high");
   body.append("output_format", OPENAI_IMAGE_OUTPUT_FORMAT);
   body.append("output_compression", String(OPENAI_IMAGE_OUTPUT_COMPRESSION));
   body.append("image", image, image.name || "donor-photo.jpg");

@@ -25,8 +25,8 @@ import {
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 
-const MOCK_WREATH_MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
-const MOCK_WREATH_MAX_DIMENSION = 1536;
+const MOCK_WREATH_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MOCK_WREATH_MAX_DIMENSION = 2048;
 const MOCK_WREATH_TIMEOUT_MS = 240_000;
 
 function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
@@ -67,8 +67,8 @@ async function compressMockWreathUpload(file: File) {
     if (!ctx) throw new Error("ไม่สามารถเตรียมรูปก่อนส่งได้");
     ctx.drawImage(image, 0, 0, width, height);
 
-    let blob = await canvasToJpegBlob(canvas, 0.82);
-    for (const quality of [0.74, 0.66, 0.58]) {
+    let blob = await canvasToJpegBlob(canvas, 0.92);
+    for (const quality of [0.86, 0.8, 0.72]) {
       if (blob.size <= MOCK_WREATH_MAX_UPLOAD_BYTES) break;
       blob = await canvasToJpegBlob(canvas, quality);
     }
