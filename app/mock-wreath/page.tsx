@@ -25,6 +25,68 @@ import {
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 
+const MOCK_WREATH_MAX_UPLOAD_BYTES = 1.5 * 1024 * 1024;
+const MOCK_WREATH_MAX_DIMENSION = 1536;
+const MOCK_WREATH_TIMEOUT_MS = 240_000;
+
+function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error("ไม่สามารถเตรียมรูปก่อนส่งได้"));
+      },
+      "image/jpeg",
+      quality
+    );
+  });
+}
+
+async function compressMockWreathUpload(file: File) {
+  if (!file.type.startsWith("image/")) {
+    throw new Error("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+  }
+
+  const sourceUrl = URL.createObjectURL(file);
+  try {
+    const image = new Image();
+    image.decoding = "async";
+    image.src = sourceUrl;
+    await image.decode();
+
+    const scale = Math.min(
+      1,
+      MOCK_WREATH_MAX_DIMENSION / Math.max(image.width, image.height)
+    );
+    const width = Math.max(1, Math.round(image.width * scale));
+    const height = Math.max(1, Math.round(image.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("ไม่สามารถเตรียมรูปก่อนส่งได้");
+    ctx.drawImage(image, 0, 0, width, height);
+
+    let blob = await canvasToJpegBlob(canvas, 0.82);
+    for (const quality of [0.74, 0.66, 0.58]) {
+      if (blob.size <= MOCK_WREATH_MAX_UPLOAD_BYTES) break;
+      blob = await canvasToJpegBlob(canvas, quality);
+    }
+
+    if (blob.size > MOCK_WREATH_MAX_UPLOAD_BYTES) {
+      throw new Error("รูปมีขนาดใหญ่เกินไป กรุณาเลือกรูปที่เล็กลงหรือครอปรูปก่อนแนบ");
+    }
+
+    const name = file.name.replace(/\.[^.]+$/, "") || "donor-photo";
+    return new File([blob], `${name}-mock-wreath.jpg`, {
+      type: "image/jpeg",
+      lastModified: Date.now(),
+    });
+  } finally {
+    URL.revokeObjectURL(sourceUrl);
+  }
+}
+
 export default function MockWreathPage() {
   return (
     <Suspense>
@@ -52,6 +114,7 @@ function MockWreathInner() {
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState("");
   const [shared, setShared] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
@@ -152,14 +215,27 @@ function MockWreathInner() {
     selectedImage,
   ]);
 
-  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
-    setDonorPhoto(file);
-    setDonorPhotoPreview(URL.createObjectURL(file));
-    setGeneratedImages([]);
-    setSelectedImage("");
+    setCompressing(true);
     setError("");
+    try {
+      const compressed = await compressMockWreathUpload(file);
+      setDonorPhoto(compressed);
+      setDonorPhotoPreview(URL.createObjectURL(compressed));
+      setGeneratedImages([]);
+      setSelectedImage("");
+    } catch (err) {
+      setDonorPhoto(null);
+      setDonorPhotoPreview("");
+      setGeneratedImages([]);
+      setSelectedImage("");
+      setError(err instanceof Error ? err.message : "เตรียมรูปไม่สำเร็จ กรุณาลองเลือกรูปใหม่");
+    } finally {
+      setCompressing(false);
+      event.target.value = "";
+    }
   }
 
   async function handleGenerate() {
@@ -180,12 +256,16 @@ function MockWreathInner() {
       form.append("condolence_text", condolenceText);
       form.append("deceased_name", deceasedName);
       form.append("funeral_place", funeralPlace);
-      form.append("count", "3");
+      form.append("count", "1");
 
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), MOCK_WREATH_TIMEOUT_MS);
       const res = await fetch("/api/generate-wreath", {
         method: "POST",
         body: form,
+        signal: controller.signal,
       });
+      window.clearTimeout(timeout);
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "สร้างภาพไม่สำเร็จ");
 
@@ -193,7 +273,13 @@ function MockWreathInner() {
       setGeneratedImages(images);
       setSelectedImage(images[0] ?? "");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
+      if (err instanceof DOMException && err.name === "AbortError") {
+        setError("บริการสร้างภาพใช้เวลานานเกินไป กรุณาลองใหม่ หรือใช้รูปที่เล็กลง");
+      } else if (err instanceof TypeError && err.message.toLowerCase().includes("fetch")) {
+        setError("เชื่อมต่อบริการสร้างภาพไม่ได้ อาจเกิดจากรูปใหญ่เกินไป เน็ตหลุด หรือบริการ AI ไม่ตอบสนอง");
+      } else {
+        setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด กรุณาลองใหม่");
+      }
     } finally {
       setLoading(false);
     }
@@ -250,7 +336,7 @@ function MockWreathInner() {
     setTimeout(() => setCopiedLink(false), 2000);
   }
 
-  const canGenerate = Boolean(donorPhoto) && Boolean(donorName.trim());
+  const canGenerate = Boolean(donorPhoto) && Boolean(donorName.trim()) && !compressing;
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -262,9 +348,15 @@ function MockWreathInner() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="w-full rounded-2xl border-2 border-dashed border-gold-300 bg-white px-4 py-4 text-left hover:bg-cream-50 transition-colors"
+              disabled={compressing}
+              className="w-full rounded-2xl border-2 border-dashed border-gold-300 bg-white px-4 py-4 text-left hover:bg-cream-50 transition-colors disabled:opacity-60"
             >
-              {donorPhotoPreview ? (
+              {compressing ? (
+                <div className="flex items-center justify-center gap-2 py-8 text-gold-600">
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span className="text-sm font-semibold">กำลังเตรียมรูปก่อนส่ง...</span>
+                </div>
+              ) : donorPhotoPreview ? (
                 <div className="flex items-center gap-3">
                   <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-gold-200 bg-cream-50 shrink-0">
                     {/* eslint-disable-next-line @next/next/no-img-element */}

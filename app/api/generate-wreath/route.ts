@@ -7,6 +7,7 @@ import {
 import { editOpenAIImage, generateOpenAIImage } from "@/lib/openai-image";
 
 // Allow enough time for GPT Image requests on Vercel.
+export const runtime = "nodejs";
 export const maxDuration = 300;
 
 const STYLE_PROMPTS: Record<string, string> = {
@@ -44,7 +45,7 @@ async function handleTemplateForm(request: NextRequest) {
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
   const requestedCount = Number(form.get("count") ?? 1);
-  const count = Math.min(
+  const count = donorPhoto && donorPhoto.size > 0 ? 1 : Math.min(
     4,
     Math.max(1, Number.isFinite(requestedCount) ? requestedCount : 1)
   );
