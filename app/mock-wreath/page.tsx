@@ -17,6 +17,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import AiPhotoStandingPreview from "@/components/ai-photo/AiPhotoStandingPreview";
 import {
   buildAiPhotoPrompt,
   buildWreathLabelText,
@@ -109,6 +110,7 @@ function MockWreathInner() {
   );
   const [deceasedName, setDeceasedName] = useState(params.get("deceased_name") ?? "");
   const [funeralPlace, setFuneralPlace] = useState(params.get("funeral_place") ?? "");
+  const memorialPhotoUrl = params.get("memorial_photo") ?? "";
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -387,6 +389,14 @@ function MockWreathInner() {
               />
             </button>
           </StepCard>
+
+          <AiPhotoStandingPreview
+            donorPreview={donorPhotoPreview}
+            memorialPhotoUrl={memorialPhotoUrl}
+            donorName={donorName}
+            donorPosition={donorPosition}
+            deceasedName={deceasedName}
+          />
 
           <StepCard step="2" title="ข้อมูลจากงานศพและป้าย">
             <div className="space-y-3">

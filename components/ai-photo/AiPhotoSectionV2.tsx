@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
+import AiPhotoStandingPreview from "./AiPhotoStandingPreview";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -44,6 +45,7 @@ interface Props {
   condolenceText?: string;
   deceasedName?: string;
   funeralPlace?: string;
+  memorialPhotoUrl?: string;
   memorialId: string;
   donationId?: string;
 }
@@ -80,7 +82,7 @@ function notifyAiPhotoComplete() {
 
 export default function AiPhotoSectionV2({
   donorName, donorPosition, condolenceText,
-  deceasedName, funeralPlace, memorialId, donationId,
+  deceasedName, funeralPlace, memorialPhotoUrl, memorialId, donationId,
 }: Props) {
   const draftReadyRef = useRef(false);
   const templateKey: AiPhotoTemplateKey = "standing_with_label";
@@ -440,6 +442,14 @@ export default function AiPhotoSectionV2({
           {compressing && <Loader2 className="w-4 h-4 animate-spin text-gold-400 shrink-0" />}
         </button>
       </div>
+
+      <AiPhotoStandingPreview
+        donorPreview={donorPreview}
+        memorialPhotoUrl={memorialPhotoUrl}
+        donorName={donorName}
+        donorPosition={donorPosition}
+        deceasedName={deceasedName}
+      />
 
       {/* Step 3: Host/family picker */}
       <HostPersonPicker
