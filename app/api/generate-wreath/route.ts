@@ -44,6 +44,8 @@ async function handleTemplateForm(request: NextRequest) {
     "ร่วมอาลัยและร่วมทำบุญ";
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
+  const donorGender = (form.get("donor_gender") as string | null) ?? "male";
+  const donorAgeRange = (form.get("donor_age_range") as string | null) ?? "46-60 years old";
   const requestedCount = Number(form.get("count") ?? 1);
   const normalizedCount = Math.max(
     1,
@@ -79,6 +81,8 @@ async function handleTemplateForm(request: NextRequest) {
     condolenceText,
     deceasedName,
     funeralPlace,
+    donorGender,
+    donorAgeRange,
     promptTemplate: promptOverride,
     negativePrompt: negativeOverride,
   });
@@ -110,6 +114,8 @@ async function handleLegacyJson(request: NextRequest) {
         condolenceText: body.message ?? "ร่วมอาลัยและร่วมทำบุญ",
         deceasedName: body.deceasedName ?? "",
         funeralPlace: body.funeralPlace ?? "",
+        donorGender: body.donorGender ?? "male",
+        donorAgeRange: body.donorAgeRange ?? "46-60 years old",
       });
 
   const images = await generateOpenAIImage(prompt, 1);

@@ -29,6 +29,20 @@ const MOCK_WREATH_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const MOCK_WREATH_MAX_DIMENSION = 2048;
 const MOCK_WREATH_TIMEOUT_MS = 240_000;
 
+const DONOR_GENDER_OPTIONS = [
+  { value: "male", label: "ชาย" },
+  { value: "female", label: "หญิง" },
+  { value: "non-binary", label: "ไม่ระบุ/อื่น ๆ" },
+];
+
+const DONOR_AGE_OPTIONS = [
+  { value: "18-30 years old", label: "18-30 ปี" },
+  { value: "31-45 years old", label: "31-45 ปี" },
+  { value: "46-60 years old", label: "46-60 ปี" },
+  { value: "61-75 years old", label: "61-75 ปี" },
+  { value: "76+ years old", label: "76 ปีขึ้นไป" },
+];
+
 function canvasToJpegBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {
     canvas.toBlob(
@@ -110,6 +124,8 @@ function MockWreathInner() {
   );
   const [deceasedName, setDeceasedName] = useState(params.get("deceased_name") ?? "");
   const [funeralPlace, setFuneralPlace] = useState(params.get("funeral_place") ?? "");
+  const [donorGender, setDonorGender] = useState(params.get("donor_gender") ?? "male");
+  const [donorAgeRange, setDonorAgeRange] = useState(params.get("donor_age_range") ?? "46-60 years old");
   const memorialPhotoUrl = params.get("memorial_photo") ?? "";
   const [generatedImages, setGeneratedImages] = useState<string[]>([]);
   const [selectedImage, setSelectedImage] = useState("");
@@ -119,6 +135,8 @@ function MockWreathInner() {
   const [shared, setShared] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [pageUrl, setPageUrl] = useState("");
+  const donorGenderLabel = DONOR_GENDER_OPTIONS.find((option) => option.value === donorGender)?.label;
+  const donorAgeLabel = DONOR_AGE_OPTIONS.find((option) => option.value === donorAgeRange)?.label;
   const draftKey = useMemo(
     () =>
       [
@@ -146,8 +164,10 @@ function MockWreathInner() {
         condolenceText,
         deceasedName,
         funeralPlace,
+        donorGender,
+        donorAgeRange,
       }),
-    [donorName, donorPosition, condolenceText, deceasedName, funeralPlace]
+    [donorName, donorPosition, condolenceText, deceasedName, funeralPlace, donorGender, donorAgeRange]
   );
 
   useEffect(() => {
@@ -162,6 +182,8 @@ function MockWreathInner() {
           condolenceText?: string;
           deceasedName?: string;
           funeralPlace?: string;
+          donorGender?: string;
+          donorAgeRange?: string;
           generatedImages?: string[];
           selectedImage?: string;
         };
@@ -172,6 +194,8 @@ function MockWreathInner() {
         if (typeof draft.condolenceText === "string") setCondolenceText(draft.condolenceText);
         if (typeof draft.deceasedName === "string") setDeceasedName(draft.deceasedName);
         if (typeof draft.funeralPlace === "string") setFuneralPlace(draft.funeralPlace);
+        if (typeof draft.donorGender === "string") setDonorGender(draft.donorGender);
+        if (typeof draft.donorAgeRange === "string") setDonorAgeRange(draft.donorAgeRange);
         if (Array.isArray(draft.generatedImages)) setGeneratedImages(draft.generatedImages);
         if (typeof draft.selectedImage === "string") setSelectedImage(draft.selectedImage);
       }
@@ -192,6 +216,8 @@ function MockWreathInner() {
           condolenceText,
           deceasedName,
           funeralPlace,
+          donorGender,
+          donorAgeRange,
           generatedImages,
           selectedImage,
         })
@@ -205,6 +231,8 @@ function MockWreathInner() {
     condolenceText,
     deceasedName,
     funeralPlace,
+    donorGender,
+    donorAgeRange,
     generatedImages,
     selectedImage,
   ]);
@@ -250,6 +278,8 @@ function MockWreathInner() {
       form.append("condolence_text", condolenceText);
       form.append("deceased_name", deceasedName);
       form.append("funeral_place", funeralPlace);
+      form.append("donor_gender", donorGender);
+      form.append("donor_age_range", donorAgeRange);
       form.append("count", "2");
 
       const controller = new AbortController();
@@ -396,9 +426,40 @@ function MockWreathInner() {
             donorName={donorName}
             donorPosition={donorPosition}
             deceasedName={deceasedName}
+            donorGenderLabel={donorGenderLabel}
+            donorAgeLabel={donorAgeLabel}
           />
 
-          <StepCard step="2" title="ข้อมูลจากงานศพและป้าย">
+          <StepCard step="2" title="เพศและช่วงอายุผู้มอบ">
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-gold-700">เพศผู้มอบ</span>
+                <select
+                  value={donorGender}
+                  onChange={(event) => setDonorGender(event.target.value)}
+                  className="w-full rounded-xl gold-border bg-white px-3 py-2.5 text-sm font-semibold text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400"
+                >
+                  {DONOR_GENDER_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="space-y-1.5">
+                <span className="text-xs font-semibold text-gold-700">ช่วงอายุ</span>
+                <select
+                  value={donorAgeRange}
+                  onChange={(event) => setDonorAgeRange(event.target.value)}
+                  className="w-full rounded-xl gold-border bg-white px-3 py-2.5 text-sm font-semibold text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400"
+                >
+                  {DONOR_AGE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </select>
+              </label>
+            </div>
+          </StepCard>
+
+          <StepCard step="3" title="ข้อมูลจากงานศพและป้าย">
             <div className="space-y-3">
               <Field
                 label="ชื่อผู้มอบ"
@@ -441,7 +502,7 @@ function MockWreathInner() {
             </div>
           </StepCard>
 
-          <StepCard step="3" title="Prompt Template ที่ระบบล็อกไว้">
+          <StepCard step="4" title="Prompt Template ที่ระบบล็อกไว้">
             <div className="rounded-xl bg-gold-50 border border-gold-100 px-3 py-3">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <p className="text-xs font-bold text-gold-700">
@@ -457,7 +518,7 @@ function MockWreathInner() {
             </div>
           </StepCard>
 
-          <StepCard step="4" title="สร้างภาพจำลองและเลือกภาพ">
+          <StepCard step="5" title="สร้างภาพจำลองและเลือกภาพ">
             <button
               type="button"
               onClick={handleGenerate}

@@ -6,6 +6,8 @@ interface Props {
   donorName?: string;
   donorPosition?: string;
   deceasedName?: string;
+  donorGenderLabel?: string;
+  donorAgeLabel?: string;
 }
 
 export default function AiPhotoStandingPreview({
@@ -14,6 +16,8 @@ export default function AiPhotoStandingPreview({
   donorName,
   donorPosition,
   deceasedName,
+  donorGenderLabel,
+  donorAgeLabel,
 }: Props) {
   const plaqueLines = [
     donorName?.trim() || "ผู้มอบหรีดร่วมบุญ",
@@ -23,6 +27,13 @@ export default function AiPhotoStandingPreview({
   return (
     <div className="space-y-2">
       <p className="text-xs font-semibold text-gold-700">ตัวอย่างภาพจำลอง</p>
+      {(donorGenderLabel || donorAgeLabel) && (
+        <p className="text-[10px] leading-relaxed text-gold-500">
+          ระบบจะกำหนดผู้มอบเป็น{donorGenderLabel ? `เพศ${donorGenderLabel}` : ""}
+          {donorGenderLabel && donorAgeLabel ? " · " : ""}
+          {donorAgeLabel ? `ช่วงอายุ ${donorAgeLabel}` : ""}
+        </p>
+      )}
       <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-gold-200 bg-cream-100 shadow-sm">
         {memorialPhotoUrl ? (
           <>

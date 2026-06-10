@@ -223,11 +223,30 @@ The background behind the standing person must resemble the public memorial prof
 If the model tries to add any text outside the held plaque, remove it. If the model tries to add a black or dark caption box, remove it completely.`;
 }
 
+function buildDonorDemographicInstruction(gender: string, ageRange: string) {
+  const normalizedGender = gender.toLowerCase();
+  const clothing =
+    normalizedGender === "male"
+      ? "The donor must present as male and wear male formal Thai funeral attire only: a black suit jacket or black formal shirt with black trousers. Do not use a dress, blouse, skirt, feminine blazer cut, feminine accessories, or feminine hairstyle."
+      : normalizedGender === "female"
+      ? "The donor must present as female and wear female formal Thai funeral attire only: a modest black dress, black blouse with skirt, or black formal women's suit. Do not use male suit proportions, masculine haircut, or masculine body shape unless present in the reference photo."
+      : "The donor must use neutral formal black Thai funeral attire and must follow the gender presentation visible in the reference photo. Do not force male or female clothing that contradicts the reference photo.";
+
+  return [
+    "DONOR DEMOGRAPHICS AND CLOTHING ARE MANDATORY:",
+    `Declared donor gender: ${gender}.`,
+    `Declared donor age range: ${ageRange}.`,
+    clothing,
+    "Keep the donor's apparent age consistent with the declared age range and the reference photo.",
+    "Never change the donor's gender presentation, age group, body type, or funeral clothing category.",
+  ].join("\n");
+}
+
 export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   const template = getAiPhotoTemplate(input.templateKey);
 
-  const donorGender = input.donorGender?.trim() || "female";
-  const donorAgeRange = input.donorAgeRange?.trim() || "35–50 years old";
+  const donorGender = input.donorGender?.trim() || "male";
+  const donorAgeRange = input.donorAgeRange?.trim() || "46-60 years old";
 
   // Build plaque text from the 2 printed fields only
   // Field 1: ชื่อ หรือ หน่วยงาน → donorName
@@ -270,6 +289,8 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     template.promptTemplate.includes("{DONOR_GENDER}");
 
   if (isNewStyle) {
+    prompt += `\n\n${buildDonorDemographicInstruction(donorGender, donorAgeRange)}`;
+
     if (template.templateKey === "standing_with_label") {
       prompt += `\n\n${buildStandingWithLabelMandatoryRules({
         deceasedName: input.deceasedName,
@@ -301,6 +322,8 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
   if (negativePrompt) {
     parts.push("", `Negative requirements: ${negativePrompt}`);
   }
+
+  parts.push("", buildDonorDemographicInstruction(donorGender, donorAgeRange));
 
   return parts.join("\n");
 }

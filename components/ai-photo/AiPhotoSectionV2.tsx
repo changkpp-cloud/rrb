@@ -10,6 +10,20 @@ import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const MAX_DIM = 2048;
 
+const DONOR_GENDER_OPTIONS = [
+  { value: "male", label: "ชาย" },
+  { value: "female", label: "หญิง" },
+  { value: "non-binary", label: "ไม่ระบุ/อื่น ๆ" },
+];
+
+const DONOR_AGE_OPTIONS = [
+  { value: "18-30 years old", label: "18-30 ปี" },
+  { value: "31-45 years old", label: "31-45 ปี" },
+  { value: "46-60 years old", label: "46-60 ปี" },
+  { value: "61-75 years old", label: "61-75 ปี" },
+  { value: "76+ years old", label: "76 ปีขึ้นไป" },
+];
+
 function canvasToBlob(canvas: HTMLCanvasElement, q: number) {
   return new Promise<Blob>((res, rej) =>
     canvas.toBlob(b => b ? res(b) : rej(new Error("compress fail")), "image/jpeg", q)
@@ -90,6 +104,8 @@ export default function AiPhotoSectionV2({
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
   const [hostPerson, setHostPerson] = useState<MemorialPerson | null>(null);
+  const [donorGender, setDonorGender] = useState("male");
+  const [donorAgeRange, setDonorAgeRange] = useState("46-60 years old");
   const [consent, setConsent] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [images, setImages] = useState<string[]>([]);
@@ -100,6 +116,8 @@ export default function AiPhotoSectionV2({
   const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
   const [copiedJobUrl, setCopiedJobUrl] = useState(false);
   const donorRef = useRef<HTMLInputElement>(null);
+  const donorGenderLabel = DONOR_GENDER_OPTIONS.find((option) => option.value === donorGender)?.label;
+  const donorAgeLabel = DONOR_AGE_OPTIONS.find((option) => option.value === donorAgeRange)?.label;
   const draftKey = useMemo(
     () =>
       [
@@ -121,6 +139,8 @@ export default function AiPhotoSectionV2({
           donorPreview?: string | null;
           images?: string[];
           selectedIdx?: number;
+          donorGender?: string;
+          donorAgeRange?: string;
           consent?: boolean;
           creditUsed?: boolean;
           existingImageUrl?: string | null;
@@ -130,6 +150,8 @@ export default function AiPhotoSectionV2({
         if (draft.donorPreview) setDonorPreview(draft.donorPreview);
         if (Array.isArray(draft.images)) setImages(draft.images);
         if (typeof draft.selectedIdx === "number") setSelectedIdx(draft.selectedIdx);
+        if (typeof draft.donorGender === "string") setDonorGender(draft.donorGender);
+        if (typeof draft.donorAgeRange === "string") setDonorAgeRange(draft.donorAgeRange);
         if (typeof draft.consent === "boolean") setConsent(draft.consent);
         if (typeof draft.creditUsed === "boolean") setCreditUsed(draft.creditUsed);
         if (typeof draft.existingImageUrl === "string") setExistingImageUrl(draft.existingImageUrl);
@@ -150,6 +172,8 @@ export default function AiPhotoSectionV2({
           donorPreview,
           images,
           selectedIdx,
+          donorGender,
+          donorAgeRange,
           consent,
           creditUsed,
           existingImageUrl,
@@ -157,7 +181,7 @@ export default function AiPhotoSectionV2({
         })
       );
     } catch {}
-  }, [draftKey, donorPreview, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
+  }, [draftKey, donorPreview, images, selectedIdx, donorGender, donorAgeRange, consent, creditUsed, existingImageUrl, activeJob]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -193,8 +217,8 @@ export default function AiPhotoSectionV2({
       tokenForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
       tokenForm.append("deceased_name", deceasedName ?? "");
       tokenForm.append("funeral_place", funeralPlace ?? "");
-      tokenForm.append("donor_gender", "female");
-      tokenForm.append("donor_age_range", "35-50 years old");
+      tokenForm.append("donor_gender", donorGender);
+      tokenForm.append("donor_age_range", donorAgeRange);
       if (hostPerson?.id) tokenForm.append("host_person_id", hostPerson.id);
 
       const tokenRes = await fetch("/api/ai-photo/auth-token", { method: "POST", body: tokenForm });
@@ -331,8 +355,8 @@ export default function AiPhotoSectionV2({
       jobForm.append("condolence_text", condolenceText ?? "ร่วมอาลัยและร่วมทำบุญ");
       jobForm.append("deceased_name", deceasedName ?? "");
       jobForm.append("funeral_place", funeralPlace ?? "");
-      jobForm.append("donor_gender", "female");
-      jobForm.append("donor_age_range", "35-50 years old");
+      jobForm.append("donor_gender", donorGender);
+      jobForm.append("donor_age_range", donorAgeRange);
       jobForm.append("donor_photo", donorFile);
       if (hostPerson?.id) jobForm.append("host_person_id", hostPerson.id);
 
@@ -449,7 +473,36 @@ export default function AiPhotoSectionV2({
         donorName={donorName}
         donorPosition={donorPosition}
         deceasedName={deceasedName}
+        donorGenderLabel={donorGenderLabel}
+        donorAgeLabel={donorAgeLabel}
       />
+
+      <div className="grid grid-cols-2 gap-3">
+        <label className="space-y-1.5">
+          <span className="text-xs font-semibold text-gold-700">เพศผู้มอบ</span>
+          <select
+            value={donorGender}
+            onChange={(event) => setDonorGender(event.target.value)}
+            className="w-full rounded-xl gold-border bg-white px-3 py-2.5 text-sm font-semibold text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400"
+          >
+            {DONOR_GENDER_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+        <label className="space-y-1.5">
+          <span className="text-xs font-semibold text-gold-700">ช่วงอายุ</span>
+          <select
+            value={donorAgeRange}
+            onChange={(event) => setDonorAgeRange(event.target.value)}
+            className="w-full rounded-xl gold-border bg-white px-3 py-2.5 text-sm font-semibold text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400"
+          >
+            {DONOR_AGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
+          </select>
+        </label>
+      </div>
 
       {/* Step 3: Host/family picker */}
       <HostPersonPicker

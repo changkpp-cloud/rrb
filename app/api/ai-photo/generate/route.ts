@@ -60,6 +60,8 @@ async function handleAiPhotoGenerate(req: NextRequest) {
     "ร่วมอาลัยและร่วมทำบุญ";
   const deceasedName = (form.get("deceased_name") as string | null) ?? "";
   const funeralPlace = (form.get("funeral_place") as string | null) ?? "";
+  const donorGender = (form.get("donor_gender") as string | null) ?? "male";
+  const donorAgeRange = (form.get("donor_age_range") as string | null) ?? "46-60 years old";
 
   const supabase = createAdminClient();
 
@@ -119,6 +121,8 @@ async function handleAiPhotoGenerate(req: NextRequest) {
     condolenceText,
     deceasedName,
     funeralPlace,
+    donorGender,
+    donorAgeRange,
     promptTemplate: promptOverride,
     negativePrompt: negativeOverride,
   });
