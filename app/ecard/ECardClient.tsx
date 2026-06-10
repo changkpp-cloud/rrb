@@ -241,6 +241,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             deceasedName={deceasedName}
             funeralPlace={ceremonyLocation}
             memorialPhotoUrl={memorialPhotoSrc}
+            birthDate={birthDate}
+            deathDate={deathDate}
+            age={memorial.age}
+            ceremonyDate={ceremonyDate}
             donationId={donationId || undefined}
             memorialId={memorial.id}
           />

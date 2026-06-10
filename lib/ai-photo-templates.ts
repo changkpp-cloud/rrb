@@ -83,7 +83,7 @@ export const AI_PHOTO_TEMPLATES: AiPhotoTemplate[] = [
 
 Generate a vertical portrait image of a {DONOR_GENDER} Thai person, around {DONOR_AGE_RANGE}, standing in front of a public memorial profile display for {DECEASED_NAME} inside a respectful Thai funeral hall during an evening Buddhist memorial ceremony. Use {DONOR_FACE_REFERENCE} as the face reference and preserve the real facial identity, facial structure, hairstyle, skin tone, age, and natural expression as closely as possible.
 
-The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use warm ivory, cream, beige, soft gold, and natural dried flower tones. In the background, show a memorial profile backdrop similar to the first public donation page: a framed deceased portrait, cream and gold information area for {DECEASED_NAME}, Buddhist funeral venue details at {TEMPLE_NAME}, and premium dried flowers in cream and gold tones. This background must be a real physical funeral display behind the person, not a digital overlay.
+The atmosphere must be calm, elegant, dignified, solemn, and respectful. Use warm ivory, cream, beige, soft gold, and natural dried flower tones. In the background, recreate the first public funeral memorial page as a real physical memorial backdrop behind the person. Use the supplied memorial background reference image when available. The backdrop must include the deceased portrait, the deceased name {DECEASED_NAME}, birth date, death date, age, cremation schedule, Buddhist funeral venue details at {TEMPLE_NAME}, and premium dried flowers in cream and gold tones. Keep this background sharp enough that the main memorial details can be read, with only gentle natural depth of field. Do not blur the background so much that the memorial text becomes unreadable. This background must be a real physical funeral display behind the person, not a digital overlay.
 
 The main subject wears formal black funeral attire, elegant and respectful, with no colorful clothing. Show the person holding one realistic long horizontal Thai condolence plaque. The plaque must be similar in size to a traditional Thai wreath name tag, not oversized. The plaque must have an ivory cream background, a thin gold border, and small dried floral decorations at the corners.
 
@@ -94,18 +94,18 @@ The held plaque must contain only this exact printed plaque text:
 {PLAQUE_PRINT_TEXT}
 
 Very important:
-Show text only on the physical plaque being held by the person.
-Do not add any subtitle, floating text, text overlay, lower-third title, black rectangle, dark transparent text panel, caption box, poster text, duplicated text, or any graphic text element anywhere else in the image.
+Show the donor plaque text only on the physical plaque being held by the person. The only other readable text allowed is the memorial information that belongs to the real physical memorial backdrop in the background, based on the first public funeral page.
+Do not add any subtitle, floating text, text overlay, lower-third title, black rectangle, dark transparent text panel, caption box, duplicated text, or any graphic text element anywhere else in the image.
 Do not place any text at the bottom of the image, in front of the person, over the body, over the plaque, or over the photo.
 Do not repeat the plaque text outside the plaque.
 Do not show any black box or dark text background.
-Keep the memorial profile information in the background soft, distant, and secondary. It may suggest the deceased portrait and memorial information layout, but it must not create a readable foreground caption or any overlay text.
+Keep the memorial profile information in the background secondary but readable. It should look like the actual first public funeral page printed as a physical memorial backdrop behind the person. The deceased portrait, name, birth date, death date, age, cremation schedule, and funeral venue should remain legible in the background. Do not create floating text, overlay captions, or any graphic text outside the real physical background and the held plaque.
 This must look like a real event photograph, not a poster, not a banner, and not a graphic design layout.
 
 Use a professional event photography style. Show full upper body, with the plaque clearly visible and the memorial board visible behind the subject. Use soft natural lighting, shallow depth of field, realistic skin texture, realistic hands and fingers. The mood must be sincere, calm, solemn, and respectful. The subject should not smile broadly.
 
 Negative constraints:
-no cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos, no subtitle overlay, no caption box, no black text panel, no extra typography outside the held plaque, no duplicated plaque text, no added condolence message outside {PLAQUE_PRINT_TEXT}, no black rectangle, no dark overlay box.
+no cartoon, no illustration, no anime, no exaggerated smile, no distorted face, no extra fingers, no wrong hands, no oversized sign, no messy background, no bright party colors, no horror mood, no fake plastic look, no unreadable Thai text, no random English text, no commercial logos, no subtitle overlay, no caption box, no black text panel, no extra typography except the held plaque and the real memorial backdrop, no duplicated plaque text, no added condolence message outside {PLAQUE_PRINT_TEXT}, no black rectangle, no dark overlay box.
 
 If needed, refine the result while keeping the same person, pose, clothing, lighting, funeral atmosphere, plaque, and overall composition. Improve only the face identity using the provided face reference and make the face more accurate while preserving the real jawline, eyes, nose, hairstyle, age, and skin tone. Also ensure the plaque text is clean, centered, elegant, readable, and appears only on the held plaque. Do not change the background, pose, clothing, or composition. Remove any black box, dark overlay, caption box, or extra text outside the physical plaque.`,
     negativePrompt: "",
@@ -212,15 +212,15 @@ function buildStandingWithLabelMandatoryRules(input: {
 MANDATORY FINAL COMPOSITION RULES FOR THE STANDING PLAQUE PHOTO:
 The final image must be a real event-style photograph only. It must not look like a poster, edited social graphic, e-card, app screen, or design mockup.
 
-There must be exactly one readable text area in the whole image: the physical cream-and-gold condolence plaque held by the person. That held plaque must contain only this exact printed text:
+There must be exactly one readable donor plaque text area: the physical cream-and-gold condolence plaque held by the person. That held plaque must contain only this exact printed text:
 ${input.plaqueText}
 
-Never create a black rectangle, dark translucent bar, lower-third caption, subtitle panel, name caption, title card, sticker, floating label, app overlay, or any graphic text box anywhere in the image. Do not duplicate the plaque text over the person's body, over the bottom of the image, or over the plaque.
+The memorial backdrop may contain its own readable funeral information from the first public funeral page, such as the deceased name, birth date, death date, age, cremation schedule, and venue. Never create a black rectangle, dark translucent bar, lower-third caption, subtitle panel, name caption, title card, sticker, floating label, app overlay, or any graphic text box anywhere in the image. Do not duplicate the plaque text over the person's body, over the bottom of the image, or over the plaque.
 The held plaque itself must stay ivory or cream with a thin gold border. Never cover the held plaque with a black strip, dark transparent strip, shadow label, or any dark backing behind the plaque text.
 
-The background behind the standing person must resemble the public memorial profile area from the first donation page: a calm Thai Buddhist memorial display for ${deceasedName}, with a framed deceased portrait, cream/gold memorial information board, flower arrangements, and funeral venue context at ${funeralPlace}. The memorial information display must be a real physical background element, not a digital overlay. Keep any background writing soft, distant, blurred, or unreadable so it does not compete with the held plaque.
+The background behind the standing person must use the public memorial profile area from the first donation page as the visual source: a calm Thai Buddhist memorial display for ${deceasedName}, with a framed deceased portrait, cream/gold memorial information board, birth date, death date, age, cremation schedule, flower arrangements, and funeral venue context at ${funeralPlace}. If a memorial background reference image is supplied, follow that reference for the exact layout and information. The memorial information display must be a real physical background element, not a digital overlay. Keep it secondary to the donor and held plaque, but clear and sharp enough that the main memorial details remain readable. Do not heavily blur the background.
 
-If the model tries to add any text outside the held plaque, remove it. If the model tries to add a black or dark caption box, remove it completely.`;
+If the model tries to add any text outside the held plaque and outside the real memorial backdrop, remove it. If the model tries to add a black or dark caption box, remove it completely.`;
 }
 
 function buildDonorDemographicInstruction(gender: string, ageRange: string) {

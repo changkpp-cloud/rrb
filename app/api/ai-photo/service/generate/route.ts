@@ -1,7 +1,7 @@
 /**
  * Local AI service endpoint — used when AI_SERVICE_URL is not configured.
  * Accepts the same format as the external AI service:
- *   POST multipart/form-data: { prompt, count?, donor_photo?, host_photo? }
+ *   POST multipart/form-data: { prompt, count?, donor_photo?, memorial_background_photo?, host_photo? }
  * Returns: { images: string[] }
  *
  * This route calls OpenAI directly using OPENAI_API_KEY.
@@ -37,12 +37,19 @@ export async function POST(req: NextRequest) {
   }
 
   const donorPhoto = form.get("donor_photo") as File | null;
+  const memorialBackgroundPhoto = form.get("memorial_background_photo") as File | null;
+  const hostPhoto = form.get("host_photo") as File | null;
 
   try {
     let images: string[];
 
     if (donorPhoto && donorPhoto.size > 0) {
-      images = await editOpenAIImage(prompt, donorPhoto, 1);
+      const references =
+        memorialBackgroundPhoto && memorialBackgroundPhoto.size > 0
+          ? [donorPhoto, memorialBackgroundPhoto]
+          : [donorPhoto];
+      if (hostPhoto && hostPhoto.size > 0) references.push(hostPhoto);
+      images = await editOpenAIImage(prompt, references, 1);
     } else {
       images = await generateOpenAIImage(prompt, 1);
     }

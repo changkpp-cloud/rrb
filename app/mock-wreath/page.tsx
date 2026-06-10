@@ -17,7 +17,6 @@ import {
   Sparkles,
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
-import AiPhotoStandingPreview from "@/components/ai-photo/AiPhotoStandingPreview";
 import {
   buildAiPhotoPrompt,
   buildWreathLabelText,
@@ -135,8 +134,6 @@ function MockWreathInner() {
   const [shared, setShared] = useState(false);
   const [copiedLink, setCopiedLink] = useState(false);
   const [pageUrl, setPageUrl] = useState("");
-  const donorGenderLabel = DONOR_GENDER_OPTIONS.find((option) => option.value === donorGender)?.label;
-  const donorAgeLabel = DONOR_AGE_OPTIONS.find((option) => option.value === donorAgeRange)?.label;
   const draftKey = useMemo(
     () =>
       [
@@ -419,16 +416,6 @@ function MockWreathInner() {
               />
             </button>
           </StepCard>
-
-          <AiPhotoStandingPreview
-            donorPreview={donorPhotoPreview}
-            memorialPhotoUrl={memorialPhotoUrl}
-            donorName={donorName}
-            donorPosition={donorPosition}
-            deceasedName={deceasedName}
-            donorGenderLabel={donorGenderLabel}
-            donorAgeLabel={donorAgeLabel}
-          />
 
           <StepCard step="2" title="เพศและช่วงอายุผู้มอบ">
             <div className="grid grid-cols-2 gap-3">

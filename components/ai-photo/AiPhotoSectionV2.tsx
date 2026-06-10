@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
-import AiPhotoStandingPreview from "./AiPhotoStandingPreview";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
@@ -60,6 +59,10 @@ interface Props {
   deceasedName?: string;
   funeralPlace?: string;
   memorialPhotoUrl?: string;
+  birthDate?: string;
+  deathDate?: string;
+  age?: string | number | null;
+  ceremonyDate?: string;
   memorialId: string;
   donationId?: string;
 }
@@ -97,8 +100,10 @@ function notifyAiPhotoComplete() {
 export default function AiPhotoSectionV2({
   donorName, donorPosition, condolenceText,
   deceasedName, funeralPlace, memorialPhotoUrl, memorialId, donationId,
+  birthDate, deathDate, age, ceremonyDate,
 }: Props) {
   const draftReadyRef = useRef(false);
+  const memorialBackgroundRef = useRef<HTMLDivElement>(null);
   const templateKey: AiPhotoTemplateKey = "standing_with_label";
   const [donorFile, setDonorFile] = useState<File | null>(null);
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
@@ -116,8 +121,6 @@ export default function AiPhotoSectionV2({
   const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
   const [copiedJobUrl, setCopiedJobUrl] = useState(false);
   const donorRef = useRef<HTMLInputElement>(null);
-  const donorGenderLabel = DONOR_GENDER_OPTIONS.find((option) => option.value === donorGender)?.label;
-  const donorAgeLabel = DONOR_AGE_OPTIONS.find((option) => option.value === donorAgeRange)?.label;
   const draftKey = useMemo(
     () =>
       [
@@ -200,6 +203,27 @@ export default function AiPhotoSectionV2({
     e.target.value = "";
   }
 
+  async function buildMemorialBackgroundFile() {
+    const node = memorialBackgroundRef.current;
+    if (!node) return null;
+
+    try {
+      const { toBlob } = await import("html-to-image");
+      const blob = await toBlob(node, {
+        pixelRatio: 2,
+        cacheBust: true,
+        backgroundColor: "#fdf8ee",
+      });
+      if (!blob) return null;
+      return new File([blob], "memorial-first-page-background.png", {
+        type: "image/png",
+        lastModified: Date.now(),
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async function handleGenerate() {
     if (!donorFile) { setError("กรุณาแนบรูปผู้มอบก่อน"); return; }
     if (!consent) { setError("กรุณายืนยันสิทธิ์การใช้รูปภาพก่อน"); return; }
@@ -246,6 +270,10 @@ export default function AiPhotoSectionV2({
       genForm.append("prompt", builtPrompt);
       genForm.append("count", "1");
       genForm.append("donor_photo", donorFile);
+      const memorialBackgroundFile = await buildMemorialBackgroundFile();
+      if (memorialBackgroundFile) {
+        genForm.append("memorial_background_photo", memorialBackgroundFile);
+      }
 
       // Fetch host photo if available
       if (hostPhotoUrl) {
@@ -467,16 +495,6 @@ export default function AiPhotoSectionV2({
         </button>
       </div>
 
-      <AiPhotoStandingPreview
-        donorPreview={donorPreview}
-        memorialPhotoUrl={memorialPhotoUrl}
-        donorName={donorName}
-        donorPosition={donorPosition}
-        deceasedName={deceasedName}
-        donorGenderLabel={donorGenderLabel}
-        donorAgeLabel={donorAgeLabel}
-      />
-
       <div className="grid grid-cols-2 gap-3">
         <label className="space-y-1.5">
           <span className="text-xs font-semibold text-gold-700">เพศผู้มอบ</span>
@@ -578,7 +596,7 @@ export default function AiPhotoSectionV2({
         {donationId && (
           <p className="text-[10px] text-gold-500 text-center">สร้างภาพที่ระลึกได้ฟรี 1 ภาพสำหรับรายการร่วมบุญนี้</p>
         )}
-        <button type="button" onClick={handleGenerateJob}
+        <button type="button" onClick={handleGenerate}
           disabled={!donorFile || !consent || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
@@ -598,6 +616,47 @@ export default function AiPhotoSectionV2({
           donorName={donorName}
         />
       )}
+
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed -left-[10000px] top-0 overflow-hidden"
+      >
+        <div
+          ref={memorialBackgroundRef}
+          style={{
+            width: 390,
+            minHeight: 640,
+            background: "linear-gradient(170deg,#fdfaf3 0%,#f7f0e0 42%,#faf4eb 72%,#fdfaf3 100%)",
+            color: "#5b3f17",
+            fontFamily: "Arial, sans-serif",
+            padding: 28,
+            boxSizing: "border-box",
+          }}
+        >
+          <div style={{ textAlign: "center", border: "2px solid #c9983c", borderRadius: 22, padding: 20, background: "rgba(255,252,248,0.9)" }}>
+            <div style={{ width: 170, height: 220, margin: "0 auto 18px", border: "4px solid #d6ad4d", borderRadius: 18, overflow: "hidden", background: "#f7ead1" }}>
+              {memorialPhotoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={memorialPhotoUrl} alt="" crossOrigin={memorialPhotoUrl.startsWith("data:") ? undefined : "anonymous"} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center", color: "#c9983c", fontSize: 44 }}>+</div>
+              )}
+            </div>
+            <div style={{ fontSize: 24, fontWeight: 800, lineHeight: 1.25, marginBottom: 16 }}>{deceasedName || "ผู้วายชนม์"}</div>
+            <div style={{ display: "grid", gap: 8, fontSize: 18, fontWeight: 700, lineHeight: 1.35 }}>
+              {birthDate && <div><span style={{ color: "#b9892d" }}>ชาตะ</span> {birthDate}</div>}
+              {deathDate && <div><span style={{ color: "#b9892d" }}>มรณะ</span> {deathDate}</div>}
+              {age != null && age !== "" && <div><span style={{ color: "#b9892d" }}>อายุ</span> {age} ปี</div>}
+              {ceremonyDate && <div><span style={{ color: "#b9892d" }}>กำหนดฌาปนกิจ</span> {ceremonyDate}</div>}
+            </div>
+            {funeralPlace && (
+              <div style={{ marginTop: 18, paddingTop: 14, borderTop: "1px solid rgba(201,152,60,0.35)", fontSize: 17, fontWeight: 700, lineHeight: 1.45 }}>
+                {funeralPlace}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

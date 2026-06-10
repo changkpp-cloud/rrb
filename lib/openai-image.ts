@@ -83,9 +83,14 @@ export async function generateOpenAIImage(prompt: string, count = 1) {
   return parseOpenAIResponse(res);
 }
 
-export async function editOpenAIImage(prompt: string, image: File, count = 1) {
-  if (image.size > 50 * 1024 * 1024) {
-    throw new Error("รูปผู้มอบต้องมีขนาดไม่เกิน 50MB");
+export async function editOpenAIImage(prompt: string, imageInput: File | File[], count = 1) {
+  const images = Array.isArray(imageInput) ? imageInput : [imageInput];
+  const image = images[0];
+  if (!image) throw new Error("No reference image provided");
+  for (const referenceImage of images) {
+    if (referenceImage.size > 50 * 1024 * 1024) {
+      throw new Error("รูปอ้างอิงต้องมีขนาดไม่เกิน 50MB");
+    }
   }
 
   const body = new FormData();
@@ -97,7 +102,13 @@ export async function editOpenAIImage(prompt: string, image: File, count = 1) {
   body.append("input_fidelity", "high");
   body.append("output_format", OPENAI_IMAGE_OUTPUT_FORMAT);
   body.append("output_compression", String(OPENAI_IMAGE_OUTPUT_COMPRESSION));
-  body.append("image", image, image.name || "donor-photo.jpg");
+  if (images.length === 1) {
+    body.append("image", image, image.name || "donor-photo.jpg");
+  } else {
+    images.forEach((referenceImage, index) => {
+      body.append("image[]", referenceImage, referenceImage.name || `reference-${index + 1}.jpg`);
+    });
+  }
 
   const res = await fetch("https://api.openai.com/v1/images/edits", {
     method: "POST",
