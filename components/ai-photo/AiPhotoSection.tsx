@@ -5,7 +5,6 @@ import {
   Camera, CheckCircle2, ImageIcon, Loader2, Sparkles, XCircle,
 } from "lucide-react";
 import AiPhotoResult from "./AiPhotoResult";
-import AiPhotoTemplateSelector from "./AiPhotoTemplateSelector";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
 interface Props {
@@ -96,9 +95,9 @@ export default function AiPhotoSection({
   memorialId,
 }: Props) {
   const fileRef = useRef<HTMLInputElement>(null);
+  const templateKey: AiPhotoTemplateKey = "standing_with_label";
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
-  const [templateKey, setTemplateKey] = useState<AiPhotoTemplateKey>("standing_with_label");
   const [generating, setGenerating] = useState(false);
   const [images, setImages] = useState<string[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -350,9 +349,6 @@ export default function AiPhotoSection({
           </>
         )}
       </button>
-
-      {/* Template selector */}
-      <AiPhotoTemplateSelector selected={templateKey} onChange={setTemplateKey} />
 
       {/* Generate button */}
       <div className="space-y-1">

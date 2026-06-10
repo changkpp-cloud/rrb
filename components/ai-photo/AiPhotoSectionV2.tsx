@@ -2,7 +2,6 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
-import AiPhotoCarousel from "./AiPhotoCarousel";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
@@ -84,7 +83,7 @@ export default function AiPhotoSectionV2({
   deceasedName, funeralPlace, memorialId, donationId,
 }: Props) {
   const draftReadyRef = useRef(false);
-  const [templateKey, setTemplateKey] = useState<AiPhotoTemplateKey>("standing_with_label");
+  const templateKey: AiPhotoTemplateKey = "standing_with_label";
   const [donorFile, setDonorFile] = useState<File | null>(null);
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
@@ -117,7 +116,6 @@ export default function AiPhotoSectionV2({
       const raw = window.sessionStorage.getItem(draftKey);
       if (raw) {
         const draft = JSON.parse(raw) as {
-          templateKey?: AiPhotoTemplateKey;
           donorPreview?: string | null;
           images?: string[];
           selectedIdx?: number;
@@ -127,7 +125,6 @@ export default function AiPhotoSectionV2({
           activeJob?: AiPhotoJobState | null;
         };
 
-        if (draft.templateKey) setTemplateKey(draft.templateKey);
         if (draft.donorPreview) setDonorPreview(draft.donorPreview);
         if (Array.isArray(draft.images)) setImages(draft.images);
         if (typeof draft.selectedIdx === "number") setSelectedIdx(draft.selectedIdx);
@@ -158,7 +155,7 @@ export default function AiPhotoSectionV2({
         })
       );
     } catch {}
-  }, [draftKey, templateKey, donorPreview, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
+  }, [draftKey, donorPreview, images, selectedIdx, consent, creditUsed, existingImageUrl, activeJob]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -416,10 +413,7 @@ export default function AiPhotoSectionV2({
         <span className="text-sm font-semibold text-gold-700">จำลองการมอบหรีดร่วมบุญ</span>
       </div>
 
-      {/* Step 1: Carousel */}
-      <AiPhotoCarousel selected={templateKey} onChange={setTemplateKey} />
-
-      {/* Step 2: Donor photo */}
+      {/* Donor photo */}
       <div className="space-y-1.5">
         <p className="text-xs font-semibold text-gold-700">แนบรูปผู้มอบ</p>
         <p className="text-[10px] text-gold-400">กรุณาแนบรูปที่เห็นใบหน้าชัดเจน เพื่อให้ภาพจำลองใกล้เคียงตัวจริงมากที่สุด</p>

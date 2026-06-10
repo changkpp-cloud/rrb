@@ -10,7 +10,6 @@ import {
   Check,
   Copy,
   Download,
-  Image as ImageIcon,
   Link2,
   Loader2,
   RefreshCw,
@@ -19,9 +18,9 @@ import {
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import {
-  AI_PHOTO_TEMPLATES,
   buildAiPhotoPrompt,
   buildWreathLabelText,
+  getAiPhotoTemplate,
   type AiPhotoTemplateKey,
 } from "@/lib/ai-photo-templates";
 
@@ -100,10 +99,9 @@ function MockWreathInner() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const draftReadyRef = useRef(false);
 
+  const templateKey: AiPhotoTemplateKey = "standing_with_label";
   const [donorPhoto, setDonorPhoto] = useState<File | null>(null);
   const [donorPhotoPreview, setDonorPhotoPreview] = useState("");
-  const [templateKey, setTemplateKey] =
-    useState<AiPhotoTemplateKey>("standing_with_label");
   const [donorName, setDonorName] = useState(params.get("name") ?? "");
   const [donorPosition, setDonorPosition] = useState(params.get("title") ?? "");
   const [condolenceText, setCondolenceText] = useState(
@@ -130,9 +128,7 @@ function MockWreathInner() {
     [params]
   );
 
-  const selectedTemplate =
-    AI_PHOTO_TEMPLATES.find((template) => template.templateKey === templateKey) ??
-    AI_PHOTO_TEMPLATES[0];
+  const selectedTemplate = getAiPhotoTemplate(templateKey);
 
   const wreathLabelText = useMemo(
     () => buildWreathLabelText({ donorName, donorPosition, condolenceText }),
@@ -149,7 +145,7 @@ function MockWreathInner() {
         deceasedName,
         funeralPlace,
       }),
-    [templateKey, donorName, donorPosition, condolenceText, deceasedName, funeralPlace]
+    [donorName, donorPosition, condolenceText, deceasedName, funeralPlace]
   );
 
   useEffect(() => {
@@ -159,7 +155,6 @@ function MockWreathInner() {
       if (raw) {
         const draft = JSON.parse(raw) as {
           donorPhotoPreview?: string;
-          templateKey?: AiPhotoTemplateKey;
           donorName?: string;
           donorPosition?: string;
           condolenceText?: string;
@@ -170,7 +165,6 @@ function MockWreathInner() {
         };
 
         if (draft.donorPhotoPreview) setDonorPhotoPreview(draft.donorPhotoPreview);
-        if (draft.templateKey) setTemplateKey(draft.templateKey);
         if (typeof draft.donorName === "string") setDonorName(draft.donorName);
         if (typeof draft.donorPosition === "string") setDonorPosition(draft.donorPosition);
         if (typeof draft.condolenceText === "string") setCondolenceText(draft.condolenceText);
@@ -191,7 +185,6 @@ function MockWreathInner() {
         draftKey,
         JSON.stringify({
           donorPhotoPreview,
-          templateKey,
           donorName,
           donorPosition,
           condolenceText,
@@ -205,7 +198,6 @@ function MockWreathInner() {
   }, [
     draftKey,
     donorPhotoPreview,
-    templateKey,
     donorName,
     donorPosition,
     condolenceText,
@@ -396,48 +388,7 @@ function MockWreathInner() {
             </button>
           </StepCard>
 
-          <StepCard step="2" title="เลือกแบบภาพ">
-            <div className="grid grid-cols-1 gap-2">
-              {AI_PHOTO_TEMPLATES.map((template) => {
-                const isSelected = template.templateKey === templateKey;
-                return (
-                  <button
-                    key={template.templateKey}
-                    type="button"
-                    onClick={() => {
-                      setTemplateKey(template.templateKey);
-                      setGeneratedImages([]);
-                      setSelectedImage("");
-                      setError("");
-                    }}
-                    className={`flex items-start gap-3 rounded-2xl border-2 px-3 py-3 text-left transition-all ${
-                      isSelected
-                        ? "border-gold-500 bg-gold-50"
-                        : "border-gold-100 bg-white hover:border-gold-300"
-                    }`}
-                  >
-                    <div
-                      className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                        isSelected ? "gold-gradient text-white" : "bg-cream-100 text-gold-500"
-                      }`}
-                    >
-                      {isSelected ? <Check className="w-4 h-4" /> : <ImageIcon className="w-4 h-4" />}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-sm font-bold text-gold-800">
-                        {template.templateName}
-                      </p>
-                      <p className="text-[11px] text-gold-500 leading-relaxed mt-0.5">
-                        {template.description}
-                      </p>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </StepCard>
-
-          <StepCard step="3" title="ข้อมูลจากงานศพและป้าย">
+          <StepCard step="2" title="ข้อมูลจากงานศพและป้าย">
             <div className="space-y-3">
               <Field
                 label="ชื่อผู้มอบ"
@@ -480,7 +431,7 @@ function MockWreathInner() {
             </div>
           </StepCard>
 
-          <StepCard step="4" title="Prompt Template ที่ระบบล็อกไว้">
+          <StepCard step="3" title="Prompt Template ที่ระบบล็อกไว้">
             <div className="rounded-xl bg-gold-50 border border-gold-100 px-3 py-3">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <p className="text-xs font-bold text-gold-700">
@@ -496,7 +447,7 @@ function MockWreathInner() {
             </div>
           </StepCard>
 
-          <StepCard step="5" title="สร้างภาพจำลองและเลือกภาพ">
+          <StepCard step="4" title="สร้างภาพจำลองและเลือกภาพ">
             <button
               type="button"
               onClick={handleGenerate}
