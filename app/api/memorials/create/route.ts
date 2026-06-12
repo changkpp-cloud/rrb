@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -9,12 +10,50 @@ function rand(n: number) {
   return s;
 }
 
-function generateEventCode(ceYear: number): string {
-  return `EVT-${ceYear}-${rand(4)}`;
-}
-
 function generateHostCode(): string {
   return `H${rand(5)}`;
+}
+
+async function buildMemorialSlug(
+  supabase: ReturnType<typeof createAdminClient>,
+  centerId: string | null,
+  deceasedName: string,
+): Promise<string> {
+  // Resolve center prefix from official_lgo_code (8-digit อปท code)
+  let prefix = "";
+  if (centerId) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: center } = await (supabase.from("centers") as any)
+      .select("official_lgo_code, center_code")
+      .eq("id", centerId)
+      .single();
+    if (center?.official_lgo_code) {
+      prefix = String(center.official_lgo_code).replace(/\D/g, "").slice(0, 8);
+    } else if (center?.center_code) {
+      prefix = String(center.center_code)
+        .replace(/^RRB-/, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+  }
+
+  const namePart = romanizeThaiFirstName(deceasedName);
+  const base = [prefix, namePart].filter(Boolean).join("-") ||
+    `evt-${new Date().getFullYear()}-${rand(4).toLowerCase()}`;
+
+  // Find a unique slug
+  let slug = base;
+  for (let counter = 2; counter <= 99; counter++) {
+    const { data: existing } = await supabase
+      .from("memorials")
+      .select("id")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (!existing) break;
+    slug = `${base}-${counter}`;
+  }
+
+  return slug;
 }
 
 async function uploadFile(
@@ -92,13 +131,13 @@ export async function POST(req: NextRequest) {
     const photoUrl = photoFile ? await uploadFile(supabase, photoFile, "photos")  : null;
     const qrUrl    = qrFile    ? await uploadFile(supabase, qrFile,    "qrcodes") : null;
 
-    const ceYear   = parseInt(deathDate.split("-")[0]) || new Date().getFullYear();
     const hostCode = generateHostCode();
-    let eventCode  = generateEventCode(ceYear);
+    const slug     = await buildMemorialSlug(supabase, centerId, name);
+    const eventCode = slug.toUpperCase();
 
     // Try with all columns first (migration applied), fall back to base columns only
     const fullPayload = {
-      slug: eventCode.toLowerCase(),
+      slug,
       event_code: eventCode,
       center_id: centerId || null,
       name,
@@ -135,7 +174,6 @@ export async function POST(req: NextRequest) {
 
     // If extra columns don't exist yet, fall back to base-only insert
     if (error && error.message.includes("Could not find")) {
-      const slug = `${eventCode.toLowerCase()}-${rand(3)}`;
       const basePayload = {
         slug,
         name,
@@ -158,8 +196,6 @@ export async function POST(req: NextRequest) {
         .insert(basePayload)
         .select()
         .single());
-      // Use slug as event_code fallback and generate host_code client-side
-      eventCode = slug.toUpperCase();
     }
 
     if (error) throw new Error(error.message);
