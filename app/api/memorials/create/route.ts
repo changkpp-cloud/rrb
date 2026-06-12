@@ -114,23 +114,25 @@ export async function POST(req: NextRequest) {
     const hostPhone        = (form.get("host_phone") as string) || null;
     const hostRelationship = (form.get("host_relationship") as string) || null;
 
-    const bankName          = (form.get("bank_name") as string) || "ธนาคารกรุงไทย\nKrungthai Bank";
+    const bankName          = (form.get("bank_name") as string) || "";
     const bankAccountNumber = (form.get("bank_account_number") as string) || "";
-    const bankAccountName   = (form.get("bank_account_name") as string) || "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
+    const bankAccountName   = (form.get("bank_account_name") as string) || "";
+    const qrImageUrl        = (form.get("qr_image_url") as string) || null;
 
     const hostBankName          = (form.get("host_bank_name") as string) || null;
     const hostBankAccountNumber = (form.get("host_bank_account_number") as string) || null;
     const hostBankAccountName   = (form.get("host_bank_account_name") as string) || null;
 
-    if (!name || !birthDate || !deathDate || !ceremonyDate || !bankAccountNumber) {
-      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น: ชื่อ วันเกิด วันเสียชีวิต วันฌาปนกิจ เลขบัญชี" }, { status: 400 });
+    if (!name || !birthDate || !deathDate || !ceremonyDate) {
+      return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น: ชื่อ วันเกิด วันเสียชีวิต วันฌาปนกิจ" }, { status: 400 });
     }
 
     const photoFile = form.get("photo") as File | null;
     const qrFile    = form.get("qr_image") as File | null;
 
-    const photoUrl = photoFile ? await uploadFile(supabase, photoFile, "photos")  : null;
-    const qrUrl    = qrFile    ? await uploadFile(supabase, qrFile,    "qrcodes") : null;
+    const photoUrl = photoFile ? await uploadFile(supabase, photoFile, "photos") : null;
+    // QR: prefer pre-uploaded URL from center settings, fall back to file upload
+    const qrUrl = qrImageUrl ?? (qrFile ? await uploadFile(supabase, qrFile, "qrcodes") : null);
 
     const hostCode = generateHostCode();
     const slug     = await buildMemorialSlug(supabase, centerId, name);

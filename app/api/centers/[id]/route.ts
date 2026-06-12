@@ -14,6 +14,10 @@ const EDITABLE_CENTER_FIELDS = [
   "municipality",
   "manager_name",
   "phone",
+  "bank_name",
+  "bank_account_number",
+  "bank_account_name",
+  "bank_account_image_url",
 ] as const;
 
 function cleanText(value: unknown) {

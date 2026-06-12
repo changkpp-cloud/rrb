@@ -10,9 +10,17 @@ import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
 
+interface CenterBank {
+  bank_name?: string | null;
+  bank_account_number?: string | null;
+  bank_account_name?: string | null;
+  bank_account_image_url?: string | null;
+}
+
 interface Props {
   centerId: string;
   embedded?: boolean;
+  centerBank?: CenterBank;
 }
 
 interface Result {
@@ -21,9 +29,6 @@ interface Result {
   slug: string;
   memorialId: string;
 }
-
-const CENTRAL_ACCOUNT = "6200358257";
-const CENTRAL_NAME    = "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
 
 type FormStep = "level-a" | "documents";
 
@@ -246,7 +251,7 @@ const inputClass = "w-full px-3 py-2.5 rounded-xl gold-border bg-white text-gold
 const inputReadonly = `${inputClass} opacity-50 cursor-not-allowed`;
 
 // ── Main Form ──────────────────────────────────────────────────────────────
-export default function CreateMemorialClient({ centerId, embedded = false }: Props) {
+export default function CreateMemorialClient({ centerId, embedded = false, centerBank }: Props) {
   const [submitting, setSubmitting]   = useState(false);
   const [result, setResult]           = useState<Result | null>(null);
   const [error, setError]             = useState("");
@@ -321,9 +326,10 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
     if (hostPhone) form.append("host_phone", hostPhone);
     if (hostRelationship) form.append("host_relationship", hostRelationship);
     form.append("consent_confirmed", "true");
-    form.append("bank_name", `ธนาคารกรุงไทย\nKrungthai Bank`);
-    form.append("bank_account_number", CENTRAL_ACCOUNT);
-    form.append("bank_account_name", CENTRAL_NAME);
+    form.append("bank_name", centerBank?.bank_name || "");
+    form.append("bank_account_number", centerBank?.bank_account_number || "");
+    form.append("bank_account_name", centerBank?.bank_account_name || "");
+    if (centerBank?.bank_account_image_url) form.append("qr_image_url", centerBank.bank_account_image_url);
     if (hostBankName) form.append("host_bank_name", hostBankName);
     if (hostBankAccount) form.append("host_bank_account_number", hostBankAccount);
     if (hostBankAccountName) form.append("host_bank_account_name", hostBankAccountName);
