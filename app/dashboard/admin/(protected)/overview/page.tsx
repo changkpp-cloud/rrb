@@ -323,7 +323,7 @@ export default async function AdminOverviewPage() {
       <section className="grid grid-cols-2 gap-2">
         <InsightLink href="/dashboard/admin/analytics" icon={BarChart3} label="วิเคราะห์พื้นที่/เวลา" />
         <InsightLink href="/dashboard/admin/report" icon={LineChart} label="รายงานตามภูมิศาสตร์" />
-        <InsightLink href="/dashboard/admin/audit" icon={ShieldCheck} label="ตรวจสอบความเสี่ยง" />
+        <InsightLink href="/dashboard/admin/system" icon={ShieldCheck} label="รายงานระบบ" />
         <InsightLink href="/dashboard/admin/centers" icon={Building2} label="ดูแลสถานะศูนย์" />
       </section>
 

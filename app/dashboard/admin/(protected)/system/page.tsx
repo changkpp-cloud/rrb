@@ -8,9 +8,7 @@ import {
   Clock3,
   Database,
   Printer,
-  ReceiptText,
   RefreshCw,
-  ScrollText,
   ShieldAlert,
 } from "lucide-react";
 import { getSystemHealth, type SystemIssue, type SystemIssueSeverity } from "@/lib/system-health";
@@ -20,9 +18,7 @@ export const revalidate = 0;
 
 const AREA = {
   ai: { label: "AI", icon: Bot },
-  payments: { label: "ชำระเงิน", icon: ReceiptText },
   printing: { label: "พิมพ์ป้าย", icon: Printer },
-  memorials: { label: "งานศพ", icon: ScrollText },
   centers: { label: "ศูนย์", icon: Building2 },
   database: { label: "ฐานข้อมูล", icon: Database },
 } satisfies Record<SystemIssue["area"], { label: string; icon: typeof Bot }>;
@@ -74,7 +70,7 @@ export default async function AdminSystemPage() {
             <p className="text-[11px] font-semibold text-gold-500">System Health Monitor</p>
             <h1 className="mt-1 text-xl font-bold text-gold-900">รายงานระบบแอดมิน</h1>
             <p className="mt-1 text-[11px] leading-relaxed text-gold-600">
-              ตรวจสัญญาณผิดปกติจากฐานข้อมูลล่าสุด เพื่อให้แอดมินรู้ก่อนผู้ใช้แจ้ง
+              ตรวจสัญญาณผิดปกติระดับระบบภาพรวม ไม่ลงลึกถึงผู้ใช้หรือปัญหาหน้างานของแต่ละศูนย์
             </p>
           </div>
           <div className={`flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl ${normal ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"}`}>
@@ -99,7 +95,7 @@ export default async function AdminSystemPage() {
           <CheckCircle2 className="mx-auto h-10 w-10 text-emerald-600" />
           <p className="mt-3 text-base font-bold text-emerald-800">ระบบทำงานปกติ</p>
           <p className="mt-1 text-xs leading-relaxed text-emerald-700">
-            ตอนนี้ยังไม่พบสัญญาณผิดปกติที่ต้องให้แอดมินตรวจทันที
+            ตอนนี้ยังไม่พบสัญญาณระบบภาพรวมที่ต้องให้แอดมินกลางตรวจทันที
           </p>
         </section>
       ) : (
@@ -117,10 +113,10 @@ export default async function AdminSystemPage() {
         </div>
         <div className="space-y-2 text-[11px] leading-relaxed text-gold-600">
           <p>• AI เจนภาพล้มเหลว หรือค้างนานผิดปกติ</p>
-          <p>• สลิปรอตรวจนานเกิน 6 ชั่วโมง</p>
-          <p>• งานพิมพ์ป้าย error หรือคิวพิมพ์ค้าง</p>
-          <p>• งาน active ที่เลยวันพิธี ไม่มีบัญชีรับเงิน หรือไม่ผูกศูนย์</p>
+          <p>• คิวพิมพ์ป้าย error หรือค้างในระดับระบบ</p>
+          <p>• ตาราง/ฐานข้อมูลที่จำเป็นต่อระบบแจ้งเตือนอ่านไม่ได้</p>
           <p>• ศูนย์ active ที่ยังไม่มีรหัสเข้าใช้งาน หรือข้อมูลผู้รับผิดชอบไม่ครบ</p>
+          <p>• รายการที่เป็นปัญหาหน้างานของผู้ใช้ ให้ศูนย์เป็นผู้รับรายงานและจัดการ</p>
         </div>
       </section>
 

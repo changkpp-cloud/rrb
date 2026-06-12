@@ -18,11 +18,10 @@ async function getData(geoLevel: string, geoVal: string, period: string) {
   const supabase = createAdminClient();
   const dateFrom = getDateFrom(period);
 
-  const [{ data: allCenters }, { data: allMemorials }, { data: allDonations }, { data: auditLogs }] = await Promise.all([
+  const [{ data: allCenters }, { data: allMemorials }, { data: allDonations }] = await Promise.all([
     supabase.from("centers").select("id, name, province, amphoe"),
     supabase.from("memorials").select("id, center_id, funeral_status, host_name, host_bank_account_number, name, ceremony_date"),
     supabase.from("donations").select("id, memorial_id, amount, status, created_at, donor_name"),
-    supabase.from("audit_logs").select("id, action, table_name, created_at, user_id").order("created_at", { ascending: false }).limit(20),
   ]);
 
   const centers: CenterRow[] = (allCenters ?? []).map(c => ({
@@ -146,7 +145,6 @@ async function getData(geoLevel: string, geoVal: string, period: string) {
     }),
     activeAmount:  filteredMemorials.filter(m => m.funeral_status === "active").reduce((s, m) => s + (memDonMap[m.id]?.amount ?? 0), 0),
     closedAmount:  filteredMemorials.filter(m => m.funeral_status === "closed").reduce((s, m) => s + (memDonMap[m.id]?.amount ?? 0), 0),
-    auditLogs: auditLogs ?? [],
     filteredCenters,
   };
 }
@@ -308,27 +306,6 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
               <FinRow label="งานที่ปิดแล้ว" value={`${d.closedAmount.toLocaleString()} บาท`} />
             </div>
           </div>
-        </div>
-      )}
-
-      {/* === AUDIT === */}
-      {type === "audit" && (
-        <div>
-          <p className="text-xs font-semibold text-gold-700 mb-2">Audit Log ล่าสุด</p>
-          {d.auditLogs.length === 0 ? (
-            <div className="bg-cream-50 rounded-xl gold-border px-4 py-6 text-center">
-              <p className="text-sm text-gold-400">ยังไม่มีข้อมูล Audit Log</p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {d.auditLogs.map(log => (
-                <div key={log.id} className="bg-cream-50 rounded-xl gold-border px-4 py-2.5">
-                  <p className="text-xs font-semibold text-gold-800">{log.action}</p>
-                  <p className="text-[10px] text-gold-500">{log.table_name ?? "-"} · {new Date(log.created_at).toLocaleString("th-TH")}</p>
-                </div>
-              ))}
-            </div>
-          )}
         </div>
       )}
 

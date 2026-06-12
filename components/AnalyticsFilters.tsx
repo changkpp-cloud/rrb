@@ -29,7 +29,7 @@ const PERIODS = [
 const TYPES = [
   { v: "overview", l: "ภาพรวม" }, { v: "esg", l: "ESG" },
   { v: "centers", l: "ศูนย์" }, { v: "hosts", l: "เจ้าภาพ" },
-  { v: "finance", l: "การเงิน" }, { v: "audit", l: "Audit" },
+  { v: "finance", l: "การเงิน" },
 ];
 
 export default function AnalyticsFilters({ geoLevel: ig, geoVal: iv, period: ip, type: it, geoOptions }: Props) {

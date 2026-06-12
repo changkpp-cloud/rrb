@@ -7,7 +7,7 @@ export type SystemIssue = {
   title: string;
   detail: string;
   severity: SystemIssueSeverity;
-  area: "ai" | "payments" | "printing" | "memorials" | "centers" | "database";
+  area: "ai" | "printing" | "centers" | "database";
   count: number;
   href?: string;
   updatedAt?: string;
@@ -51,10 +51,8 @@ export async function getSystemHealth(): Promise<SystemHealth> {
   const [
     failedAi,
     stuckAi,
-    pendingDonations,
     printErrors,
     stuckPrintJobs,
-    activeMemorials,
     centers,
   ] = await Promise.all([
     (supabase.from("ai_photo_requests") as any)
@@ -68,12 +66,6 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       .lt("created_at", isoAgo(10 * 60 * 1000)),
 
     supabase
-      .from("donations")
-      .select("id, memorial_id, donor_name, amount, created_at", { count: "exact" })
-      .eq("status", "pending")
-      .lt("created_at", isoAgo(6 * HOUR)),
-
-    supabase
       .from("print_jobs")
       .select("id, error_message, queued_at", { count: "exact" })
       .eq("status", "error"),
@@ -83,11 +75,6 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       .select("id, status, queued_at", { count: "exact" })
       .in("status", ["queued", "printing"])
       .lt("queued_at", isoAgo(30 * 60 * 1000)),
-
-    supabase
-      .from("memorials")
-      .select("id, name, center_id, funeral_status, ceremony_date, bank_account_number, host_bank_account_number, created_at")
-      .eq("funeral_status", "active"),
 
     (supabase.from("centers") as any)
       .select("id, name, status, access_code, phone, manager_name"),
@@ -100,7 +87,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       title: "ระบบอ่านประวัติ AI ไม่ได้",
       detail: failedAi.error.message,
       count: 1,
-      href: "/dashboard/admin/ai-prompts",
+      href: "/dashboard/admin/system",
     });
   } else {
     addIssue(issues, {
@@ -109,7 +96,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       title: "AI เจนภาพล้มเหลวใน 24 ชั่วโมง",
       detail: "มีงานสร้างภาพที่จบด้วยสถานะ failed ควรตรวจเครดิต, API key, หรือข้อความ error ล่าสุด",
       count: failedAi.count ?? failedAi.data?.length ?? 0,
-      href: "/dashboard/admin/ai-prompts",
+      href: "/dashboard/admin/system",
       updatedAt: failedAi.data?.[0]?.created_at,
     });
   }
@@ -127,22 +114,12 @@ export async function getSystemHealth(): Promise<SystemHealth> {
   }
 
   addIssue(issues, {
-    area: "payments",
-    severity: "warning",
-    title: "สลิปรอตรวจนานเกิน 6 ชั่วโมง",
-    detail: "ควรให้ศูนย์ที่เกี่ยวข้องตรวจสอบ เพราะผู้บริจาคอาจรอการยืนยันยอด",
-    count: pendingDonations.count ?? pendingDonations.data?.length ?? 0,
-    href: "/dashboard/admin/audit",
-    updatedAt: pendingDonations.data?.[0]?.created_at,
-  });
-
-  addIssue(issues, {
     area: "printing",
     severity: "critical",
     title: "งานพิมพ์ป้ายมี error",
-    detail: "พบ print job ที่ล้มเหลว ควรตรวจเครื่องพิมพ์/ไฟล์ป้าย/สถานะคิว",
+    detail: "พบคิวพิมพ์ที่ล้มเหลวในระบบภาพรวม ควรตรวจบริการพิมพ์หรือการเชื่อมต่อเครื่องพิมพ์",
     count: printErrors.count ?? printErrors.data?.length ?? 0,
-    href: "/dashboard/admin/audit",
+    href: "/dashboard/admin/system",
     updatedAt: printErrors.data?.[0]?.queued_at,
   });
 
@@ -150,48 +127,10 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     area: "printing",
     severity: "warning",
     title: "คิวพิมพ์ค้างเกิน 30 นาที",
-    detail: "มีงาน queued/printing ค้างนาน อาจทำให้ป้ายหน้างานไม่ออกตามเวลา",
+    detail: "มีคิว queued/printing ค้างนานในระบบภาพรวม ควรตรวจ worker หรือการเชื่อมต่อเครื่องพิมพ์",
     count: stuckPrintJobs.count ?? stuckPrintJobs.data?.length ?? 0,
-    href: "/dashboard/admin/audit",
+    href: "/dashboard/admin/system",
     updatedAt: stuckPrintJobs.data?.[0]?.queued_at,
-  });
-
-  const activeRows = activeMemorials.data ?? [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const overdueCeremony = activeRows.filter((m) => {
-    const ceremony = new Date(m.ceremony_date);
-    ceremony.setHours(0, 0, 0, 0);
-    return ceremony < today;
-  });
-  const missingBank = activeRows.filter((m) => !m.bank_account_number && !m.host_bank_account_number);
-  const missingCenter = activeRows.filter((m) => !m.center_id);
-
-  addIssue(issues, {
-    area: "memorials",
-    severity: "warning",
-    title: "งาน active เลยวันพิธีแล้ว",
-    detail: "ควรตรวจว่าศูนย์ลืมปิดงานหรือวันพิธีถูกกรอกผิด",
-    count: overdueCeremony.length,
-    href: "/dashboard/admin/memorials",
-  });
-
-  addIssue(issues, {
-    area: "memorials",
-    severity: "critical",
-    title: "งาน active ไม่มีบัญชีรับเงิน",
-    detail: "ผู้บริจาคอาจชำระเงินไม่ได้ ควรให้ศูนย์หรือเจ้าภาพเติมข้อมูลบัญชี",
-    count: missingBank.length,
-    href: "/dashboard/admin/memorials",
-  });
-
-  addIssue(issues, {
-    area: "memorials",
-    severity: "critical",
-    title: "งาน active ไม่ผูกศูนย์",
-    detail: "งานนี้อาจไม่อยู่ในคิวปฏิบัติงานของศูนย์ใด ควรตรวจสอบทันที",
-    count: missingCenter.length,
-    href: "/dashboard/admin/memorials",
   });
 
   if (!centers.error) {

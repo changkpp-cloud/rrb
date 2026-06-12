@@ -9,7 +9,6 @@ import {
   FileBarChart2,
   LayoutDashboard,
   LogOut,
-  ShieldAlert,
   Users,
   WandSparkles,
 } from "lucide-react";
@@ -20,7 +19,6 @@ const NAV = [
   { href: "/dashboard/admin/centers", label: "ศูนย์", icon: Building2 },
   { href: "/dashboard/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/dashboard/admin/ai-prompts", label: "พรอมต์ AI", icon: WandSparkles },
-  { href: "/dashboard/admin/audit", label: "ตรวจสอบ", icon: ShieldAlert },
   { href: "/dashboard/admin/system", label: "ระบบ", icon: AlertTriangle, alert: true },
   { href: "/dashboard/admin/report", label: "รายงาน", icon: FileBarChart2 },
 ];

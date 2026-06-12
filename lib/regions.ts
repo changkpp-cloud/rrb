@@ -73,5 +73,5 @@ export const GEO_LABELS: Record<string, string> = {
 
 export const TYPE_LABELS: Record<string, string> = {
   overview: "ภาพรวม", esg: "ESG", centers: "ศูนย์",
-  hosts: "เจ้าภาพ", finance: "การเงิน", audit: "Audit",
+  hosts: "เจ้าภาพ", finance: "การเงิน",
 };
