@@ -38,6 +38,7 @@ export async function getActiveMemorials(): Promise<Memorial[]> {
       .select("*")
       .eq("is_active", true)
       .eq("funeral_status", "active")
+      .not("center_id", "is", null)
       .order("ceremony_date", { ascending: true })
       .order("created_at", { ascending: false });
     return (data as Memorial[] | null) ?? [];
