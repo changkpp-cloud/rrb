@@ -115,33 +115,36 @@ export async function invalidateUserSessions(userId: string) {
 
 export async function getCenterAccess(centerId: string) {
   const cookieStore = await cookies();
-  const adminSession = cookieStore.get("admin_session")?.value;
-  if (adminSession === "ok") {
-    return { allowed: true, role: "super_admin" as AppRole, user: null, legacy: false };
-  }
-
   const legacyCenterId = cookieStore.get("center_session")?.value;
   if (legacyCenterId === centerId) {
     return { allowed: true, role: "center_manager" as AppRole, user: null, legacy: true };
   }
 
   const session = await getCenterUserSession();
-  if (!session) return { allowed: false, role: null, user: null, legacy: false };
+  if (session) {
+    const supabase = createAdminClient();
+    const { data: membership } = await supabase
+      .from("center_memberships")
+      .select("*")
+      .eq("center_id", centerId)
+      .eq("user_id", session.user.id)
+      .eq("status", "active")
+      .maybeSingle();
 
-  const supabase = createAdminClient();
-  const { data: membership } = await supabase
-    .from("center_memberships")
-    .select("*")
-    .eq("center_id", centerId)
-    .eq("user_id", session.user.id)
-    .eq("status", "active")
-    .maybeSingle();
+    if (membership) {
+      return {
+        allowed: true,
+        role: (membership as CenterMembership).role,
+        user: session.user,
+        legacy: false,
+      };
+    }
+  }
 
-  if (!membership) return { allowed: false, role: null, user: session.user, legacy: false };
-  return {
-    allowed: true,
-    role: (membership as CenterMembership).role,
-    user: session.user,
-    legacy: false,
-  };
+  const adminSession = cookieStore.get("admin_session")?.value;
+  if (adminSession === "ok") {
+    return { allowed: true, role: "super_admin" as AppRole, user: null, legacy: false };
+  }
+
+  return { allowed: false, role: null, user: session?.user ?? null, legacy: false };
 }
