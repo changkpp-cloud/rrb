@@ -17,6 +17,7 @@ import IosPageHeader from "@/components/IosPageHeader";
 import CenterSettingsForm from "@/components/CenterSettingsForm";
 import CreateMemorialClient from "./create/CreateMemorialClient";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { canManageCenterSettings, getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
@@ -37,16 +38,6 @@ type MemorialSummary = DonationStats & {
   memorial: Memorial;
   wasteKg: number;
 };
-
-async function getCenter(id: string): Promise<Center | null> {
-  try {
-    const supabase = createAdminClient();
-    const { data } = await supabase.from("centers").select("*").eq("id", id).single();
-    return data as Center | null;
-  } catch {
-    return null;
-  }
-}
 
 async function getMemorials(centerId: string): Promise<Memorial[]> {
   try {
@@ -114,11 +105,8 @@ const emptyStats: DonationStats = {
 };
 
 export default async function CenterDashboardPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
-  const access = await getCenterAccess(id);
-  if (!access.allowed) redirect("/dashboard/center");
-
-  const center = await getCenter(id);
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
   if (!center) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -126,6 +114,11 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
       </div>
     );
   }
+
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
+  const access = await getCenterAccess(id);
+  if (!access.allowed) redirect("/dashboard/center");
 
   const memorials = await getMemorials(id);
   const donationStats = await getDonationStats(memorials.map((m) => m.id));
@@ -158,7 +151,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
         <section id="open" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={Plus} title="1. เปิดงานใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
           <Link
-            href={`/dashboard/center/${id}/create`}
+            href={`/dashboard/center/${centerRouteKey}/create`}
             className="hidden"
             aria-hidden="true"
             tabIndex={-1}
@@ -182,7 +175,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           ) : (
             <div className="space-y-3">
               {activeRows.map((row) => (
-                <ActiveMemorialCard key={row.memorial.id} centerId={id} row={row} />
+                <ActiveMemorialCard key={row.memorial.id} centerId={centerRouteKey} row={row} />
               ))}
             </div>
           )}
@@ -198,7 +191,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             <Metric icon={CheckCircle2} label="งานปิดแล้ว" value={closedRows.length.toLocaleString()} tone="emerald" />
             <Metric icon={Leaf} label="ลดขยะประมาณ" value={`${(totalDonors * 2).toLocaleString()} กก.`} tone="gold" />
           </div>
-          <Link href={`/dashboard/center/${id}/closed`} className="block text-center text-xs font-semibold text-gold-700 underline underline-offset-4">
+          <Link href={`/dashboard/center/${centerRouteKey}/closed`} className="block text-center text-xs font-semibold text-gold-700 underline underline-offset-4">
             ดูงานศพที่ปิดแล้วทั้งหมด
           </Link>
         </section>

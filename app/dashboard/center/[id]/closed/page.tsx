@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import { Banknote, CheckCircle2, ChevronRight, Leaf, Users } from "lucide-react";
@@ -20,12 +21,6 @@ type DonationRow = {
   amount: number | null;
   status: string;
 };
-
-async function getCenterName(centerId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("centers").select("name").eq("id", centerId).single();
-  return data?.name ?? "ศูนย์บริหาร";
-}
 
 async function getClosedMemorials(centerId: string) {
   const supabase = createAdminClient();
@@ -60,11 +55,16 @@ async function getClosedMemorials(centerId: string) {
 }
 
 export default async function CenterClosedPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
-  const [centerName, rows] = await Promise.all([getCenterName(id), getClosedMemorials(id)]);
+  const centerName = center.name ?? "ศูนย์บริหาร";
+  const rows = await getClosedMemorials(id);
   const totals = rows.reduce(
     (sum, row) => ({
       amount: sum.amount + row.amount,
@@ -79,7 +79,7 @@ export default async function CenterClosedPage({ params }: { params: Promise<{ i
       <IosPageHeader
         title="งานศพที่ปิดแล้ว"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
@@ -98,7 +98,7 @@ export default async function CenterClosedPage({ params }: { params: Promise<{ i
             {rows.map(({ amount, donors, memorial, wasteKg }) => (
               <Link
                 key={memorial.id}
-                href={`/dashboard/center/${id}/memorial/${memorial.id}`}
+                href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}
                 className="block bg-cream-50 rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
@@ -142,4 +142,3 @@ function Mini({ icon: Icon, label, value }: { icon: React.ElementType; label: st
     </div>
   );
 }
-

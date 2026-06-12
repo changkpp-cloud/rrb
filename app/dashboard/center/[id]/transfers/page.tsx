@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import { AlertTriangle, Banknote, CheckCircle2, ChevronRight, Clock, Users } from "lucide-react";
@@ -27,12 +28,6 @@ type DonationRow = {
   status: string;
   nameplate_status: string;
 };
-
-async function getCenterName(centerId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("centers").select("name").eq("id", centerId).single();
-  return data?.name ?? "ศูนย์บริหาร";
-}
 
 async function getTransfers(centerId: string) {
   const supabase = createAdminClient();
@@ -81,11 +76,16 @@ async function getTransfers(centerId: string) {
 }
 
 export default async function CenterTransfersPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
-  const [centerName, rows] = await Promise.all([getCenterName(id), getTransfers(id)]);
+  const centerName = center.name ?? "ศูนย์บริหาร";
+  const rows = await getTransfers(id);
   const readyCount = rows.filter((r) => r.ready).length;
   const totalNet = rows.filter((r) => r.memorial.funeral_status === "active").reduce((sum, r) => sum + r.netAmount, 0);
 
@@ -94,7 +94,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
       <IosPageHeader
         title="โอนเงินเจ้าภาพ"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
@@ -117,7 +117,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
             {rows.map((row) => (
               <Link
                 key={row.memorial.id}
-                href={`/dashboard/center/${id}/memorial/${row.memorial.id}`}
+                href={`/dashboard/center/${centerRouteKey}/memorial/${row.memorial.id}`}
                 className={`block rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors ${row.ready ? "bg-emerald-50" : "bg-cream-50"}`}
               >
                 <div className="flex items-start justify-between gap-3">
@@ -192,4 +192,3 @@ function Mini({
     </div>
   );
 }
-

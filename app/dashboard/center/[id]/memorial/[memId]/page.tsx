@@ -14,6 +14,7 @@ import {
 import CenterMemorialScrollNav from "@/components/CenterMemorialScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess } from "@/lib/iam";
 import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
@@ -58,12 +59,17 @@ function formatDate(iso: string) {
 }
 
 export default async function CenterMemorialPage({ params }: { params: Promise<{ id: string; memId: string }> }) {
-  const { id, memId } = await params;
+  const { id: routeKey, memId } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
   const memorial = await getMemorialById(memId);
   if (!memorial) return null;
+  if (memorial.center_id !== id) redirect(`/dashboard/center/${centerRouteKey}`);
 
   const donations = await getDonations(memorial.id);
   const pending = donations.filter((d) => d.status === "pending");
@@ -82,10 +88,10 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
       <IosPageHeader
         title={memorial.name}
         subtitle={`ฌาปนกิจ ${formatThaiDate(memorial.ceremony_date)}`}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
         rightSlot={
           <div className="flex items-center gap-1.5">
-            <HeaderIcon href={`/dashboard/center/${id}/memorial/${memId}/edit`} label="แก้ไขข้อมูลงาน" icon={Pencil} />
+            <HeaderIcon href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`} label="แก้ไขข้อมูลงาน" icon={Pencil} />
             <HeaderIcon href={`/${memorial.slug}`} label="เปิดหน้างาน" icon={ExternalLink} external />
           </div>
         }
@@ -115,7 +121,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             </div>
           </div>
           <Link
-            href={`/dashboard/center/${id}/memorial/${memId}/edit`}
+            href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`}
             className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
           >
             <Pencil className="h-4 w-4" />

@@ -22,7 +22,7 @@ export default function CenterLoginClient() {
       });
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "เข้าสู่ระบบไม่สำเร็จ");
-      router.push(`/dashboard/center/${data.id}`);
+      router.push(`/dashboard/center/${data.routeKey || data.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "เข้าสู่ระบบไม่สำเร็จ");
     }

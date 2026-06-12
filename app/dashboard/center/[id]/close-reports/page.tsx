@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import {
@@ -38,12 +39,6 @@ type DonationRow = {
   status: "pending" | "confirmed" | "rejected";
   nameplate_status: "pending" | "queued" | "printed" | "posted";
 };
-
-async function getCenterName(centerId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("centers").select("name").eq("id", centerId).single();
-  return data?.name ?? "ศูนย์บริหาร";
-}
 
 async function getReports(centerId: string) {
   const supabase = createAdminClient();
@@ -151,11 +146,15 @@ function buildReportText({
 }
 
 export default async function CenterCloseReportsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
-  const centerName = await getCenterName(id);
+  const centerName = center.name ?? "ศูนย์บริหาร";
   const data = await getReports(id);
 
   return (
@@ -163,7 +162,7 @@ export default async function CenterCloseReportsPage({ params }: { params: Promi
       <IosPageHeader
         title="รายงานปิดงาน"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
@@ -176,19 +175,19 @@ export default async function CenterCloseReportsPage({ params }: { params: Promi
 
         <ReportSection title="พร้อมปิดงาน" hint="ไม่มีสลิป pending และป้าย confirmed ติดบอร์ดครบแล้ว" empty="ยังไม่มีงานพร้อมปิด" icon={ClipboardCheck}>
           {data.ready.map((row) => (
-            <ReportCard key={row.memorial.id} row={row} centerId={id} centerName={centerName} />
+            <ReportCard key={row.memorial.id} row={row} centerId={centerRouteKey} centerName={centerName} />
           ))}
         </ReportSection>
 
         <ReportSection title="ต้องตรวจต่อก่อนปิด" hint="ยังมีสลิปหรือป้ายค้างในงาน active" empty="ไม่มีรายการที่ต้องตรวจต่อ" icon={AlertCircle}>
           {data.attention.map((row) => (
-            <ReportCard key={row.memorial.id} row={row} centerId={id} centerName={centerName} attention />
+            <ReportCard key={row.memorial.id} row={row} centerId={centerRouteKey} centerName={centerName} attention />
           ))}
         </ReportSection>
 
         <ReportSection title="ปิดงานแล้วล่าสุด" hint="ร่างข้อความรายงานสำหรับส่งเจ้าภาพหรือส่วนกลาง" empty="ยังไม่มีงานปิดแล้ว" icon={CheckCircle2}>
           {data.closed.map((row) => (
-            <ReportCard key={row.memorial.id} row={row} centerId={id} centerName={centerName} showDraft />
+            <ReportCard key={row.memorial.id} row={row} centerId={centerRouteKey} centerName={centerName} showDraft />
           ))}
         </ReportSection>
 
@@ -320,4 +319,3 @@ function Mini({
     </div>
   );
 }
-

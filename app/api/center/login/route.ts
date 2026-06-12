@@ -18,8 +18,8 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center } = await (supabase.from("centers") as any)
-    .select("id, name, status")
-    .or(`center_code.ilike.${code},official_lgo_code.ilike.${code}`)
+    .select("id, name, status, center_code, official_lgo_code")
+    .or(`access_code.ilike.${code},center_code.ilike.${code},official_lgo_code.ilike.${code}`)
     .maybeSingle();
 
   if (!center || center.status !== "active") {
@@ -35,5 +35,9 @@ export async function POST(req: NextRequest) {
     maxAge: 8 * 60 * 60,
   });
 
-  return NextResponse.json({ id: center.id, name: center.name });
+  return NextResponse.json({
+    id: center.id,
+    name: center.name,
+    routeKey: center.center_code || center.official_lgo_code || center.id,
+  });
 }

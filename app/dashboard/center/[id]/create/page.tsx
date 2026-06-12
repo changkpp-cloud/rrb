@@ -2,9 +2,13 @@ import CreateMemorialClient from "./CreateMemorialClient";
 import { redirect } from "next/navigation";
 import { canEditCenterWork, getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey } from "@/lib/center-route";
 
 export default async function CreateMemorialPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const routeCenter = await getCenterByRouteKey(routeKey);
+  if (!routeCenter) redirect("/dashboard/center");
+  const id = routeCenter.id;
   const access = await getCenterAccess(id);
   if (!access.allowed || !canEditCenterWork(access.role)) redirect("/dashboard/center");
 

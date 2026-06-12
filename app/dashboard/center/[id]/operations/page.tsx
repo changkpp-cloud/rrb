@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import {
@@ -35,12 +36,6 @@ type DonationRow = {
   nameplate_status: "pending" | "queued" | "printed" | "posted";
   created_at: string;
 };
-
-async function getCenterName(centerId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("centers").select("name").eq("id", centerId).single();
-  return data?.name ?? "ศูนย์บริหาร";
-}
 
 async function getOperations(centerId: string) {
   const supabase = createAdminClient();
@@ -112,18 +107,23 @@ async function getOperations(centerId: string) {
 }
 
 export default async function CenterOperationsPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
-  const [centerName, data] = await Promise.all([getCenterName(id), getOperations(id)]);
+  const centerName = center.name ?? "ศูนย์บริหาร";
+  const data = await getOperations(id);
 
   return (
     <div className="min-h-screen">
       <IosPageHeader
         title="งานวันนี้"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
@@ -136,7 +136,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
 
         <Queue title="สลิปรอตรวจ" hint="ตรวจยอด เวลาโอน บัญชีปลายทาง แล้วกดยืนยันในหน้างาน" empty="ไม่มีสลิปรอตรวจ" icon={AlertTriangle}>
           {data.pendingSlips.map(({ donation, memorial }) => (
-            <OperationLink key={donation.id} href={`/dashboard/center/${id}/memorial/${memorial.id}`}>
+            <OperationLink key={donation.id} href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gold-800 truncate">{donation.donor_name}</p>
                 <p className="text-[10px] text-gold-500 truncate">{memorial.name} · {donation.amount?.toLocaleString() ?? 0} บาท</p>
@@ -148,7 +148,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
 
         <Queue title="คิวป้ายรอพิมพ์/ติดบอร์ด" hint="รายการ confirmed ที่ยังไม่ได้ posted" empty="ไม่มีคิวป้ายค้าง" icon={Printer}>
           {data.nameplateQueue.map(({ donation, memorial }) => (
-            <OperationLink key={donation.id} href={`/dashboard/center/${id}/memorial/${memorial.id}`}>
+            <OperationLink key={donation.id} href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}>
               <div className="w-9 h-9 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
                 <Printer className="w-4 h-4 text-blue-600" />
               </div>
@@ -165,7 +165,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
           {data.closeCandidates.map(({ memorial, pending, confirmed, amount, unposted }) => (
             <Link
               key={memorial.id}
-              href={`/dashboard/center/${id}/memorial/${memorial.id}`}
+              href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}
               className="block bg-cream-50 rounded-xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors"
             >
               <div className="flex items-start justify-between gap-3">
@@ -283,4 +283,3 @@ function Mini({ label, value, warning }: { label: string; value: string; warning
     </div>
   );
 }
-

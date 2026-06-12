@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import { AlertTriangle, Banknote, ChevronRight, ScrollText, Users } from "lucide-react";
@@ -22,12 +23,6 @@ type DonationRow = {
   status: string;
   nameplate_status: string;
 };
-
-async function getCenterName(centerId: string) {
-  const supabase = createAdminClient();
-  const { data } = await supabase.from("centers").select("name").eq("id", centerId).single();
-  return data?.name ?? "ศูนย์บริหาร";
-}
 
 async function getActiveMemorials(centerId: string) {
   const supabase = createAdminClient();
@@ -68,18 +63,23 @@ async function getActiveMemorials(centerId: string) {
 }
 
 export default async function CenterActivePage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params;
+  const { id: routeKey } = await params;
+  const center = await getCenterByRouteKey(routeKey);
+  if (!center) redirect("/dashboard/center");
+  const id = center.id;
+  const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
 
-  const [centerName, rows] = await Promise.all([getCenterName(id), getActiveMemorials(id)]);
+  const centerName = center.name ?? "ศูนย์บริหาร";
+  const rows = await getActiveMemorials(id);
 
   return (
     <div className="min-h-screen">
       <IosPageHeader
         title="งานศพที่เปิดอยู่"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
-        backHref={`/dashboard/center/${id}`}
+        backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
@@ -102,7 +102,7 @@ export default async function CenterActivePage({ params }: { params: Promise<{ i
             {rows.map(({ amount, confirmed, memorial, nameplateQueue, pending }) => (
               <Link
                 key={memorial.id}
-                href={`/dashboard/center/${id}/memorial/${memorial.id}`}
+                href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}
                 className="block bg-cream-50 rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
