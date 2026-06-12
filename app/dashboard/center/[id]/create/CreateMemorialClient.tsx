@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Upload, Copy, Check, ExternalLink,
-  ChevronDown, ChevronUp, Shield, CreditCard,
+  ChevronDown, ChevronUp, Shield,
 } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
@@ -22,12 +22,10 @@ interface Result {
   memorialId: string;
 }
 
-const CENTRAL_BANK    = "ธนาคารกรุงไทย";
 const CENTRAL_ACCOUNT = "6200358257";
 const CENTRAL_NAME    = "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
-const SERVICE_FEE     = 100;
 
-type FormStep = "level-a" | "level-b" | "level-c";
+type FormStep = "level-a" | "documents";
 
 const FORM_STEPS: Array<{
   id: FormStep;
@@ -36,8 +34,7 @@ const FORM_STEPS: Array<{
   helper: string;
 }> = [
   { id: "level-a", label: "A", title: "ข้อมูลงาน", helper: "บังคับ" },
-  { id: "level-b", label: "B", title: "บัญชีกลาง", helper: "ตรวจสอบ" },
-  { id: "level-c", label: "C", title: "เอกสาร", helper: "เพิ่มทีหลังได้" },
+  { id: "documents", label: "B", title: "เอกสาร", helper: "เพิ่มทีหลังได้" },
 ];
 
 // ── QR Code Component ──────────────────────────────────────────────────────
@@ -279,9 +276,6 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
   const [hostPhone, setHostPhone]             = useState("");
   const [hostRelationship, setHostRelationship] = useState("");
 
-  // Level B - central bank (pre-filled, read-only)
-  const [accountNumber, setAccountNumber] = useState(CENTRAL_ACCOUNT);
-
   // Level C - host payout
   const [hostBankName, setHostBankName]           = useState("");
   const [hostBankAccount, setHostBankAccount]     = useState("");
@@ -292,8 +286,6 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
   const [certPreview, setCertPreview]   = useState<string | null>(null);
   const [idCardFile, setIdCardFile]     = useState<File | null>(null);
   const [idCardPreview, setIdCardPreview] = useState<string | null>(null);
-  const [qrFile, setQrFile]             = useState<File | null>(null);
-  const [qrPreview, setQrPreview]       = useState<string | null>(null);
 
   // Auto-calculate age
   useEffect(() => {
@@ -330,13 +322,12 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
     if (hostRelationship) form.append("host_relationship", hostRelationship);
     form.append("consent_confirmed", "true");
     form.append("bank_name", `ธนาคารกรุงไทย\nKrungthai Bank`);
-    form.append("bank_account_number", accountNumber);
+    form.append("bank_account_number", CENTRAL_ACCOUNT);
     form.append("bank_account_name", CENTRAL_NAME);
     if (hostBankName) form.append("host_bank_name", hostBankName);
     if (hostBankAccount) form.append("host_bank_account_number", hostBankAccount);
     if (hostBankAccountName) form.append("host_bank_account_name", hostBankAccountName);
     form.append("photo", photoFile);
-    if (qrFile) form.append("qr_image", qrFile);
     if (certFile) form.append("death_certificate", certFile);
     if (idCardFile) form.append("host_id_card", idCardFile);
 
@@ -382,13 +373,13 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
           {/* Instruction banner */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs text-emerald-700 leading-relaxed">
             <p className="font-semibold mb-0.5">กรอกข้อมูลขั้นต่ำ → เปิดงานได้ทันที</p>
-            <p className="text-emerald-600">ระดับ A: ข้อมูลบังคับ · ระดับ B: บัญชีกลาง · ระดับ C: เอกสารยืนยัน (เพิ่มทีหลังได้)</p>
+            <p className="text-emerald-600">ระดับ A: ข้อมูลบังคับ · ระดับ B: เอกสารยืนยัน (เพิ่มทีหลังได้)</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-cream-50 p-2 gold-border card-shadow">
+          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-cream-50 p-2 gold-border card-shadow">
             {FORM_STEPS.map(step => {
               const active = activeStep === step.id;
-              const complete = step.id === "level-a" ? levelAComplete : step.id === "level-b" ? Boolean(accountNumber) : false;
+              const complete = step.id === "level-a" ? levelAComplete : false;
               return (
                 <button
                   key={step.id}
@@ -523,52 +514,9 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
             </>
           )}
 
-          {/* ── LEVEL B: บัญชีกลาง ───────────────────────────────────────── */}
-          {activeStep === "level-b" && (
-          <Section icon={<CreditCard className="w-4 h-4" />} title="บัญชีกลางรับเงิน" badge="ระดับ B · บัญชีมูลนิธิ">
-            <div className="pt-1 space-y-3">
-              <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2.5 text-xs text-blue-700 leading-relaxed">
-                ผู้ร่วมบุญโอนเงินมาที่บัญชีกลางของมูลนิธิ ศูนย์จะสรุปยอดและนำส่งเจ้าภาพหลังปิดงาน
-                (หัก {SERVICE_FEE} บาท/รายการ สำหรับกระดาษ หมึก และจิตอาสา)
-              </div>
-
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between items-center py-1.5 border-b border-gold-100">
-                  <span className="text-xs text-gold-500">ธนาคาร</span>
-                  <span className="font-semibold text-gold-800">{CENTRAL_BANK}</span>
-                </div>
-                <div className="flex justify-between items-center py-1.5 border-b border-gold-100">
-                  <span className="text-xs text-gold-500">เลขบัญชี</span>
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={accountNumber}
-                      onChange={e => setAccountNumber(e.target.value)}
-                      className="w-32 px-2 py-1 rounded-lg border border-gold-200 text-right text-sm font-bold text-gold-800 bg-white focus:outline-none focus:ring-1 focus:ring-gold-400"
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-between items-center py-1.5">
-                  <span className="text-xs text-gold-500">ชื่อบัญชี</span>
-                  <span className="text-xs text-gold-700 text-right max-w-[180px]">{CENTRAL_NAME}</span>
-                </div>
-              </div>
-
-              <Field label="อัปโหลด QR Code บัญชี (ถ้ามี)">
-                <PhotoUpload
-                  label=""
-                  preview={qrPreview}
-                  compact
-                  onFile={f => { setQrFile(f); setQrPreview(URL.createObjectURL(f)); }}
-                />
-              </Field>
-            </div>
-          </Section>
-          )}
-
-          {/* ── LEVEL C: เอกสาร ─────────────────────────────────────────── */}
-          {activeStep === "level-c" && (
-            <Section icon={<Shield className="w-4 h-4" />} title="เอกสารยืนยัน + บัญชีนำส่ง" badge="ระดับ C · หลังบ้านเท่านั้น">
+          {/* ── LEVEL B: เอกสาร ─────────────────────────────────────────── */}
+          {activeStep === "documents" && (
+            <Section icon={<Shield className="w-4 h-4" />} title="เอกสารยืนยัน + บัญชีนำส่ง" badge="ระดับ B · หลังบ้านเท่านั้น">
               <div className="pt-1 space-y-4">
                 <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[10px] text-gray-500">
                   ข้อมูลชุดนี้ไม่แสดงบนหน้า Public จัดเก็บไว้สำหรับศูนย์และแอดมินเท่านั้น และสามารถเพิ่มภายหลังได้
