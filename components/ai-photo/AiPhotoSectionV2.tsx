@@ -578,27 +578,31 @@ export default function AiPhotoSectionV2({
               </p>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={copyJobUrl}
-              className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
-            >
-              <Copy className="h-3.5 w-3.5" />
-              {copiedJobUrl ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
-            </button>
-            <button
-              type="button"
-              onClick={shareJobUrl}
-              className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white"
-            >
-              <Share2 className="h-3.5 w-3.5" />
-              แชร์
-            </button>
-          </div>
-          <p className="text-[10px] text-emerald-700">
-            หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
-          </p>
+          {activeJob.status !== "completed" && (
+            <>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={copyJobUrl}
+                  className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
+                >
+                  <Copy className="h-3.5 w-3.5" />
+                  {copiedJobUrl ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
+                </button>
+                <button
+                  type="button"
+                  onClick={shareJobUrl}
+                  className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white"
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                  แชร์ลิงก์
+                </button>
+              </div>
+              <p className="text-[10px] text-emerald-700">
+                หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
+              </p>
+            </>
+          )}
         </div>
       )}
 
