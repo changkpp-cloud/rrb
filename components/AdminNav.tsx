@@ -1,8 +1,10 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
+  AlertTriangle,
   Building2,
   FileBarChart2,
   LayoutDashboard,
@@ -19,12 +21,36 @@ const NAV = [
   { href: "/dashboard/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/dashboard/admin/ai-prompts", label: "พรอมต์ AI", icon: WandSparkles },
   { href: "/dashboard/admin/audit", label: "ตรวจสอบ", icon: ShieldAlert },
+  { href: "/dashboard/admin/system", label: "ระบบ", icon: AlertTriangle, alert: true },
   { href: "/dashboard/admin/report", label: "รายงาน", icon: FileBarChart2 },
 ];
 
 export default function AdminNav() {
   const pathname = usePathname();
   const router = useRouter();
+  const [issueCount, setIssueCount] = useState(0);
+
+  useEffect(() => {
+    let alive = true;
+
+    async function loadHealth() {
+      try {
+        const res = await fetch("/api/admin/system-health", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = await res.json();
+        if (alive) setIssueCount(Number(data.totalIssues ?? 0));
+      } catch {
+        if (alive) setIssueCount(0);
+      }
+    }
+
+    loadHealth();
+    const timer = window.setInterval(loadHealth, 60_000);
+    return () => {
+      alive = false;
+      window.clearInterval(timer);
+    };
+  }, []);
 
   async function logout() {
     await fetch("/api/admin/logout", { method: "POST" });
@@ -62,7 +88,7 @@ export default function AdminNav() {
       </div>
 
       <div className="max-w-4xl mx-auto px-1 flex overflow-x-auto">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV.map(({ href, label, icon: Icon, alert }) => {
           const active = pathname.startsWith(href);
           return (
             <Link
@@ -86,6 +112,11 @@ export default function AdminNav() {
                 }}
               />
               {label}
+              {alert && issueCount > 0 ? (
+                <span className="ml-0.5 min-w-4 rounded-full bg-red-600 px-1 text-center text-[9px] font-bold leading-4 text-white">
+                  {issueCount > 99 ? "99+" : issueCount}
+                </span>
+              ) : null}
             </Link>
           );
         })}
