@@ -9,6 +9,7 @@ import IosPageHeader from "./IosPageHeader";
 import ThaiDateInput from "./ThaiDateInput";
 import Link from "next/link";
 import type { Memorial } from "@/lib/supabase/types";
+import { parsePrayerDetails, serializePrayerDetails } from "@/lib/prayer-details";
 
 interface Props {
   memorial: Memorial;
@@ -44,6 +45,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function EditMemorialInfoForm({ memorial, backHref, actorType, hostCode }: Props) {
   const router = useRouter();
+  const prayerDetails = parsePrayerDetails(memorial.prayer_date, memorial.prayer_location);
   const [saving, setSaving]   = useState(false);
   const [saved, setSaved]     = useState(false);
   const [error, setError]     = useState("");
@@ -56,8 +58,8 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
   const [ceremonyTime, setCeremonyTime]         = useState(memorial.ceremony_time);
   const [ceremonyLocation, setCeremonyLocation] = useState(memorial.ceremony_location);
   const [ceremonyHall, setCeremonyHall]         = useState(memorial.ceremony_hall ?? "");
-  const [prayerText, setPrayerText]             = useState(memorial.prayer_date ?? "");
-  const [prayerSchedule, setPrayerSchedule]     = useState(memorial.prayer_location ?? "");
+  const [prayerText, setPrayerText]             = useState(prayerDetails.schedule);
+  const [prayerSchedule, setPrayerSchedule]     = useState(prayerDetails.location);
   const [hostName, setHostName]                 = useState(memorial.host_name ?? "");
   const [hostPhone, setHostPhone]               = useState(memorial.host_phone ?? "");
   const [hostRelationship, setHostRelationship] = useState(memorial.host_relationship ?? "");
@@ -88,8 +90,8 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
         ceremony_time: ceremonyTime,
         ceremony_location: ceremonyLocation.trim(),
         ceremony_hall: ceremonyHall.trim() || null,
-        prayer_date: prayerText.trim() || null,
-        prayer_location: prayerSchedule.trim() || null,
+        prayer_date: null,
+        prayer_location: serializePrayerDetails(prayerText, prayerSchedule),
         host_name: hostName.trim() || null,
         host_phone: hostPhone.trim() || null,
         host_relationship: hostRelationship.trim() || null,

@@ -114,6 +114,13 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
               </a>
             </div>
           </div>
+          <Link
+            href={`/dashboard/center/${id}/memorial/${memId}/edit`}
+            className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
+          >
+            <Pencil className="h-4 w-4" />
+            แก้ไขวัด / วันเวลา / กำหนดการสวด
+          </Link>
         </section>
 
         <section id="slips" className="scroll-mt-36 space-y-3">
@@ -304,4 +311,3 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
     </div>
   );
 }
-

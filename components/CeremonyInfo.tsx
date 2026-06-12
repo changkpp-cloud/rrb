@@ -1,5 +1,6 @@
 import LotusIcon from "./LotusIcon";
 import type { Memorial } from "@/lib/supabase/types";
+import { parsePrayerDetails } from "@/lib/prayer-details";
 
 interface Props {
   memorial: Memorial;
@@ -49,13 +50,14 @@ export default function CeremonyInfo({ memorial }: Props) {
   const cremationDate = parseDate(memorial.ceremony_date);
   const chantStart = addDays(cremationDate, -3);
   const chantEnd   = addDays(cremationDate, -1);
+  const prayerDetails = parsePrayerDetails(memorial.prayer_date, memorial.prayer_location);
 
-  const prayerDateText = memorial.prayer_date
-    ? memorial.prayer_date
+  const prayerDateText = prayerDetails.schedule
+    ? prayerDetails.schedule
     : formatShortRange(chantStart, chantEnd);
 
-  const prayerLocation = memorial.prayer_location
-    ? memorial.prayer_location
+  const prayerLocation = prayerDetails.location
+    ? prayerDetails.location
     : `${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;
 
   const cremationLocation = `${memorial.ceremony_location}${memorial.ceremony_hall ? ` ${memorial.ceremony_hall}` : ""}`;

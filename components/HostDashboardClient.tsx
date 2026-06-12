@@ -144,6 +144,14 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
             </div>
           </div>
 
+          <Link
+            href={`/dashboard/host/${id}/edit?code=${memorial.host_code ?? ""}`}
+            className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
+          >
+            <Pencil className="h-4 w-4" />
+            แก้ไขวัด / วันเวลา / กำหนดการสวด
+          </Link>
+
           {/* Print error alert */}
           {printErrors.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 space-y-1">

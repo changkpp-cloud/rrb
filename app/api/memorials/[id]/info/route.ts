@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { canEditCenterWork, getCenterAccess } from "@/lib/iam";
 import { normalizeHostCode } from "@/lib/memorial";
 import type { Database } from "@/lib/supabase/types";
 
@@ -12,10 +12,6 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const supabase = createAdminClient();
-
-  const cookieStore = await cookies();
-  const centerSession = cookieStore.get("center_session")?.value ?? null;
-  const adminSession  = cookieStore.get("admin_session")?.value ?? null;
 
   const body = await req.json() as {
     host_code?: string;
@@ -35,22 +31,24 @@ export async function PATCH(
   };
 
   // Determine actor
-  let actorType: "center" | "host" | "admin" | null = null;
+  let actorType: "center" | "host" | null = null;
   let actorId = "";
+  const { data: existingMemorial } = await supabase
+    .from("memorials")
+    .select("center_id, host_code")
+    .eq("id", id)
+    .single();
 
-  if (adminSession === "ok") {
-    actorType = "admin";
-    actorId = "admin";
-  } else if (centerSession) {
-    actorType = "center";
-    actorId = centerSession;
-  } else if (body.host_code) {
-    const { data: mem } = await supabase
-      .from("memorials")
-      .select("host_code")
-      .eq("id", id)
-      .single();
-    if (mem?.host_code && normalizeHostCode(mem.host_code) === normalizeHostCode(body.host_code)) {
+  if (existingMemorial?.center_id) {
+    const access = await getCenterAccess(existingMemorial.center_id);
+    if (access.allowed && access.role !== "super_admin" && canEditCenterWork(access.role)) {
+      actorType = "center";
+      actorId = existingMemorial.center_id;
+    }
+  }
+
+  if (!actorType && body.host_code) {
+    if (existingMemorial?.host_code && normalizeHostCode(existingMemorial.host_code) === normalizeHostCode(body.host_code)) {
       actorType = "host";
       actorId = normalizeHostCode(body.host_code);
     }
@@ -92,11 +90,13 @@ export async function PATCH(
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase.from("audit_logs") as any).insert({
-      memorial_id: id,
-      actor_type: actorType,
-      actor_id: actorId,
+      user_id: null,
       action: "edit_memorial_info",
-      details: update,
+      table_name: "memorials",
+      record_id: id,
+      old_value: null,
+      new_value: { actor_type: actorType, actor_id: actorId, changes: update },
+      ip_address: null,
       created_at: new Date().toISOString(),
     });
   } catch { /* audit failure must not block response */ }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
+import { serializePrayerDetails } from "@/lib/prayer-details";
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -149,8 +150,8 @@ export async function POST(req: NextRequest) {
       ceremony_time: ceremonyTime,
       ceremony_location: ceremonyLocation,
       ceremony_hall: ceremonyHall,
-      prayer_date: prayerText,
-      prayer_location: prayerSchedule,
+      prayer_date: null,
+      prayer_location: serializePrayerDetails(prayerText, prayerSchedule),
       host_name: hostName,
       host_phone: hostPhone,
       host_code: hostCode,

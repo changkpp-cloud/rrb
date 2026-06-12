@@ -16,6 +16,7 @@ export default async function CenterEditMemorialPage({
 
   const memorial = await getMemorialById(memId);
   if (!memorial) notFound();
+  if (memorial.center_id !== id) redirect(`/dashboard/center/${id}`);
 
   return (
     <EditMemorialInfoForm
