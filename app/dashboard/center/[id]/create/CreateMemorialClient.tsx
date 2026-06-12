@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   Upload, Copy, Check, ExternalLink,
-  ChevronDown, ChevronUp, Shield, CreditCard, FileText,
+  ChevronDown, ChevronUp, Shield, CreditCard,
 } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
@@ -26,6 +26,19 @@ const CENTRAL_BANK    = "ธนาคารกรุงไทย";
 const CENTRAL_ACCOUNT = "6200358257";
 const CENTRAL_NAME    = "ชื่อบัญชี ศูนย์บริหารหรีดร่วมบุญ ประจำ อปท";
 const SERVICE_FEE     = 100;
+
+type FormStep = "level-a" | "level-b" | "level-c";
+
+const FORM_STEPS: Array<{
+  id: FormStep;
+  label: string;
+  title: string;
+  helper: string;
+}> = [
+  { id: "level-a", label: "A", title: "ข้อมูลงาน", helper: "บังคับ" },
+  { id: "level-b", label: "B", title: "บัญชีกลาง", helper: "ตรวจสอบ" },
+  { id: "level-c", label: "C", title: "เอกสาร", helper: "เพิ่มทีหลังได้" },
+];
 
 // ── QR Code Component ──────────────────────────────────────────────────────
 function QRCodeDisplay({ url }: { url: string }) {
@@ -241,7 +254,7 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
   const [result, setResult]           = useState<Result | null>(null);
   const [error, setError]             = useState("");
   const [consent, setConsent]         = useState(false);
-  const [showLevelC, setShowLevelC]   = useState(false);
+  const [activeStep, setActiveStep]   = useState<FormStep>("level-a");
 
   // Level A - deceased
   const [name, setName]               = useState("");
@@ -338,6 +351,13 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
     setSubmitting(false);
   }
 
+  const levelAComplete = Boolean(consent && name && birthDate && deathDate && ceremonyDate && photoFile);
+  const stepIndex = FORM_STEPS.findIndex(step => step.id === activeStep);
+  const canGoBack = stepIndex > 0;
+  const canGoNext = stepIndex < FORM_STEPS.length - 1;
+  const goBack = () => setActiveStep(FORM_STEPS[Math.max(0, stepIndex - 1)].id);
+  const goNext = () => setActiveStep(FORM_STEPS[Math.min(FORM_STEPS.length - 1, stepIndex + 1)].id);
+
   if (result) return <SuccessScreen embedded={embedded} result={result} centerId={centerId} />;
 
   return (
@@ -365,7 +385,36 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
             <p className="text-emerald-600">ระดับ A: ข้อมูลบังคับ · ระดับ B: บัญชีกลาง · ระดับ C: เอกสารยืนยัน (เพิ่มทีหลังได้)</p>
           </div>
 
+          <div className="grid grid-cols-3 gap-2 rounded-2xl bg-cream-50 p-2 gold-border card-shadow">
+            {FORM_STEPS.map(step => {
+              const active = activeStep === step.id;
+              const complete = step.id === "level-a" ? levelAComplete : step.id === "level-b" ? Boolean(accountNumber) : false;
+              return (
+                <button
+                  key={step.id}
+                  type="button"
+                  onClick={() => setActiveStep(step.id)}
+                  className={`min-h-[76px] rounded-xl border px-2 py-2 text-center transition-all ${
+                    active
+                      ? "border-gold-400 bg-white text-gold-800 shadow-sm"
+                      : "border-transparent bg-transparent text-gold-500 hover:bg-white/70"
+                  }`}
+                >
+                  <span className={`mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
+                    active ? "bg-gold-600 text-white" : complete ? "bg-emerald-100 text-emerald-700" : "bg-gold-100 text-gold-600"
+                  }`}>
+                    {complete ? <Check className="h-3.5 w-3.5" /> : step.label}
+                  </span>
+                  <span className="block text-xs font-bold leading-tight">{step.title}</span>
+                  <span className="block text-[10px] leading-tight opacity-75">{step.helper}</span>
+                </button>
+              );
+            })}
+          </div>
+
           {/* ── LEVEL A: ผู้วายชนม์ ───────────────────────────────────────── */}
+          {activeStep === "level-a" && (
+            <>
           <Section icon={<LotusIcon className="w-4 h-4" />} title="ข้อมูลผู้วายชนม์" badge="ระดับ A · บังคับ">
             <div className="pt-1">
               <PhotoUpload
@@ -471,8 +520,11 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
               </label>
             </div>
           </Section>
+            </>
+          )}
 
           {/* ── LEVEL B: บัญชีกลาง ───────────────────────────────────────── */}
+          {activeStep === "level-b" && (
           <Section icon={<CreditCard className="w-4 h-4" />} title="บัญชีกลางรับเงิน" badge="ระดับ B · บัญชีมูลนิธิ">
             <div className="pt-1 space-y-3">
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-2.5 text-xs text-blue-700 leading-relaxed">
@@ -512,60 +564,70 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
               </Field>
             </div>
           </Section>
+          )}
 
-          {/* ── LEVEL C: เอกสาร (collapsible) ────────────────────────────── */}
-          <div className="space-y-0">
-            <button
-              type="button"
-              onClick={() => setShowLevelC(o => !o)}
-              className="w-full flex items-center gap-2 text-xs text-gold-500 py-2 px-1 hover:text-gold-700 transition-colors"
-            >
-              <FileText className="w-3.5 h-3.5" />
-              <span className="flex-1 text-left">ระดับ C: เอกสารยืนยันและบัญชีนำส่งเจ้าภาพ (ไม่บังคับ เพิ่มทีหลังได้)</span>
-              {showLevelC ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
-            </button>
-
-            {showLevelC && (
-              <Section icon={<Shield className="w-4 h-4" />} title="เอกสารยืนยัน + บัญชีนำส่ง" badge="ระดับ C · หลังบ้านเท่านั้น">
-                <div className="pt-1 space-y-4">
-                  <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[10px] text-gray-500">
-                    ข้อมูลชุดนี้ไม่แสดงบนหน้า Public จัดเก็บไว้สำหรับศูนย์และแอดมินเท่านั้น
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <PhotoUpload
-                      label="ใบมรณะบัตร"
-                      preview={certPreview}
-                      compact
-                      onFile={f => { setCertFile(f); setCertPreview(URL.createObjectURL(f)); }}
-                    />
-                    <PhotoUpload
-                      label="สำเนาบัตรประชาชนเจ้าภาพ"
-                      preview={idCardPreview}
-                      compact
-                      onFile={f => { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}
-                    />
-                  </div>
-
-                  <p className="text-xs font-semibold text-gold-700">บัญชีรับเงินนำส่งเจ้าภาพ</p>
-
-                  <Field label="ธนาคารเจ้าภาพ">
-                    <input type="text" value={hostBankName} onChange={e => setHostBankName(e.target.value)}
-                      placeholder="เช่น ธนาคารกรุงไทย" className={inputClass} />
-                  </Field>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="เลขบัญชีเจ้าภาพ">
-                      <input type="text" value={hostBankAccount} onChange={e => setHostBankAccount(e.target.value)}
-                        placeholder="123-4-56789-0" className={inputClass} />
-                    </Field>
-                    <Field label="ชื่อบัญชีเจ้าภาพ">
-                      <input type="text" value={hostBankAccountName} onChange={e => setHostBankAccountName(e.target.value)}
-                        placeholder="ชื่อ-นามสกุล" className={inputClass} />
-                    </Field>
-                  </div>
+          {/* ── LEVEL C: เอกสาร ─────────────────────────────────────────── */}
+          {activeStep === "level-c" && (
+            <Section icon={<Shield className="w-4 h-4" />} title="เอกสารยืนยัน + บัญชีนำส่ง" badge="ระดับ C · หลังบ้านเท่านั้น">
+              <div className="pt-1 space-y-4">
+                <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[10px] text-gray-500">
+                  ข้อมูลชุดนี้ไม่แสดงบนหน้า Public จัดเก็บไว้สำหรับศูนย์และแอดมินเท่านั้น และสามารถเพิ่มภายหลังได้
                 </div>
-              </Section>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <PhotoUpload
+                    label="ใบมรณะบัตร"
+                    preview={certPreview}
+                    compact
+                    onFile={f => { setCertFile(f); setCertPreview(URL.createObjectURL(f)); }}
+                  />
+                  <PhotoUpload
+                    label="สำเนาบัตรประชาชนเจ้าภาพ"
+                    preview={idCardPreview}
+                    compact
+                    onFile={f => { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}
+                  />
+                </div>
+
+                <p className="text-xs font-semibold text-gold-700">บัญชีรับเงินนำส่งเจ้าภาพ</p>
+
+                <Field label="ธนาคารเจ้าภาพ">
+                  <input type="text" value={hostBankName} onChange={e => setHostBankName(e.target.value)}
+                    placeholder="เช่น ธนาคารกรุงไทย" className={inputClass} />
+                </Field>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="เลขบัญชีเจ้าภาพ">
+                    <input type="text" value={hostBankAccount} onChange={e => setHostBankAccount(e.target.value)}
+                      placeholder="123-4-56789-0" className={inputClass} />
+                  </Field>
+                  <Field label="ชื่อบัญชีเจ้าภาพ">
+                    <input type="text" value={hostBankAccountName} onChange={e => setHostBankAccountName(e.target.value)}
+                      placeholder="ชื่อ-นามสกุล" className={inputClass} />
+                  </Field>
+                </div>
+              </div>
+            </Section>
+          )}
+
+          <div className="grid grid-cols-2 gap-2">
+            {canGoBack && (
+              <button
+                type="button"
+                onClick={goBack}
+                className="rounded-xl gold-border bg-white px-4 py-3 text-sm font-semibold text-gold-700 hover:bg-cream-50"
+              >
+                ย้อนกลับ
+              </button>
+            )}
+            {canGoNext && (
+              <button
+                type="button"
+                onClick={goNext}
+                className={`${canGoBack ? "" : "col-span-2"} rounded-xl bg-gold-100 px-4 py-3 text-sm font-semibold text-gold-800 hover:bg-gold-200`}
+              >
+                ถัดไป
+              </button>
             )}
           </div>
 
@@ -575,6 +637,7 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
             </div>
           )}
 
+          {activeStep !== "level-a" && (
           <button
             type="submit"
             disabled={submitting || !consent || !name || !birthDate || !deathDate || !ceremonyDate || !photoFile}
@@ -582,6 +645,7 @@ export default function CreateMemorialClient({ centerId, embedded = false }: Pro
           >
             {submitting ? "กำลังสร้างหน้างาน..." : "เปิดงานศพ · สร้างลิงก์และ QR Code"}
           </button>
+          )}
 
           <p className="text-center text-[10px] text-gold-400 pb-2">
             หลังเปิดงาน ระบบจะสร้างลิงก์ QR Code และรหัสเจ้าภาพให้ทันที
