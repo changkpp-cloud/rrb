@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, Copy, ExternalLink, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
@@ -596,13 +596,6 @@ export default function AiPhotoSectionV2({
               แชร์
             </button>
           </div>
-          <a
-            href={activeJob.jobUrl}
-            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
-          >
-            <ExternalLink className="h-3.5 w-3.5" />
-            เปิดหน้ารับภาพ
-          </a>
           <p className="text-[10px] text-emerald-700">
             หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
           </p>
