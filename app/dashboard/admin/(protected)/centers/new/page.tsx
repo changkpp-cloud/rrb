@@ -16,7 +16,7 @@ const LGO_TYPES: Record<string, string> = {
   "06": "อบต.",
 };
 
-function parseLgoCode(code: string) {
+function parseCenterCode(code: string) {
   const d = code.replace(/\D/g, "");
   if (d.length !== 8) return null;
   return {
@@ -24,13 +24,12 @@ function parseLgoCode(code: string) {
     province: d.slice(2, 4),
     district: d.slice(4, 6),
     seq: d.slice(6, 8),
-    centerCode: d,
   };
 }
 
 interface FormState {
   name: string;
-  official_lgo_code: string;
+  center_code: string;
   province: string;
   amphoe: string;
   tambon: string;
@@ -42,11 +41,10 @@ interface FormState {
 interface SuccessData {
   centerName: string;
   centerCode: string;
-  accessCode: string;
 }
 
 const INITIAL: FormState = {
-  name: "", official_lgo_code: "",
+  name: "", center_code: "",
   province: "", amphoe: "", tambon: "", municipality: "",
   manager_name: "", phone: "",
 };
@@ -63,7 +61,7 @@ export default function NewCenterPage() {
       setForm(prev => ({ ...prev, [key]: e.target.value }));
   }
 
-  const parsed = parseLgoCode(form.official_lgo_code);
+  const parsed = parseCenterCode(form.center_code);
 
   async function handleSubmit() {
     if (!form.name.trim()) { setError("กรุณากรอกชื่อศูนย์"); return; }
@@ -79,7 +77,6 @@ export default function NewCenterPage() {
       setSuccessData({
         centerName: data.center.name,
         centerCode: data.center.center_code,
-        accessCode: data.access_code,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
@@ -92,7 +89,6 @@ export default function NewCenterPage() {
       `ศูนย์: ${sd.centerName}`,
       `รหัสศูนย์: ${sd.centerCode}`,
       `URL เข้าระบบ: https://rrb.center/dashboard/center`,
-      `รหัสเข้าใช้งาน: ${sd.accessCode}`,
     ].join("\n");
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -114,15 +110,14 @@ export default function NewCenterPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-emerald-200 px-4 py-3 space-y-2.5">
-            <p className="text-xs font-bold text-gold-700">ข้อมูลสำหรับส่งให้เจ้าหน้าที่ศูนย์</p>
-            <InfoRow label="รหัสศูนย์" value={successData.centerCode} mono />
+          <div className="bg-white rounded-xl border border-emerald-200 px-4 py-3 space-y-3">
+            <p className="text-xs font-bold text-gold-700">ส่งข้อมูลนี้ให้เจ้าหน้าที่ศูนย์</p>
             <InfoRow label="URL เข้าระบบ" value="rrb.center/dashboard/center" mono />
-            <div className="pt-1 mt-1 border-t border-emerald-100">
-              <p className="text-[10px] text-gold-500 mb-1">รหัสเข้าใช้งาน (ส่งให้เจ้าหน้าที่)</p>
+            <div>
+              <p className="text-[10px] text-gold-500 mb-1.5">รหัสศูนย์ (ใช้ login)</p>
               <div className="flex items-center justify-between bg-gold-50 border border-gold-200 rounded-xl px-4 py-3">
-                <span className="text-xl font-bold text-gold-800 font-mono tracking-[0.2em]">
-                  {successData.accessCode}
+                <span className="text-2xl font-bold text-gold-800 font-mono tracking-[0.15em]">
+                  {successData.centerCode}
                 </span>
                 <KeyRound className="w-5 h-5 text-gold-400 shrink-0" />
               </div>
@@ -155,37 +150,36 @@ export default function NewCenterPage() {
         <p className="text-[11px] text-gold-500">สร้างโดย Super Admin เท่านั้น</p>
       </div>
 
-      {/* ── กลุ่ม 1: รหัส อปท. ── */}
+      {/* ── กลุ่ม 1: รหัสศูนย์ ── */}
       <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-3">
         <div className="flex items-center gap-2 mb-1">
           <Hash className="w-4 h-4 text-gold-500" />
-          <p className="text-xs font-semibold text-gold-700">รหัส อปท. (มาตรฐานกระทรวงมหาดไทย)</p>
+          <p className="text-xs font-semibold text-gold-700">รหัสศูนย์</p>
         </div>
-        <FieldRow label="รหัส อปท. 8 หลัก" hint="TT PP DD LL เช่น 05810109 = เทศบาลตำบล / กระบี่ / เมือง / ลำดับ 09">
+        <FieldRow
+          label="รหัสศูนย์ (รหัส อปท. 8 หลัก)"
+          hint="เช่น 05620601 — ใช้เป็นทั้งรหัสประจำศูนย์และรหัส login"
+        >
           <input
             type="text" inputMode="numeric" maxLength={8}
-            value={form.official_lgo_code} onChange={set("official_lgo_code")}
-            placeholder="05810109"
+            value={form.center_code} onChange={set("center_code")}
+            placeholder="05620601"
             className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm font-mono tracking-widest"
           />
         </FieldRow>
         {parsed ? (
-          <div className="bg-gold-50 border border-gold-200 rounded-xl px-3 py-2.5 space-y-1">
+          <div className="bg-gold-50 border border-gold-200 rounded-xl px-3 py-2.5">
             <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
               <p className="text-[10px] text-gold-600">ประเภท: <span className="font-medium">{parsed.type}</span></p>
-              <p className="text-[10px] text-gold-600">จังหวัด: <span className="font-medium">รหัส {parsed.province}</span></p>
-              <p className="text-[10px] text-gold-600">อำเภอ: <span className="font-medium">รหัส {parsed.district}</span></p>
+              <p className="text-[10px] text-gold-600">รหัสจังหวัด: <span className="font-medium">{parsed.province}</span></p>
+              <p className="text-[10px] text-gold-600">รหัสอำเภอ: <span className="font-medium">{parsed.district}</span></p>
               <p className="text-[10px] text-gold-600">ลำดับ: <span className="font-medium">{parsed.seq}</span></p>
             </div>
-            <div className="flex items-center gap-2 mt-1 pt-1 border-t border-gold-200">
-              <p className="text-[10px] text-gold-500">รหัสศูนย์ (= รหัส อปท.):</p>
-              <span className="text-xs font-bold text-gold-800 font-mono tracking-wider">{parsed.centerCode}</span>
-            </div>
           </div>
-        ) : form.official_lgo_code.length > 0 ? (
+        ) : form.center_code.length > 0 ? (
           <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
             <Info className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-            <p className="text-[10px] text-amber-700">รหัส อปท. ต้องเป็นตัวเลข 8 หลัก</p>
+            <p className="text-[10px] text-amber-700">รหัสศูนย์ต้องเป็นตัวเลข 8 หลัก</p>
           </div>
         ) : (
           <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2">
@@ -253,13 +247,6 @@ export default function NewCenterPage() {
               className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm font-mono" />
           </div>
         </FieldRow>
-      </div>
-
-      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
-        <KeyRound className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
-        <p className="text-[10px] text-blue-600">
-          ระบบจะสร้าง <span className="font-semibold">รหัสเข้าใช้งาน</span> ให้อัตโนมัติ — แอดมินนำไปส่งให้เจ้าหน้าที่ศูนย์ใช้ login
-        </p>
       </div>
 
       {error && (

@@ -1,18 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { randomBytes } from "crypto";
-
-function generateAccessCode(): string {
-  return randomBytes(5).toString("hex").toUpperCase().slice(0, 8);
-}
 
 async function buildCenterCode(
-  officialLgoCode: string | null | undefined,
+  centerCode: string | null | undefined,
   supabase: ReturnType<typeof createAdminClient>
 ): Promise<string> {
-  const lgo = officialLgoCode?.replace(/\D/g, "");
-  if (lgo?.length === 8) return lgo;
+  const digits = centerCode?.replace(/\D/g, "");
+  if (digits?.length === 8) return digits;
 
   const { count } = await supabase
     .from("centers")
@@ -31,7 +26,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json();
   const {
-    name, official_lgo_code,
+    name, center_code: rawCenterCode,
     province, amphoe, tambon, municipality,
     manager_name, phone,
   } = body;
@@ -41,17 +36,14 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient();
-  const center_code = await buildCenterCode(official_lgo_code, supabase);
-  const lgoCode = official_lgo_code?.replace(/\D/g, "").slice(0, 8) || null;
-  const access_code = generateAccessCode();
+  const center_code = await buildCenterCode(rawCenterCode, supabase);
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center, error } = await (supabase.from("centers") as any)
     .insert({
       name: name.trim(),
-      official_lgo_code: lgoCode,
+      official_lgo_code: center_code.length === 8 && /^\d+$/.test(center_code) ? center_code : null,
       center_code,
-      access_code,
       province: province?.trim() || null,
       amphoe: amphoe?.trim() || null,
       tambon: tambon?.trim() || null,
@@ -65,5 +57,5 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  return NextResponse.json({ center, access_code });
+  return NextResponse.json({ center });
 }

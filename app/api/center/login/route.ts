@@ -7,29 +7,23 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "กรุณากรอกรหัสเข้าระบบ" }, { status: 400 });
+    return NextResponse.json({ error: "กรุณากรอกรหัสศูนย์" }, { status: 400 });
   }
 
   const code = String(body.code ?? "").trim();
-
   if (!code) {
-    return NextResponse.json({ error: "กรุณากรอกรหัสเข้าระบบ" }, { status: 400 });
+    return NextResponse.json({ error: "กรุณากรอกรหัสศูนย์" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
-  const codeFilter = [
-    `access_code.ilike.${code}`,
-    `center_code.ilike.${code}`,
-    `official_lgo_code.ilike.${code}`,
-  ].join(",");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center } = await (supabase.from("centers") as any)
     .select("id, name, status")
-    .or(codeFilter)
+    .or(`center_code.ilike.${code},official_lgo_code.ilike.${code}`)
     .maybeSingle();
 
   if (!center || center.status !== "active") {
-    return NextResponse.json({ error: "รหัสไม่ถูกต้องหรือศูนย์ไม่ได้เปิดใช้งาน" }, { status: 401 });
+    return NextResponse.json({ error: "รหัสศูนย์ไม่ถูกต้องหรือศูนย์ไม่ได้เปิดใช้งาน" }, { status: 401 });
   }
 
   const cookieStore = await cookies();
