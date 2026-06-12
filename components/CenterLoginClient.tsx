@@ -51,7 +51,7 @@ export default function CenterLoginClient() {
                 value={code}
                 onChange={e => setCode(e.target.value.toUpperCase())}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
-                placeholder="เช่น RRB-05620601"
+                placeholder="เช่น 05620601"
                 className="w-full px-4 py-3 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-base font-bold text-center tracking-[0.2em] uppercase"
                 maxLength={20}
                 autoComplete="off"
