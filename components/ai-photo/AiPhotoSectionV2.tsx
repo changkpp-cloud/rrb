@@ -596,7 +596,7 @@ export default function AiPhotoSectionV2({
         {donationId && (
           <p className="text-[10px] text-gold-500 text-center">สร้างภาพที่ระลึกได้ฟรี 1 ภาพสำหรับรายการร่วมบุญนี้</p>
         )}
-        <button type="button" onClick={handleGenerate}
+        <button type="button" onClick={handleGenerateJob}
           disabled={!donorFile || !consent || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}

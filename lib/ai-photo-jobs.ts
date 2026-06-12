@@ -129,7 +129,16 @@ export async function processAiPhotoJob(jobId: string) {
       ? await fileFromPublicUrl(row.reference_image_url)
       : null;
 
-    const externalImage = await generateViaExternalService(row.final_prompt, donorFile);
+    let externalImage: string | null = null;
+    try {
+      externalImage = await generateViaExternalService(row.final_prompt, donorFile);
+    } catch (error) {
+      console.warn(
+        "External AI image service failed; falling back to direct OpenAI generation.",
+        error
+      );
+    }
+
     const images = externalImage
       ? [externalImage]
       : donorFile && donorFile.size > 0
