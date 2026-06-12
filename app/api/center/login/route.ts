@@ -3,7 +3,13 @@ import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  let body: { code?: unknown };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "กรุณากรอกรหัสเข้าระบบ" }, { status: 400 });
+  }
+
   const code = String(body.code ?? "").trim();
 
   if (!code) {
