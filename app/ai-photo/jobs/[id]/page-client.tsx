@@ -51,7 +51,11 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
   }, [jobId]);
 
   async function copyLink() {
-    await navigator.clipboard.writeText(job?.jobUrl || window.location.href);
+    const url = job?.jobUrl || window.location.href;
+    const text = isDone
+      ? `ภาพมอบหรีดพร้อมแล้ว เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพ: ${url}`
+      : `กำลังสร้างภาพมอบหรีด เก็บลิงก์นี้ไว้เพื่อกลับมารับภาพภายหลัง: ${url}`;
+    await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 1800);
   }
@@ -59,9 +63,12 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
   async function shareLink() {
     const url = job?.jobUrl || window.location.href;
     if (navigator.share) {
+      const ready = job?.status === "completed" && job.imageUrl;
       await navigator.share({
-        title: "ภาพมอบหรีดร่วมบุญ",
-        text: "เปิดดูสถานะภาพมอบหรีดที่กำลังสร้าง",
+        title: ready ? "ภาพมอบหรีดพร้อมแล้ว" : "กำลังสร้างภาพมอบหรีด",
+        text: ready
+          ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพมอบหรีด"
+          : "เก็บลิงก์นี้ไว้ แล้วกลับมาเปิดเพื่อรับภาพมอบหรีดภายหลัง",
         url,
       });
       return;
@@ -72,13 +79,28 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
   const status = job?.status ?? "pending";
   const isDone = status === "completed" && job?.imageUrl;
   const isFailed = status === "failed";
+  const statusCardClass = isDone
+    ? "border-emerald-200 bg-emerald-50"
+    : isFailed
+    ? "border-red-200 bg-red-50"
+    : "border-gold-200 bg-cream-50";
+  const statusTextClass = isDone
+    ? "text-emerald-800"
+    : isFailed
+    ? "text-red-700"
+    : "text-gold-800";
+  const detailTextClass = isDone
+    ? "text-emerald-700"
+    : isFailed
+    ? "text-red-600"
+    : "text-gold-500";
 
   return (
     <div className="min-h-dvh flex flex-col bg-white">
       <IosPageHeader title="หรีดร่วมบุญ" subtitle="AI Photo" backHref="/" />
       <main className="flex-1">
         <div className="mx-auto max-w-lg px-4 py-5 space-y-4">
-          <div className="rounded-2xl bg-cream-50 gold-border card-shadow p-4 space-y-3">
+          <div className={`rounded-2xl border card-shadow p-4 space-y-3 ${statusCardClass}`}>
             <div className="flex items-center gap-2">
               {isDone ? (
                 <CheckCircle2 className="h-5 w-5 text-emerald-500" />
@@ -88,19 +110,19 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
                 <Loader2 className="h-5 w-5 animate-spin text-gold-500" />
               )}
               <div>
-                <p className="text-sm font-bold text-gold-800">
+                <p className={`text-sm font-bold ${statusTextClass}`}>
                   {isDone
                     ? "ภาพมอบหรีดพร้อมแล้ว"
                     : isFailed
                     ? "สร้างภาพไม่สำเร็จ"
                     : "กำลังสร้างภาพมอบหรีด"}
                 </p>
-                <p className="text-[11px] text-gold-500">
+                <p className={`text-[11px] leading-relaxed ${detailTextClass}`}>
                   {isDone
-                    ? "แชร์"
+                    ? "บันทึกภาพลงเครื่อง หรือแชร์ภาพจากปุ่มด้านล่างได้เลย"
                     : isFailed
                     ? job?.error ?? "กรุณาลองสร้างใหม่อีกครั้ง"
-                    : "หน้านี้จะอัปเดตสถานะอัตโนมัติ สามารถบันทึกลิงก์ไว้กลับมาดูภายหลังได้"}
+                    : "งานกำลังประมวลผลบนระบบ สามารถปิดหน้านี้ คัดลอกลิงก์ไว้ แล้วกลับมาเปิดเพื่อรับภาพภายหลังได้"}
                 </p>
               </div>
             </div>
@@ -112,7 +134,7 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
                 className="flex items-center justify-center gap-2 rounded-xl border border-gold-200 bg-white px-3 py-2.5 text-xs font-bold text-gold-700"
               >
                 <Copy className="h-4 w-4" />
-                {copied ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
+                {copied ? "คัดลอกแล้ว" : "คัดลอกข้อความลิงก์"}
               </button>
               <button
                 type="button"

@@ -74,13 +74,20 @@ export async function getMemorialBySlug(slug: string): Promise<Memorial | null> 
   }
 }
 
+export function normalizeHostCode(hostCode: string) {
+  return hostCode.trim().toUpperCase();
+}
+
 export async function getMemorialByHostCode(hostCode: string): Promise<Memorial | null> {
   try {
+    const normalizedHostCode = normalizeHostCode(hostCode);
+    if (!normalizedHostCode) return null;
+
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("memorials")
       .select("*")
-      .eq("host_code", hostCode)
+      .eq("host_code", normalizedHostCode)
       .single();
     return (data as Memorial | null);
   } catch {

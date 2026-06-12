@@ -1,4 +1,4 @@
-import { getMemorialById } from "@/lib/memorial";
+import { getMemorialById, normalizeHostCode } from "@/lib/memorial";
 import EditMemorialInfoForm from "@/components/EditMemorialInfoForm";
 import { notFound } from "next/navigation";
 
@@ -18,7 +18,7 @@ export default async function HostEditMemorialPage({
   if (!memorial) notFound();
 
   // Verify host_code
-  if (!code || code !== memorial.host_code) {
+  if (!code || normalizeHostCode(code) !== normalizeHostCode(memorial.host_code ?? "")) {
     return (
       <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#ffffff" }}>
         <div className="text-center space-y-2">
@@ -34,7 +34,7 @@ export default async function HostEditMemorialPage({
       memorial={memorial}
       backHref={`/dashboard/host/${id}`}
       actorType="host"
-      hostCode={code}
+      hostCode={normalizeHostCode(code)}
     />
   );
 }

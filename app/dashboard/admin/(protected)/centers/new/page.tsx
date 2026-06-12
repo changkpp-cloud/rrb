@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-  Building2, Check, CheckCircle2, Copy, Eye, EyeOff,
-  Hash, Info, KeyRound, Loader2, Mail, MapPin, Phone, User,
+  Building2, Check, CheckCircle2, Copy,
+  Hash, Info, KeyRound, Loader2, MapPin, Phone, User,
 } from "lucide-react";
 
 const LGO_TYPES: Record<string, string> = {
@@ -37,23 +37,18 @@ interface FormState {
   municipality: string;
   manager_name: string;
   phone: string;
-  manager_email: string;
-  manager_password: string;
 }
 
 interface SuccessData {
   centerName: string;
   centerCode: string;
-  managerEmail: string;
-  managerPassword: string;
-  iamSkipped: boolean;
+  accessCode: string;
 }
 
 const INITIAL: FormState = {
   name: "", official_lgo_code: "",
   province: "", amphoe: "", tambon: "", municipality: "",
   manager_name: "", phone: "",
-  manager_email: "", manager_password: "",
 };
 
 export default function NewCenterPage() {
@@ -61,7 +56,6 @@ export default function NewCenterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [successData, setSuccessData] = useState<SuccessData | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   const [copied, setCopied] = useState(false);
 
   function set(key: keyof FormState) {
@@ -73,9 +67,6 @@ export default function NewCenterPage() {
 
   async function handleSubmit() {
     if (!form.name.trim()) { setError("กรุณากรอกชื่อศูนย์"); return; }
-    if (form.manager_email && form.manager_password.length < 8) {
-      setError("รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร"); return;
-    }
     setLoading(true); setError("");
     try {
       const res = await fetch("/api/centers", {
@@ -88,9 +79,7 @@ export default function NewCenterPage() {
       setSuccessData({
         centerName: data.center.name,
         centerCode: data.center.center_code,
-        managerEmail: form.manager_email,
-        managerPassword: form.manager_password,
-        iamSkipped: data.iamSkipped ?? false,
+        accessCode: data.access_code,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
@@ -102,10 +91,9 @@ export default function NewCenterPage() {
     const text = [
       `ศูนย์: ${sd.centerName}`,
       `รหัสศูนย์: ${sd.centerCode}`,
-      `URL: https://rrb.center/dashboard/center`,
-      sd.managerEmail ? `Email: ${sd.managerEmail}` : null,
-      sd.managerPassword ? `Password: ${sd.managerPassword}` : null,
-    ].filter(Boolean).join("\n");
+      `URL เข้าระบบ: https://rrb.center/dashboard/center`,
+      `รหัสเข้าใช้งาน: ${sd.accessCode}`,
+    ].join("\n");
     await navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -127,38 +115,27 @@ export default function NewCenterPage() {
           </div>
 
           <div className="bg-white rounded-xl border border-emerald-200 px-4 py-3 space-y-2.5">
-            <p className="text-xs font-bold text-gold-700">ข้อมูลสำหรับเข้าระบบศูนย์</p>
-
+            <p className="text-xs font-bold text-gold-700">ข้อมูลสำหรับส่งให้เจ้าหน้าที่ศูนย์</p>
             <InfoRow label="รหัสศูนย์" value={successData.centerCode} mono />
             <InfoRow label="URL เข้าระบบ" value="rrb.center/dashboard/center" mono />
-            {successData.managerEmail && (
-              <InfoRow label="Email" value={successData.managerEmail} />
-            )}
-            {successData.managerPassword && (
-              <InfoRow label="Password" value={successData.managerPassword} mono />
-            )}
+            <div className="pt-1 mt-1 border-t border-emerald-100">
+              <p className="text-[10px] text-gold-500 mb-1">รหัสเข้าใช้งาน (ส่งให้เจ้าหน้าที่)</p>
+              <div className="flex items-center justify-between bg-gold-50 border border-gold-200 rounded-xl px-4 py-3">
+                <span className="text-xl font-bold text-gold-800 font-mono tracking-[0.2em]">
+                  {successData.accessCode}
+                </span>
+                <KeyRound className="w-5 h-5 text-gold-400 shrink-0" />
+              </div>
+            </div>
           </div>
 
-          {successData.iamSkipped && (
-            <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
-              <Info className="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5" />
-              <p className="text-[11px] text-amber-700">
-                ยังไม่ได้ติดตั้งตาราง IAM — ศูนย์ยังเข้าระบบไม่ได้จนกว่าจะรัน{" "}
-                <code className="font-mono bg-amber-100 px-1 rounded">migration_iam_users.sql</code>{" "}
-                ใน Supabase
-              </p>
-            </div>
-          )}
-
-          {successData.managerEmail && (
-            <button
-              onClick={() => copyCredentials(successData)}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-emerald-300 bg-white text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors"
-            >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              {copied ? "คัดลอกแล้ว" : "คัดลอกข้อมูลทั้งหมด"}
-            </button>
-          )}
+          <button
+            onClick={() => copyCredentials(successData)}
+            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-emerald-300 bg-white text-sm font-semibold text-emerald-700 hover:bg-emerald-50 transition-colors"
+          >
+            {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            {copied ? "คัดลอกแล้ว" : "คัดลอกข้อมูลทั้งหมด"}
+          </button>
         </div>
 
         <Link
@@ -278,34 +255,11 @@ export default function NewCenterPage() {
         </FieldRow>
       </div>
 
-      {/* ── กลุ่ม 5: บัญชีเข้าระบบ ── */}
-      <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-3">
-        <div className="flex items-center gap-2 mb-1">
-          <KeyRound className="w-4 h-4 text-gold-500" />
-          <p className="text-xs font-semibold text-gold-700">บัญชีเข้าระบบศูนย์</p>
-          <span className="ml-auto text-[10px] text-gold-400">ไม่บังคับ — เพิ่มทีหลังได้</span>
-        </div>
-        <FieldRow label="Email ผู้จัดการ">
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-white">
-            <Mail className="w-4 h-4 text-gold-400 shrink-0" />
-            <input type="email" value={form.manager_email} onChange={set("manager_email")} placeholder="manager@example.com"
-              className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm" />
-          </div>
-        </FieldRow>
-        <FieldRow label="รหัสผ่าน" hint="อย่างน้อย 8 ตัวอักษร — แจ้งให้ผู้จัดการเปลี่ยนทีหลัง">
-          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl gold-border bg-white">
-            <KeyRound className="w-4 h-4 text-gold-400 shrink-0" />
-            <input
-              type={showPassword ? "text" : "password"}
-              value={form.manager_password} onChange={set("manager_password")}
-              placeholder="รหัสผ่านอย่างน้อย 8 ตัว"
-              className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
-            />
-            <button type="button" onClick={() => setShowPassword(v => !v)} className="text-gold-400 hover:text-gold-600" tabIndex={-1}>
-              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </FieldRow>
+      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-3 py-2.5">
+        <KeyRound className="w-3.5 h-3.5 text-blue-400 shrink-0 mt-0.5" />
+        <p className="text-[10px] text-blue-600">
+          ระบบจะสร้าง <span className="font-semibold">รหัสเข้าใช้งาน</span> ให้อัตโนมัติ — แอดมินนำไปส่งให้เจ้าหน้าที่ศูนย์ใช้ login
+        </p>
       </div>
 
       {error && (

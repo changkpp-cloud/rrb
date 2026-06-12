@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { normalizeHostCode } from "@/lib/memorial";
 import type { Database } from "@/lib/supabase/types";
 
 type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
@@ -49,9 +50,9 @@ export async function PATCH(
       .select("host_code")
       .eq("id", id)
       .single();
-    if (mem?.host_code && mem.host_code === body.host_code) {
+    if (mem?.host_code && normalizeHostCode(mem.host_code) === normalizeHostCode(body.host_code)) {
       actorType = "host";
-      actorId = body.host_code;
+      actorId = normalizeHostCode(body.host_code);
     }
   }
 

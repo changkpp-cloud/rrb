@@ -2,7 +2,7 @@
 
 import { KeyRound, LogIn } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function HostLoginPage() {
@@ -11,11 +11,15 @@ export default function HostLoginPage() {
   const [error, setError] = useState("");
   const router = useRouter();
 
+  useEffect(() => {
+    setCode("");
+  }, []);
+
   async function handleLogin() {
     if (!code.trim()) { setError("กรุณากรอกรหัสเจ้าภาพ"); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`/api/memorial/host?code=${encodeURIComponent(code.trim().toUpperCase())}`);
+      const res = await fetch(`/api/memorial/host?code=${encodeURIComponent(code.trim())}`);
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "ไม่พบรหัสนี้");
       router.push(`/dashboard/host/${data.id}`);
@@ -50,10 +54,14 @@ export default function HostLoginPage() {
               <input
                 type="text"
                 value={code}
-                onChange={e => setCode(e.target.value.toUpperCase())}
+                onChange={e => setCode(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleLogin()}
-                placeholder="เช่น H3K9AB"
-                className="w-full px-4 py-3 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-base font-bold text-center tracking-[0.25em] uppercase"
+                name="rrb-host-token-entry"
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                className="w-full px-4 py-3 rounded-xl gold-border bg-white text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400 text-base font-bold text-center tracking-[0.25em]"
                 maxLength={10}
               />
             </div>

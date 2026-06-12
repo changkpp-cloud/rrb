@@ -10,9 +10,13 @@ export type CenterMembership = Database["public"]["Tables"]["center_memberships"
 const SESSION_COOKIE = "center_user_session";
 const SESSION_HOURS = 8;
 
+export function normalizePassword(password: string) {
+  return password.trim().toLowerCase();
+}
+
 export function hashPassword(password: string) {
   const salt = randomBytes(16).toString("hex");
-  const hash = scryptSync(password, salt, 64).toString("hex");
+  const hash = scryptSync(normalizePassword(password), salt, 64).toString("hex");
   return `scrypt:${salt}:${hash}`;
 }
 
@@ -20,9 +24,13 @@ export function verifyPassword(password: string, storedHash: string | null) {
   if (!storedHash) return false;
   const [scheme, salt, hash] = storedHash.split(":");
   if (scheme !== "scrypt" || !salt || !hash) return false;
-  const actual = scryptSync(password, salt, 64);
   const expected = Buffer.from(hash, "hex");
-  return expected.length === actual.length && timingSafeEqual(expected, actual);
+  const attempts = [normalizePassword(password), password];
+
+  return attempts.some((attempt) => {
+    const actual = scryptSync(attempt, salt, 64);
+    return expected.length === actual.length && timingSafeEqual(expected, actual);
+  });
 }
 
 export function createSessionToken() {
@@ -44,6 +52,10 @@ export function roleLabel(role: AppRole | string | null) {
 }
 
 export function canManageCenterUsers(role: AppRole | string | null) {
+  return role === "super_admin" || role === "center_manager";
+}
+
+export function canManageCenterSettings(role: AppRole | string | null) {
   return role === "super_admin" || role === "center_manager";
 }
 

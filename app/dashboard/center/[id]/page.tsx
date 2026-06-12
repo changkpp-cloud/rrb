@@ -14,9 +14,10 @@ import {
 } from "lucide-react";
 import CenterDashboardScrollNav from "@/components/CenterDashboardScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
+import CenterSettingsForm from "@/components/CenterSettingsForm";
 import CreateMemorialClient from "./create/CreateMemorialClient";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getCenterAccess, roleLabel } from "@/lib/iam";
+import { canManageCenterSettings, getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
 
@@ -140,6 +141,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const totalDonors = summaries.reduce((sum, row) => sum + row.confirmed, 0);
   const pendingSlipCount = summaries.reduce((sum, row) => sum + row.pendingSlip, 0);
   const pendingPrintCount = summaries.reduce((sum, row) => sum + row.nameplatePending + row.nameplateQueued, 0);
+  const canEditSettings = canManageCenterSettings(access.role);
 
   return (
     <div className="min-h-screen bg-white">
@@ -205,13 +207,20 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           settings={
         <section id="settings" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={Settings} title="4. ตั้งค่าศูนย์" subtitle="ข้อมูลหลักของศูนย์บริหารประจำตำบล" />
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
-            <InfoRow label="ชื่อศูนย์" value={center.name} />
-            <InfoRow label="ผู้จัดการ" value={center.manager_name || "-"} />
-            <InfoRow label="โทรศัพท์" value={center.phone || "-"} />
-            <InfoRow label="พื้นที่" value={[center.tambon, center.amphoe, center.province].filter(Boolean).join(" · ") || "-"} />
-            <InfoRow label="สถานะศูนย์" value={center.status || "-"} />
-          </div>
+          {canEditSettings ? (
+            <CenterSettingsForm center={center as Center & { access_code?: string | null; official_lgo_code?: string | null }} />
+          ) : (
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
+              <p className="rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold text-gold-700">
+                สิทธิ์นี้ดูข้อมูลได้เท่านั้น หากต้องแก้ไขข้อมูลศูนย์ให้ใช้บัญชีผู้จัดการศูนย์
+              </p>
+              <InfoRow label="ชื่อศูนย์" value={center.name} />
+              <InfoRow label="ผู้จัดการ" value={center.manager_name || "-"} />
+              <InfoRow label="โทรศัพท์" value={center.phone || "-"} />
+              <InfoRow label="พื้นที่" value={[center.tambon, center.amphoe, center.province].filter(Boolean).join(" · ") || "-"} />
+              <InfoRow label="สถานะศูนย์" value={center.status || "-"} />
+            </div>
+          )}
         </section>
           }
         />

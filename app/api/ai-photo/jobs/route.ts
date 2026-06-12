@@ -8,6 +8,7 @@ import {
 } from "@/lib/ai-photo-templates";
 import { processAiPhotoJob } from "@/lib/ai-photo-jobs";
 import { getSiteUrl } from "@/lib/site-url";
+import { AI_PHOTO_SCHEMA_ERROR, isMissingAiPhotoSchemaError } from "@/lib/ai-photo-schema";
 
 export const maxDuration = 300;
 
@@ -53,13 +54,17 @@ export async function POST(req: NextRequest) {
 
   if (donationId) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existingJob } = await (supabase.from("ai_photo_requests") as any)
+    const { data: existingJob, error: existingJobError } = await (supabase.from("ai_photo_requests") as any)
       .select("id, status, generated_image_url")
       .eq("donation_id", donationId)
       .in("status", ["pending", "processing", "completed"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
+
+    if (existingJobError && isMissingAiPhotoSchemaError(existingJobError)) {
+      return NextResponse.json({ error: AI_PHOTO_SCHEMA_ERROR }, { status: 503 });
+    }
 
     const row = existingJob as { id: string; status: string; generated_image_url?: string | null } | null;
     if (row?.id) {
@@ -132,6 +137,9 @@ export async function POST(req: NextRequest) {
 
   if (insertError) {
     console.error("AI photo job insert failed", insertError);
+    if (isMissingAiPhotoSchemaError(insertError)) {
+      return NextResponse.json({ error: AI_PHOTO_SCHEMA_ERROR }, { status: 503 });
+    }
     return NextResponse.json({ error: "สร้างงานเจนภาพไม่สำเร็จ" }, { status: 500 });
   }
 

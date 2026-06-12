@@ -3,7 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
   const adminPassword = process.env.ADMIN_PASSWORD ?? "ESG2025";
-  if (password !== adminPassword) {
+  const inputPassword = String(password ?? "").trim().toLowerCase();
+  const expectedPassword = String(adminPassword).trim().toLowerCase();
+  if (inputPassword !== expectedPassword) {
     return NextResponse.json({ error: "รหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
   const res = NextResponse.json({ success: true });

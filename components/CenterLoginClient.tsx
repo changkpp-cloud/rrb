@@ -2,25 +2,23 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Eye, EyeOff, KeyRound, Mail } from "lucide-react";
+import { Building2, KeyRound } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
 export default function CenterLoginClient() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
   async function handleLogin() {
-    if (!email.trim() || !password) return;
+    if (!code.trim()) return;
     setLoading(true); setError("");
     try {
       const res = await fetch("/api/center/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), password }),
+        body: JSON.stringify({ code: code.trim() }),
       });
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "เข้าสู่ระบบไม่สำเร็จ");
@@ -43,47 +41,26 @@ export default function CenterLoginClient() {
               <Building2 className="w-8 h-8 text-gold-600" />
             </div>
             <h2 className="text-xl font-bold text-gold-800">เข้าสู่ระบบศูนย์บริหาร</h2>
-            <p className="text-xs text-gold-500">บัญชีของคุณถูกสร้างโดยผู้ดูแลระบบ</p>
+            <p className="text-xs text-gold-500">ใช้รหัสที่ได้รับจากผู้ดูแลระบบ</p>
           </div>
 
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 space-y-4">
             <label className="block space-y-1.5">
-              <span className="text-xs font-semibold text-gold-700">อีเมล</span>
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
-                <Mail className="w-4 h-4 text-gold-400 shrink-0" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  placeholder="your@email.com"
-                  className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
-                  autoComplete="email"
-                />
-              </div>
-            </label>
-
-            <label className="block space-y-1.5">
-              <span className="text-xs font-semibold text-gold-700">รหัสผ่าน</span>
+              <span className="text-xs font-semibold text-gold-700">รหัสเข้าระบบศูนย์</span>
               <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
                 <KeyRound className="w-4 h-4 text-gold-400 shrink-0" />
                 <input
-                  type={showPassword ? "text" : "password"}
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  type="text"
+                  value={code}
+                  onChange={e => setCode(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  placeholder="รหัสผ่าน"
-                  className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
-                  autoComplete="current-password"
+                  name="center-access-code"
+                  maxLength={8}
+                  className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm font-mono tracking-widest"
+                  autoComplete="off"
+                  autoCorrect="off"
+                  spellCheck={false}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(v => !v)}
-                  className="text-gold-400 hover:text-gold-600 transition-colors"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
               </div>
             </label>
 
@@ -91,7 +68,7 @@ export default function CenterLoginClient() {
 
             <button
               onClick={handleLogin}
-              disabled={loading || !email.trim() || !password}
+              disabled={loading || !code.trim()}
               className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               <KeyRound className="w-5 h-5" />
@@ -100,7 +77,7 @@ export default function CenterLoginClient() {
           </div>
 
           <p className="text-center text-[11px] text-gold-400 leading-relaxed">
-            หากยังไม่มีบัญชี ติดต่อผู้ดูแลระบบเพื่อขอสิทธิ์เข้าใช้งาน
+            ติดต่อผู้ดูแลระบบหากไม่มีรหัสเข้าใช้งาน
           </p>
 
         </div>

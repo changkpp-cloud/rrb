@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Copy, ExternalLink, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
@@ -415,7 +415,10 @@ export default function AiPhotoSectionV2({
 
   async function copyJobUrl() {
     if (!activeJob?.jobUrl) return;
-    await navigator.clipboard.writeText(activeJob.jobUrl);
+    const text = activeJob.status === "completed" && activeJob.imageUrl
+      ? `ภาพมอบหรีดพร้อมแล้ว เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพ: ${activeJob.jobUrl}`
+      : `กำลังสร้างภาพมอบหรีด เก็บลิงก์นี้ไว้เพื่อกลับมารับภาพภายหลัง: ${activeJob.jobUrl}`;
+    await navigator.clipboard.writeText(text);
     setCopiedJobUrl(true);
     setTimeout(() => setCopiedJobUrl(false), 1800);
   }
@@ -423,9 +426,12 @@ export default function AiPhotoSectionV2({
   async function shareJobUrl() {
     if (!activeJob?.jobUrl) return;
     if (navigator.share) {
+      const ready = activeJob.status === "completed" && activeJob.imageUrl;
       await navigator.share({
-        title: "AI wreath photo",
-        text: "Open this link to check the generated wreath photo status.",
+        title: ready ? "ภาพมอบหรีดพร้อมแล้ว" : "กำลังสร้างภาพมอบหรีด",
+        text: ready
+          ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพมอบหรีด"
+          : "เก็บลิงก์นี้ไว้ แล้วกลับมาเปิดเพื่อรับภาพมอบหรีดภายหลัง",
         url: activeJob.jobUrl,
       });
       return;
@@ -559,8 +565,13 @@ export default function AiPhotoSectionV2({
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-emerald-800">
                 {activeJob.status === "completed"
-                  ? "Image ready"
-                  : "Server generation started"}
+                  ? "ภาพมอบหรีดพร้อมแล้ว"
+                  : "เริ่มสร้างภาพบนระบบแล้ว"}
+              </p>
+              <p className="mt-0.5 text-[10px] leading-relaxed text-emerald-700">
+                {activeJob.status === "completed"
+                  ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพได้ทุกเมื่อ"
+                  : "คัดลอกหรือแชร์ลิงก์นี้ไว้ได้ ออกจากหน้านี้แล้วกลับมาเปิดลิงก์เพื่อรับภาพภายหลัง"}
               </p>
               <p className="mt-0.5 break-all text-[10px] text-emerald-700">
                 {activeJob.jobUrl}
@@ -574,7 +585,7 @@ export default function AiPhotoSectionV2({
               className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
             >
               <Copy className="h-3.5 w-3.5" />
-              {copiedJobUrl ? "Copied" : "Copy link"}
+              {copiedJobUrl ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
             </button>
             <button
               type="button"
@@ -585,8 +596,15 @@ export default function AiPhotoSectionV2({
               แชร์
             </button>
           </div>
+          <a
+            href={activeJob.jobUrl}
+            className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            เปิดหน้ารับภาพ
+          </a>
           <p className="text-[10px] text-emerald-700">
-            แชร์
+            หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
           </p>
         </div>
       )}

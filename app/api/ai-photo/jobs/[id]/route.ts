@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSiteUrl } from "@/lib/site-url";
+import { AI_PHOTO_SCHEMA_ERROR, isMissingAiPhotoSchemaError } from "@/lib/ai-photo-schema";
 
 function absoluteJobUrl(req: NextRequest, jobId: string) {
   const origin =
@@ -24,6 +25,9 @@ export async function GET(
     .single();
 
   if (error || !data) {
+    if (error && isMissingAiPhotoSchemaError(error)) {
+      return NextResponse.json({ error: AI_PHOTO_SCHEMA_ERROR }, { status: 503 });
+    }
     return NextResponse.json({ error: "ไม่พบงานเจนภาพนี้" }, { status: 404 });
   }
 

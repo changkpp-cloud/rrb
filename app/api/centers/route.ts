@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hashPassword } from "@/lib/iam";
+import { randomBytes } from "crypto";
+
+function generateAccessCode(): string {
+  return randomBytes(5).toString("hex").toUpperCase().slice(0, 8);
+}
 
 async function buildCenterCode(
   officialLgoCode: string | null | undefined,
@@ -18,43 +22,6 @@ async function buildCenterCode(
   return `CEN-${seq}`;
 }
 
-async function createManagerAccount(
-  supabase: ReturnType<typeof createAdminClient>,
-  centerId: string,
-  managerName: string | null,
-  email: string,
-  password: string,
-): Promise<{ iamSkipped: boolean }> {
-  try {
-    const { data: user, error: userError } = await supabase
-      .from("app_users")
-      .upsert({
-        email,
-        display_name: managerName || email.split("@")[0],
-        auth_provider: "password",
-        password_hash: hashPassword(password),
-        status: "active",
-        approved_at: new Date().toISOString(),
-      }, { onConflict: "email" })
-      .select("id")
-      .single();
-
-    if (userError || !user?.id) return { iamSkipped: true };
-
-    await supabase.from("center_memberships").upsert({
-      center_id: centerId,
-      user_id: user.id,
-      role: "center_manager",
-      status: "active",
-      approved_at: new Date().toISOString(),
-    }, { onConflict: "center_id,user_id" });
-
-    return { iamSkipped: false };
-  } catch {
-    return { iamSkipped: true };
-  }
-}
-
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session");
@@ -67,7 +34,6 @@ export async function POST(req: NextRequest) {
     name, official_lgo_code,
     province, amphoe, tambon, municipality,
     manager_name, phone,
-    manager_email, manager_password,
   } = body;
 
   if (!name?.trim()) {
@@ -77,6 +43,7 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient();
   const center_code = await buildCenterCode(official_lgo_code, supabase);
   const lgoCode = official_lgo_code?.replace(/\D/g, "").slice(0, 8) || null;
+  const access_code = generateAccessCode();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center, error } = await (supabase.from("centers") as any)
@@ -84,6 +51,7 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       official_lgo_code: lgoCode,
       center_code,
+      access_code,
       province: province?.trim() || null,
       amphoe: amphoe?.trim() || null,
       tambon: tambon?.trim() || null,
@@ -97,16 +65,5 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // สร้างบัญชีผู้จัดการถ้ากรอก email+password ไว้
-  let iamSkipped = false;
-  const email = manager_email?.trim().toLowerCase();
-  const password = manager_password ?? "";
-  if (email && password.length >= 8) {
-    const result = await createManagerAccount(
-      supabase, center.id, manager_name?.trim() || null, email, password
-    );
-    iamSkipped = result.iamSkipped;
-  }
-
-  return NextResponse.json({ center, iamSkipped });
+  return NextResponse.json({ center, access_code });
 }
