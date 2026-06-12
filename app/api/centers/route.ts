@@ -2,21 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 
-// Generate center_code from official LGO code or auto-sequence
+// Generate center_code: อปท 8-digit code, or CEN-NNNNNN for non-อปท centers
 async function buildCenterCode(
   officialLgoCode: string | null | undefined,
   supabase: ReturnType<typeof createAdminClient>
 ): Promise<string> {
   const lgo = officialLgoCode?.replace(/\D/g, "");
-  if (lgo?.length === 8) return `RRB-${lgo}`;
+  if (lgo?.length === 8) return lgo;
 
-  // Auto-sequence for non-LGO centers: RRB-CEN-000001
+  // Auto-sequence for non-อปท centers
   const { count } = await supabase
     .from("centers")
     .select("id", { count: "exact", head: true })
-    .like("center_code", "RRB-CEN-%");
+    .like("center_code", "CEN-%");
   const seq = String((count ?? 0) + 1).padStart(6, "0");
-  return `RRB-CEN-${seq}`;
+  return `CEN-${seq}`;
 }
 
 export async function POST(req: NextRequest) {

@@ -22,7 +22,7 @@ function parseLgoCode(code: string) {
     province: d.slice(2, 4),
     district: d.slice(4, 6),
     seq: d.slice(6, 8),
-    centerCode: `RRB-${d}`,
+    centerCode: d,
   };
 }
 
@@ -132,7 +132,7 @@ export default function NewCenterPage() {
               <p className="text-[10px] text-gold-600">ลำดับ: <span className="font-medium">{parsed.seq}</span></p>
             </div>
             <div className="flex items-center gap-2 mt-1 pt-1 border-t border-gold-200">
-              <p className="text-[10px] text-gold-500">รหัสศูนย์ที่จะได้:</p>
+              <p className="text-[10px] text-gold-500">รหัสศูนย์ (= รหัส อปท.):</p>
               <span className="text-xs font-bold text-gold-800 font-mono tracking-wider">{parsed.centerCode}</span>
             </div>
           </div>
@@ -231,8 +231,8 @@ export default function NewCenterPage() {
       </button>
 
       <p className="text-center text-[10px] text-gold-400 leading-relaxed">
-        รหัสศูนย์จะถูกกำหนดอัตโนมัติจากรหัส อปท.<br />
-        login เข้าศูนย์ใช้บัญชีผู้ใช้รายคน ไม่ใช้รหัสศูนย์เป็นรหัสผ่าน
+        รหัสศูนย์ = รหัส อปท. 8 หลัก (เช่น 05620601)<br />
+        ใช้เป็น login code และ prefix ของลิงค์งานทุกงานในศูนย์นี้
       </p>
       <div className="h-2" />
     </div>
