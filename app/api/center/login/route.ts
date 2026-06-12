@@ -17,10 +17,15 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient();
+  const codeFilter = [
+    `access_code.ilike.${code}`,
+    `center_code.ilike.${code}`,
+    `official_lgo_code.ilike.${code}`,
+  ].join(",");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center } = await (supabase.from("centers") as any)
     .select("id, name, status")
-    .ilike("access_code", code)
+    .or(codeFilter)
     .maybeSingle();
 
   if (!center || center.status !== "active") {
