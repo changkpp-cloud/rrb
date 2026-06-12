@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, KeyRound } from "lucide-react";
+import { KeyRound } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
 export default function CenterLoginClient() {
@@ -38,15 +38,15 @@ export default function CenterLoginClient() {
 
           <div className="text-center space-y-2">
             <div className="w-16 h-16 rounded-full bg-gold-100 border-2 border-gold-300 flex items-center justify-center mx-auto">
-              <Building2 className="w-8 h-8 text-gold-600" />
+              <KeyRound className="w-8 h-8 text-gold-600" />
             </div>
             <h2 className="text-xl font-bold text-gold-800">เข้าสู่ระบบศูนย์บริหาร</h2>
-            <p className="text-xs text-gold-500">ใช้รหัสศูนย์ที่ได้รับจากผู้ดูแลระบบ</p>
+            <p className="text-xs text-gold-500">กรอกรหัสที่ได้รับจากผู้ดูแลระบบ</p>
           </div>
 
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 space-y-4">
             <label className="block space-y-1.5">
-              <span className="text-xs font-semibold text-gold-700">รหัสศูนย์</span>
+              <span className="text-xs font-semibold text-gold-700">รหัสเข้าใช้งาน</span>
               <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
                 <KeyRound className="w-4 h-4 text-gold-400 shrink-0" />
                 <input
@@ -54,15 +54,15 @@ export default function CenterLoginClient() {
                   value={code}
                   onChange={e => setCode(e.target.value)}
                   onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  placeholder="เช่น 05620601"
-                  name="center-code"
+                  placeholder=""
+                  name="rrb-center-token-entry"
                   className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm font-mono tracking-widest"
-                  autoComplete="off"
+                  autoComplete="new-password"
                   autoCorrect="off"
+                  autoCapitalize="none"
                   spellCheck={false}
                 />
               </div>
-              <p className="text-[10px] text-gold-400">รหัส อปท. 8 หลัก หรือรหัสศูนย์ที่ได้รับ</p>
             </label>
 
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
