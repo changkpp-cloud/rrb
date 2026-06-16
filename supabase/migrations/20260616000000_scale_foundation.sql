@@ -185,11 +185,8 @@ RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE
   v_center_id uuid;
 BEGIN
-  v_center_id := COALESCE(NEW.center_id, OLD.center_id);
-  IF v_center_id IS NULL THEN
-    SELECT center_id INTO v_center_id
-      FROM memorials WHERE id = COALESCE(NEW.memorial_id, OLD.memorial_id);
-  END IF;
+  SELECT center_id INTO v_center_id
+    FROM memorials WHERE id = COALESCE(NEW.memorial_id, OLD.memorial_id);
   IF v_center_id IS NULL THEN RETURN COALESCE(NEW, OLD); END IF;
 
   IF TG_OP = 'INSERT' THEN
@@ -348,15 +345,15 @@ ON CONFLICT (center_id) DO UPDATE SET
 
 WITH ds AS (
   SELECT
-    COALESCE(d.center_id, m.center_id)                            AS center_id,
+    m.center_id,
     COUNT(d.id)                                                   AS total_donations,
     COUNT(d.id) FILTER (WHERE d.status = 'confirmed')            AS confirmed_donations,
     COALESCE(SUM(d.amount) FILTER (WHERE d.status = 'confirmed'), 0) AS total_amount,
     COUNT(d.id) FILTER (WHERE d.status = 'confirmed')            AS wreaths_reduced
   FROM donations d
   JOIN memorials m ON m.id = d.memorial_id
-  WHERE COALESCE(d.center_id, m.center_id) IS NOT NULL
-  GROUP BY COALESCE(d.center_id, m.center_id)
+  WHERE m.center_id IS NOT NULL
+  GROUP BY m.center_id
 )
 INSERT INTO tenant_stats (center_id, total_donations, confirmed_donations, total_amount, wreaths_reduced)
 SELECT center_id, total_donations, confirmed_donations, total_amount, wreaths_reduced
