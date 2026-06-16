@@ -42,23 +42,23 @@ type DonationRow = {
 
 async function getReports(centerId: string) {
   const supabase = createAdminClient();
-  const [{ data: memorialsData }, { data: donationsData }] = await Promise.all([
-    supabase
-      .from("memorials")
-      .select("id, name, ceremony_date, funeral_status, center_id, host_name, host_phone, host_bank_name, host_bank_account_number, host_bank_account_name")
-      .eq("center_id", centerId)
-      .in("funeral_status", ["active", "closed"])
-      .order("ceremony_date", { ascending: false })
-      .limit(80),
-    supabase
-      .from("donations")
-      .select("memorial_id, donor_name, amount, status, nameplate_status")
-      .limit(1000),
-  ]);
-
+  const { data: memorialsData } = await supabase
+    .from("memorials")
+    .select("id, name, ceremony_date, funeral_status, center_id, host_name, host_phone, host_bank_name, host_bank_account_number, host_bank_account_name")
+    .eq("center_id", centerId)
+    .in("funeral_status", ["active", "closed"])
+    .order("ceremony_date", { ascending: false })
+    .limit(80);
   const memorials = ((memorialsData ?? []) as MemorialRow[]).filter((m) => m.center_id === centerId);
   const memorialIds = new Set(memorials.map((m) => m.id));
-  const donations = ((donationsData ?? []) as DonationRow[]).filter((d) => memorialIds.has(d.memorial_id));
+  const { data: donationsData } = memorials.length > 0
+    ? await supabase
+        .from("donations")
+        .select("memorial_id, donor_name, amount, status, nameplate_status")
+        .in("memorial_id", [...memorialIds])
+        .limit(3000)
+    : { data: [] };
+  const donations = (donationsData ?? []) as DonationRow[];
 
   const donationMap = new Map<string, DonationRow[]>();
   for (const d of donations) {

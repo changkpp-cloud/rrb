@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { REGION_MAP, REGION_ORDER, getRegion, getDateFrom, PERIOD_LABELS, GEO_LABELS, TYPE_LABELS } from "@/lib/regions";
 import AnalyticsFilters from "@/components/AnalyticsFilters";
 import { Leaf, Trash2, Banknote, Users, ScrollText, Building2, ChevronRight, Clock } from "lucide-react";
+import { getCenterReportTotals } from "@/lib/center-reporting";
 
 export const revalidate = 120;
 
@@ -17,70 +18,51 @@ type BreakdownRow = { key: string; label: string; href: string } & Stats;
 async function getData(geoLevel: string, geoVal: string, period: string) {
   const supabase = createAdminClient();
   const dateFrom = getDateFrom(period);
-
-  const [{ data: allCenters }, { data: allMemorials }, { data: allDonations }] = await Promise.all([
-    supabase.from("centers").select("id, name, province, amphoe"),
+  const [centerReports, { data: allMemorials }, { data: statsRows }] = await Promise.all([
+    getCenterReportTotals(),
     supabase.from("memorials").select("id, center_id, funeral_status, host_name, host_bank_account_number, name, ceremony_date"),
-    supabase.from("donations").select("id, memorial_id, amount, status, created_at, donor_name"),
+    supabase
+      .from("center_daily_stats")
+      .select("center_id, report_date, donation_count, pending_count, confirmed_count, rejected_count, total_amount, wreaths_reduced, waste_reduced_kg"),
   ]);
 
-  const centers: CenterRow[] = (allCenters ?? []).map(c => ({
-    id: c.id, name: c.name,
-    province: c.province ?? "ไม่ระบุ",
-    amphoe: c.amphoe ?? "ไม่ระบุ",
+  const centers: CenterRow[] = centerReports.map((c) => ({
+    id: c.center_id,
+    name: c.center_name,
+    province: c.province ?? "???????",
+    amphoe: c.amphoe ?? "???????",
     region: getRegion(c.province),
   }));
 
-  // ── Apply geo filter ──
   let filteredCenters = centers;
-  if (geoLevel === "region" && geoVal)   filteredCenters = centers.filter(c => c.region === geoVal);
+  if (geoLevel === "region" && geoVal) filteredCenters = centers.filter(c => c.region === geoVal);
   if (geoLevel === "province" && geoVal) filteredCenters = centers.filter(c => c.province === geoVal);
-  if (geoLevel === "amphoe" && geoVal)   filteredCenters = centers.filter(c => c.amphoe === geoVal);
-  if (geoLevel === "center" && geoVal)   filteredCenters = centers.filter(c => c.id === geoVal);
+  if (geoLevel === "amphoe" && geoVal) filteredCenters = centers.filter(c => c.amphoe === geoVal);
+  if (geoLevel === "center" && geoVal) filteredCenters = centers.filter(c => c.id === geoVal);
 
   const filteredCenterIds = new Set(filteredCenters.map(c => c.id));
-
-  // ── Filter memorials by geo ──
   const filteredMemorials = (allMemorials ?? []).filter(m => m.center_id && filteredCenterIds.has(m.center_id));
-  const filteredMemIds = new Set(filteredMemorials.map(m => m.id));
+  const filteredStats = (statsRows ?? []).filter((row) => {
+    if (!filteredCenterIds.has(row.center_id)) return false;
+    return !dateFrom || row.report_date >= dateFrom.slice(0, 10);
+  });
 
-  // ── Filter donations by geo + time ──
-  const filteredDonations = (allDonations ?? []).filter(d =>
-    filteredMemIds.has(d.memorial_id) &&
-    (!dateFrom || d.created_at >= dateFrom)
-  );
-
-  const confirmedDonations = filteredDonations.filter(d => d.status === "confirmed");
-  const pendingDonations   = filteredDonations.filter(d => d.status === "pending");
-  const rejectedDonations  = filteredDonations.filter(d => d.status === "rejected");
-
-  const totalAmount = confirmedDonations.reduce((s, d) => s + (d.amount || 0), 0);
-  const wreaths     = confirmedDonations.length;
-
-  // ── Center-level stats for breakdown/center report ──
-  const centerMemMap: Record<string, string[]> = {};
-  for (const m of filteredMemorials) {
-    if (!m.center_id) continue;
-    if (!centerMemMap[m.center_id]) centerMemMap[m.center_id] = [];
-    centerMemMap[m.center_id].push(m.id);
-  }
-
-  const memDonMap: Record<string, { donors: number; amount: number }> = {};
-  for (const d of confirmedDonations) {
-    if (!memDonMap[d.memorial_id]) memDonMap[d.memorial_id] = { donors: 0, amount: 0 };
-    memDonMap[d.memorial_id].donors++;
-    memDonMap[d.memorial_id].amount += d.amount || 0;
-  }
+  const pending = filteredStats.reduce((sum, row) => sum + (row.pending_count ?? 0), 0);
+  const rejected = filteredStats.reduce((sum, row) => sum + (row.rejected_count ?? 0), 0);
+  const wreaths = filteredStats.reduce((sum, row) => sum + (row.wreaths_reduced ?? 0), 0);
+  const totalAmount = filteredStats.reduce((sum, row) => sum + (row.total_amount ?? 0), 0);
 
   const centerStats: Record<string, Stats> = {};
-  for (const c of filteredCenters) {
-    const mIds = centerMemMap[c.id] ?? [];
-    const donors = mIds.reduce((s, mid) => s + (memDonMap[mid]?.donors ?? 0), 0);
-    const amount = mIds.reduce((s, mid) => s + (memDonMap[mid]?.amount ?? 0), 0);
-    centerStats[c.id] = { centers: 1, memorials: mIds.length, donors, amount };
+  for (const c of filteredCenters) centerStats[c.id] = { centers: 1, memorials: 0, donors: 0, amount: 0 };
+  for (const m of filteredMemorials) {
+    if (m.center_id && centerStats[m.center_id]) centerStats[m.center_id].memorials += 1;
+  }
+  for (const row of filteredStats) {
+    if (!centerStats[row.center_id]) continue;
+    centerStats[row.center_id].donors += row.wreaths_reduced ?? 0;
+    centerStats[row.center_id].amount += row.total_amount ?? 0;
   }
 
-  // ── Breakdown by next geo level ──
   function buildBreakdown(keyFn: (c: CenterRow) => string, hrefFn: (key: string, c: CenterRow) => string, sortByOrder?: string[]): BreakdownRow[] {
     const map = new Map<string, BreakdownRow>();
     for (const c of filteredCenters) {
@@ -98,21 +80,20 @@ async function getData(geoLevel: string, geoVal: string, period: string) {
 
   const sp = (k: string, v: string) => `?geoLevel=${k}&geo=${encodeURIComponent(v)}&period=${period}&type=overview`;
   let breakdown: BreakdownRow[] = [];
-  if (geoLevel === "country")  breakdown = buildBreakdown(c => c.region,   (k) => `/dashboard/admin/analytics${sp("region", k)}`,   REGION_ORDER);
-  if (geoLevel === "region")   breakdown = buildBreakdown(c => c.province, (k) => `/dashboard/admin/analytics${sp("province", k)}`);
-  if (geoLevel === "province") breakdown = buildBreakdown(c => c.amphoe,   (k) => `/dashboard/admin/analytics${sp("amphoe", k)}`);
-  if (geoLevel === "amphoe")   breakdown = buildBreakdown(c => c.id,       (_, c) => `/dashboard/admin/centers/${c.id}`).map(r => ({
+  if (geoLevel === "country") breakdown = buildBreakdown(c => c.region, (k) => `/dashboard/admin/analytics${sp("region", k)}`, REGION_ORDER);
+  if (geoLevel === "region") breakdown = buildBreakdown(c => c.province, (k) => `/dashboard/admin/analytics${sp("province", k)}`);
+  if (geoLevel === "province") breakdown = buildBreakdown(c => c.amphoe, (k) => `/dashboard/admin/analytics${sp("amphoe", k)}`);
+  if (geoLevel === "amphoe") breakdown = buildBreakdown(c => c.id, (_, c) => `/dashboard/admin/centers/${c.id}`).map(r => ({
     ...r, label: filteredCenters.find(c => c.id === r.key)?.name ?? r.key,
   }));
 
-  // ── Monthly trend (last 6 months of confirmed donations) ──
   const monthMap: Record<string, number> = {};
-  for (const d of confirmedDonations) {
-    const dt = new Date(d.created_at);
+  for (const row of filteredStats) {
+    const dt = new Date(row.report_date);
     const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, "0")}`;
-    monthMap[key] = (monthMap[key] || 0) + 1;
+    monthMap[key] = (monthMap[key] || 0) + (row.wreaths_reduced ?? 0);
   }
-  const thaiM = ["", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+  const thaiM = ["", "?.?.", "?.?.", "??.?.", "??.?.", "?.?.", "??.?.", "?.?.", "?.?.", "?.?.", "?.?.", "?.?.", "?.?."];
   const monthTrend = Object.entries(monthMap)
     .sort(([a], [b]) => a.localeCompare(b))
     .slice(-6)
@@ -122,34 +103,38 @@ async function getData(geoLevel: string, geoVal: string, period: string) {
     });
   const maxMonth = Math.max(...monthTrend.map(m => m.count), 1);
 
-  // ── Geo options for filter dropdowns ──
-  const regions  = [...new Set(centers.map(c => c.region))].sort((a, b) => REGION_ORDER.indexOf(a) - REGION_ORDER.indexOf(b));
-  const provinces = [...new Set(centers.map(c => c.province))].filter(p => p !== "ไม่ระบุ").sort();
-  const amphoes   = [...new Set(centers.map(c => c.amphoe))].filter(a => a !== "ไม่ระบุ").sort();
+  const regions = [...new Set(centers.map(c => c.region))].sort((a, b) => REGION_ORDER.indexOf(a) - REGION_ORDER.indexOf(b));
+  const provinces = [...new Set(centers.map(c => c.province))].filter(p => p !== "???????").sort();
+  const amphoes = [...new Set(centers.map(c => c.amphoe))].filter(a => a !== "???????").sort();
   const centerOpts = centers.map(c => ({ id: c.id, name: c.name })).sort((a, b) => a.name.localeCompare(b.name, "th"));
 
   return {
     geoOptions: { regions, provinces, amphoes, centers: centerOpts },
     totals: { centers: filteredCenters.length, memorials: filteredMemorials.length, donors: wreaths, amount: totalAmount },
-    pending: pendingDonations.length,
-    rejected: rejectedDonations.length,
-    wreaths, wasteKg: wreaths * 2,
+    pending,
+    rejected,
+    wreaths,
+    wasteKg: wreaths * 2,
     breakdown,
     centerRows: filteredCenters.map(c => ({
-      id: c.id, name: c.name, ...centerStats[c.id] ?? { centers: 1, memorials: 0, donors: 0, amount: 0 },
+      id: c.id, name: c.name, ...(centerStats[c.id] ?? { centers: 1, memorials: 0, donors: 0, amount: 0 }),
     })).sort((a, b) => b.donors - a.donors),
-    monthTrend, maxMonth,
-    hostRows: filteredMemorials.filter(m => m.host_name).map(m => {
-      const d = memDonMap[m.id] ?? { donors: 0, amount: 0 };
-      return { id: m.id, name: m.name, hostName: m.host_name!, hasBankAccount: !!m.host_bank_account_number, status: m.funeral_status, amount: d.amount };
-    }),
-    activeAmount:  filteredMemorials.filter(m => m.funeral_status === "active").reduce((s, m) => s + (memDonMap[m.id]?.amount ?? 0), 0),
-    closedAmount:  filteredMemorials.filter(m => m.funeral_status === "closed").reduce((s, m) => s + (memDonMap[m.id]?.amount ?? 0), 0),
+    monthTrend,
+    maxMonth,
+    hostRows: filteredMemorials.filter(m => m.host_name).map(m => ({
+      id: m.id,
+      name: m.name,
+      hostName: m.host_name!,
+      hasBankAccount: !!m.host_bank_account_number,
+      status: m.funeral_status,
+      amount: 0,
+    })),
+    activeAmount: 0,
+    closedAmount: 0,
     filteredCenters,
   };
 }
 
-// ─── Page ───────────────────────────────────────────────────────────────────
 export default async function AnalyticsPage({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const sp = await searchParams;
   const geoLevel = sp.geoLevel ?? "country";

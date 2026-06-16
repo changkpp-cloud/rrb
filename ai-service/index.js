@@ -11,8 +11,11 @@ const PORT = process.env.PORT || 3001;
 
 const AI_SERVICE_SECRET = process.env.AI_SERVICE_SECRET;
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1";
-const IMAGE_SIZE = process.env.OPENAI_IMAGE_SIZE || "1024x1536";
+const MODEL = process.env.OPENAI_IMAGE_MODEL || "gpt-image-1-mini";
+const IMAGE_SIZE = process.env.OPENAI_IMAGE_SIZE || "1024x1024";
+const IMAGE_QUALITY = process.env.OPENAI_IMAGE_QUALITY || "high";
+const IMAGE_OUTPUT_FORMAT = process.env.OPENAI_IMAGE_OUTPUT_FORMAT || "jpeg";
+const IMAGE_OUTPUT_COMPRESSION = process.env.OPENAI_IMAGE_OUTPUT_COMPRESSION || "72";
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || "*";
 
 if (!AI_SERVICE_SECRET) console.warn("[warn] AI_SERVICE_SECRET is not set — all requests will be rejected");
@@ -75,7 +78,7 @@ app.post("/generate", upload.fields([
 
   if (!prompt) return res.status(400).json({ error: "prompt is required" });
 
-  console.log(`[generate] count=${count} hasPhoto=${!!donorPhoto} model=${MODEL}`);
+  console.log(`[generate] count=${count} hasPhoto=${!!donorPhoto} model=${MODEL} size=${IMAGE_SIZE} quality=${IMAGE_QUALITY}`);
 
   try {
     let images;
@@ -87,9 +90,9 @@ app.post("/generate", upload.fields([
       formData.append("prompt", prompt);
       formData.append("n", String(count));
       formData.append("size", IMAGE_SIZE);
-      formData.append("quality", "high");
-      formData.append("output_format", "jpeg");
-      formData.append("output_compression", "85");
+      formData.append("quality", IMAGE_QUALITY);
+      formData.append("output_format", IMAGE_OUTPUT_FORMAT);
+      formData.append("output_compression", IMAGE_OUTPUT_COMPRESSION);
       const blob = new Blob([donorPhoto.buffer], {
         type: donorPhoto.mimetype || "image/jpeg",
       });
@@ -129,9 +132,9 @@ app.post("/generate", upload.fields([
           prompt,
           n: count,
           size: IMAGE_SIZE,
-          quality: "high",
-          output_format: "jpeg",
-          output_compression: 85,
+          quality: IMAGE_QUALITY,
+          output_format: IMAGE_OUTPUT_FORMAT,
+          output_compression: Number(IMAGE_OUTPUT_COMPRESSION),
         }),
         signal: AbortSignal.timeout(180_000),
       });
@@ -163,5 +166,5 @@ app.post("/generate", upload.fields([
 app.get("/health", (_req, res) => res.json({ status: "ok", model: MODEL }));
 
 app.listen(PORT, () => {
-  console.log(`AI service ready on port ${PORT} | model=${MODEL} size=${IMAGE_SIZE}`);
+  console.log(`AI service ready on port ${PORT} | model=${MODEL} size=${IMAGE_SIZE} quality=${IMAGE_QUALITY}`);
 });

@@ -39,14 +39,14 @@ export async function PATCH(req: NextRequest) {
       .limit(1)
       .single();
 
-    if (!existing) {
+    const existingMemorial = existing as { id: string } | null;
+    if (!existingMemorial) {
       return NextResponse.json({ ok: true, demo: true });
     }
 
-    const { error } = await supabase
-      .from("memorials")
+    const { error } = await (supabase.from("memorials") as any)
       .update(updates)
-      .eq("id", existing.id);
+      .eq("id", existingMemorial.id);
 
     if (error) throw error;
     return NextResponse.json({ ok: true });

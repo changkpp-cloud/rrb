@@ -1,5 +1,6 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { Leaf, Trash2, Banknote, Users, Building2, ScrollText } from "lucide-react";
+import { getCenterReportTotals } from "@/lib/center-reporting";
 
 export const revalidate = 300;
 
@@ -8,31 +9,30 @@ const KG_PER_WREATH = 2;
 async function getESGData() {
   const supabase = createAdminClient();
   const [
-    { data: donations },
+    centerReports,
+    { data: statsRows },
     { count: totalCenters },
     { count: activeMemorials },
     { count: closedMemorials },
-    { data: memorialsWithCenter },
   ] = await Promise.all([
-    supabase.from("donations").select("amount, status, created_at, memorial_id"),
+    getCenterReportTotals(),
+    supabase.from("center_daily_stats").select("report_date, wreaths_reduced"),
     supabase.from("centers").select("*", { count: "exact", head: true }).eq("status", "active"),
     supabase.from("memorials").select("*", { count: "exact", head: true }).eq("funeral_status", "active"),
     supabase.from("memorials").select("*", { count: "exact", head: true }).eq("funeral_status", "closed"),
-    supabase.from("memorials").select("id, center_id").not("center_id", "is", null),
   ]);
 
-  const confirmed = donations?.filter(d => d.status === "confirmed") ?? [];
-  const totalDonors = confirmed.length;
-  const totalAmount = confirmed.reduce((s, d) => s + (d.amount || 0), 0);
+  const totalDonors = centerReports.reduce((sum, row) => sum + row.confirmed_count, 0);
+  const totalAmount = centerReports.reduce((sum, row) => sum + row.total_amount, 0);
   const wreaths = totalDonors;
   const wasteKg = wreaths * KG_PER_WREATH;
 
   // Monthly breakdown (last 6 months)
   const monthlyMap: Record<string, number> = {};
-  for (const d of confirmed) {
-    const date = new Date(d.created_at);
+  for (const row of statsRows ?? []) {
+    const date = new Date(row.report_date);
     const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
-    monthlyMap[key] = (monthlyMap[key] || 0) + 1;
+    monthlyMap[key] = (monthlyMap[key] || 0) + (row.wreaths_reduced ?? 0);
   }
   const months = Object.entries(monthlyMap)
     .sort(([a], [b]) => a.localeCompare(b))
@@ -49,26 +49,10 @@ async function getESGData() {
 
   const maxMonth = Math.max(...months.map(m => m.count), 1);
 
-  // Per-center breakdown
-  const memIdToCenterId: Record<string, string> = {};
-  for (const m of memorialsWithCenter ?? []) {
-    if (m.center_id) memIdToCenterId[m.id] = m.center_id;
-  }
-  const centerWreaths: Record<string, number> = {};
-  for (const d of confirmed) {
-    const centerId = memIdToCenterId[d.memorial_id];
-    if (centerId) centerWreaths[centerId] = (centerWreaths[centerId] || 0) + 1;
-  }
-
-  const centerIds = Object.keys(centerWreaths);
-  let topCenters: { name: string; wreaths: number }[] = [];
-  if (centerIds.length > 0) {
-    const { data: centers } = await supabase.from("centers").select("id, name").in("id", centerIds);
-    topCenters = (centers ?? [])
-      .map(c => ({ name: c.name, wreaths: centerWreaths[c.id] || 0 }))
-      .sort((a, b) => b.wreaths - a.wreaths)
-      .slice(0, 5);
-  }
+  const topCenters = centerReports
+    .map((center) => ({ name: center.center_name, wreaths: center.wreaths_reduced }))
+    .sort((a, b) => b.wreaths - a.wreaths)
+    .slice(0, 5);
 
   return {
     totalDonors, totalAmount, wreaths, wasteKg,

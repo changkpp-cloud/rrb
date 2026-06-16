@@ -6,6 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "load:donations": "node scripts/load-donations.mjs",
+    "test:policy": "node --experimental-strip-types tests/donation-policy.test.ts",
     "lint": "next lint"
   },
   "dependencies": {

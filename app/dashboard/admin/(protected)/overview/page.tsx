@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterReportTotals } from "@/lib/center-reporting";
 import {
   AlertTriangle,
   ArrowUpRight,
@@ -39,14 +40,6 @@ type MemorialRow = {
   host_bank_account_number: string | null;
 };
 
-type DonationRow = {
-  id: string;
-  memorial_id: string;
-  amount: number | null;
-  status: string | null;
-  created_at: string;
-};
-
 function shortMoney(value: number) {
   if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(1)}M`;
   if (value >= 100_000) return `${(value / 1_000).toFixed(0)}K`;
@@ -70,76 +63,50 @@ function monthLabel(key: string) {
 
 async function getAnalytics() {
   const supabase = createAdminClient();
+  const centerReports = await getCenterReportTotals();
 
-  const [{ data: centers }, { data: memorials }, { data: donations }] = await Promise.all([
+  const [{ data: centers }, { data: memorials }, { data: monthlyStats }] = await Promise.all([
     supabase.from("centers").select("id, name, province, amphoe, status"),
     supabase.from("memorials").select("id, name, center_id, funeral_status, ceremony_date, created_at, host_bank_account_number"),
-    supabase.from("donations").select("id, memorial_id, amount, status, created_at"),
+    supabase.from("center_daily_stats").select("report_date, total_amount, confirmed_count"),
   ]);
 
   const centerRows = (centers ?? []) as CenterRow[];
   const memorialRows = (memorials ?? []) as MemorialRow[];
-  const donationRows = (donations ?? []) as DonationRow[];
-
-  const confirmed = donationRows.filter((d) => d.status === "confirmed");
-  const pending = donationRows.filter((d) => d.status === "pending");
-  const rejected = donationRows.filter((d) => d.status === "rejected");
-  const totalAmount = confirmed.reduce((sum, d) => sum + (d.amount || 0), 0);
-  const avgDonation = confirmed.length ? totalAmount / confirmed.length : 0;
-  const confirmationRate = donationRows.length ? (confirmed.length / donationRows.length) * 100 : 0;
-  const rejectionRate = donationRows.length ? (rejected.length / donationRows.length) * 100 : 0;
+  const donationCount = centerReports.reduce((sum, row) => sum + row.donation_count, 0);
+  const confirmedCount = centerReports.reduce((sum, row) => sum + row.confirmed_count, 0);
+  const pendingCount = centerReports.reduce((sum, row) => sum + row.pending_count, 0);
+  const rejectedCount = centerReports.reduce((sum, row) => sum + row.rejected_count, 0);
+  const totalAmount = centerReports.reduce((sum, row) => sum + row.total_amount, 0);
+  const avgDonation = confirmedCount ? totalAmount / confirmedCount : 0;
+  const confirmationRate = donationCount ? (confirmedCount / donationCount) * 100 : 0;
+  const rejectionRate = donationCount ? (rejectedCount / donationCount) * 100 : 0;
 
   const now = new Date();
   const thisMonth = monthKey(now);
   const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
   const lastMonth = monthKey(lastMonthDate);
-  const amountThisMonth = confirmed
-    .filter((d) => monthKey(new Date(d.created_at)) === thisMonth)
-    .reduce((sum, d) => sum + (d.amount || 0), 0);
-  const amountLastMonth = confirmed
-    .filter((d) => monthKey(new Date(d.created_at)) === lastMonth)
-    .reduce((sum, d) => sum + (d.amount || 0), 0);
+  const monthRows = monthlyStats ?? [];
+  const amountThisMonth = monthRows
+    .filter((row) => monthKey(new Date(row.report_date)) === thisMonth)
+    .reduce((sum, row) => sum + (row.total_amount || 0), 0);
+  const amountLastMonth = monthRows
+    .filter((row) => monthKey(new Date(row.report_date)) === lastMonth)
+    .reduce((sum, row) => sum + (row.total_amount || 0), 0);
   const monthGrowth = amountLastMonth > 0 ? ((amountThisMonth - amountLastMonth) / amountLastMonth) * 100 : amountThisMonth > 0 ? 100 : 0;
 
-  const memorialById = new Map(memorialRows.map((m) => [m.id, m]));
-  const centerStats = new Map<string, { id: string; name: string; province: string; active: number; closed: number; memorials: number; donors: number; amount: number; pending: number }>();
-
-  for (const center of centerRows) {
-    centerStats.set(center.id, {
-      id: center.id,
-      name: center.name,
-      province: center.province || "ไม่ระบุจังหวัด",
-      active: 0,
-      closed: 0,
-      memorials: 0,
-      donors: 0,
-      amount: 0,
-      pending: 0,
-    });
-  }
-
-  for (const memorial of memorialRows) {
-    if (!memorial.center_id) continue;
-    const stat = centerStats.get(memorial.center_id);
-    if (!stat) continue;
-    stat.memorials += 1;
-    if (memorial.funeral_status === "active") stat.active += 1;
-    if (memorial.funeral_status === "closed") stat.closed += 1;
-  }
-
-  for (const donation of donationRows) {
-    const memorial = memorialById.get(donation.memorial_id);
-    if (!memorial?.center_id) continue;
-    const stat = centerStats.get(memorial.center_id);
-    if (!stat) continue;
-    if (donation.status === "confirmed") {
-      stat.donors += 1;
-      stat.amount += donation.amount || 0;
-    }
-    if (donation.status === "pending") stat.pending += 1;
-  }
-
-  const topCenters = [...centerStats.values()]
+  const topCenters = centerReports
+    .map((row) => ({
+      id: row.center_id,
+      name: row.center_name,
+      province: row.province,
+      active: row.active_memorials,
+      closed: row.closed_memorials,
+      memorials: row.memorials,
+      donors: row.confirmed_count,
+      amount: row.total_amount,
+      pending: row.pending_count,
+    }))
     .filter((center) => center.memorials > 0 || center.donors > 0 || center.amount > 0)
     .sort((a, b) => b.amount - a.amount)
     .slice(0, 5);
@@ -154,19 +121,19 @@ async function getAnalytics() {
   });
   const activeWithoutHostBank = memorialRows.filter((m) => m.funeral_status === "active" && !m.host_bank_account_number);
   const inactiveCenters = centerRows.filter((c) => c.status !== "active");
-  const pendingRatio = donationRows.length ? (pending.length / donationRows.length) * 100 : 0;
+  const pendingRatio = donationCount ? (pendingCount / donationCount) * 100 : 0;
 
   const trendMap = new Map<string, { amount: number; donors: number }>();
   for (let i = 5; i >= 0; i--) {
     const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
     trendMap.set(monthKey(date), { amount: 0, donors: 0 });
   }
-  for (const donation of confirmed) {
-    const key = monthKey(new Date(donation.created_at));
+  for (const stat of monthRows) {
+    const key = monthKey(new Date(stat.report_date));
     const row = trendMap.get(key);
     if (!row) continue;
-    row.amount += donation.amount || 0;
-    row.donors += 1;
+    row.amount += stat.total_amount || 0;
+    row.donors += stat.confirmed_count || 0;
   }
   const trend = [...trendMap.entries()].map(([key, value]) => ({ key, label: monthLabel(key), ...value }));
   const maxTrendAmount = Math.max(...trend.map((row) => row.amount), 1);
@@ -178,16 +145,16 @@ async function getAnalytics() {
       memorials: memorialRows.length,
       activeMemorials: memorialRows.filter((m) => m.funeral_status === "active").length,
       closedMemorials: memorialRows.filter((m) => m.funeral_status === "closed").length,
-      donors: confirmed.length,
-      pending: pending.length,
-      rejected: rejected.length,
+      donors: confirmedCount,
+      pending: pendingCount,
+      rejected: rejectedCount,
       amount: totalAmount,
       avgDonation,
       confirmationRate,
       rejectionRate,
       amountThisMonth,
       monthGrowth,
-      wasteKg: confirmed.length * 2,
+      wasteKg: confirmedCount * 2,
     },
     risk: {
       overdueActive: overdueActive.length,

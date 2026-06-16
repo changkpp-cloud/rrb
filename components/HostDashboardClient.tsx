@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Users, Download, Pencil } from "lucide-react";
+import { Users, Download, Pencil, ExternalLink } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostBankForm from "./HostBankForm";
@@ -233,7 +233,15 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
                     {d.message && <p className="text-[10px] text-gold-400 italic mt-0.5">"{d.message}"</p>}
                     <p className="text-[9px] text-gold-400 mt-0.5">{formatDateTime(d.created_at)}</p>
                   </div>
-                  <p className="text-sm font-bold text-gold-700 shrink-0">{d.amount.toLocaleString()} ฿</p>
+                  <div className="shrink-0 text-right">
+                    <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
+                    {d.slip_url && (
+                      <a href={`/api/donations/${d.id}/slip`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-[10px] text-blue-500 underline">
+                        <ExternalLink className="h-3 w-3" />
+                        ดูสลิป
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

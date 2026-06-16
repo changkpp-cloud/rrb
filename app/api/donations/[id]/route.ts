@@ -25,13 +25,19 @@ export async function PATCH(
     if (key in body) (update as Record<string, unknown>)[key] = body[key];
   }
 
+  if (typeof update.status === "string") {
+    update.reviewed_at = new Date().toISOString();
+    if (update.status === "confirmed") {
+      update.confirmed_at = update.reviewed_at;
+    }
+  }
+
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
-  let { data, error } = await supabase
-    .from("donations")
+  let { data, error } = await (supabase.from("donations") as any)
     .update(update)
     .eq("id", id)
     .select()
@@ -45,7 +51,7 @@ export async function PATCH(
       if (key in update) (baseUpdate as Record<string, unknown>)[key] = (update as Record<string, unknown>)[key];
     }
     if (Object.keys(baseUpdate).length > 0) {
-      ({ data, error } = await supabase.from("donations").update(baseUpdate).eq("id", id).select().single());
+      ({ data, error } = await (supabase.from("donations") as any).update(baseUpdate).eq("id", id).select().single());
     }
   }
 

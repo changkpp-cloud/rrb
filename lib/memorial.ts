@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Memorial } from "@/lib/supabase/types";
+import type { Center, Memorial } from "@/lib/supabase/types";
 
 export async function getMemorial(): Promise<Memorial | null> {
   try {
@@ -96,7 +96,7 @@ export async function getMemorialByHostCode(hostCode: string): Promise<Memorial 
   }
 }
 
-export async function getCenterById(centerId: string) {
+export async function getCenterById(centerId: string): Promise<Center | null> {
   try {
     const supabase = createAdminClient();
     const { data } = await supabase
@@ -104,7 +104,7 @@ export async function getCenterById(centerId: string) {
       .select("*")
       .eq("id", centerId)
       .single();
-    return data;
+    return data as Center | null;
   } catch {
     return null;
   }

@@ -37,8 +37,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "อีเมลนี้มีบัญชีในระบบแล้ว กรุณาให้แอดมินเพิ่มสิทธิ์ศูนย์" }, { status: 409 });
   }
 
-  const { data: existingRequest } = await supabase
-    .from("center_user_requests")
+  const { data: existingRequest } = await (supabase.from("center_user_requests") as any)
     .select("id")
     .eq("email", email)
     .eq("center_id", centerId)
@@ -49,7 +48,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "มีคำขอสมัครรออนุมัติอยู่แล้ว" }, { status: 409 });
   }
 
-  const { error } = await supabase.from("center_user_requests").insert({
+  const { error } = await (supabase.from("center_user_requests") as any).insert({
     center_id: centerId,
     email,
     display_name: displayName,

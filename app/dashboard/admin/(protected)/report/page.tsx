@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterReportTotals } from "@/lib/center-reporting";
 import { ChevronRight, Leaf, Banknote, Users, ScrollText, Building2, Map as MapIcon } from "lucide-react";
 
 export const revalidate = 300;
@@ -59,40 +59,17 @@ type AggRow = {
 
 // ─── Data fetching ────────────────────────────────────────────────────────────
 async function getAllData(): Promise<CenterRow[]> {
-  const supabase = createAdminClient();
-  const [{ data: centers }, { data: memorials }, { data: donations }] = await Promise.all([
-    supabase.from("centers").select("id, name, province, amphoe"),
-    supabase.from("memorials").select("id, center_id"),
-    supabase.from("donations").select("memorial_id, amount").eq("status", "confirmed"),
-  ]);
-
-  const donByMem: Record<string, { count: number; amount: number }> = {};
-  for (const d of donations ?? []) {
-    if (!donByMem[d.memorial_id]) donByMem[d.memorial_id] = { count: 0, amount: 0 };
-    donByMem[d.memorial_id].count++;
-    donByMem[d.memorial_id].amount += d.amount ?? 0;
-  }
-
-  const centerStats: Record<string, { memorials: number; donors: number; amount: number }> = {};
-  for (const m of memorials ?? []) {
-    if (!m.center_id) continue;
-    if (!centerStats[m.center_id]) centerStats[m.center_id] = { memorials: 0, donors: 0, amount: 0 };
-    centerStats[m.center_id].memorials++;
-    const d = donByMem[m.id] ?? { count: 0, amount: 0 };
-    centerStats[m.center_id].donors += d.count;
-    centerStats[m.center_id].amount += d.amount;
-  }
-
-  return (centers ?? []).map(c => ({
-    id: c.id,
-    name: c.name,
-    province: c.province ?? "ไม่ระบุ",
-    amphoe: c.amphoe ?? "ไม่ระบุ",
-    region: REGION_MAP[c.province ?? ""] ?? "อื่นๆ",
+  const rows = await getCenterReportTotals();
+  return rows.map(c => ({
+    id: c.center_id,
+    name: c.center_name,
+    province: c.province ?? "???????",
+    amphoe: c.amphoe ?? "???????",
+    region: REGION_MAP[c.province ?? ""] ?? "?????",
     centers: 1,
-    memorials: centerStats[c.id]?.memorials ?? 0,
-    donors: centerStats[c.id]?.donors ?? 0,
-    amount: centerStats[c.id]?.amount ?? 0,
+    memorials: c.memorials,
+    donors: c.confirmed_count,
+    amount: c.total_amount,
   }));
 }
 

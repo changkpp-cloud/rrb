@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
-import { ExternalLink, Users, Banknote, Clock, CheckCircle, XCircle } from "lucide-react";
+import { ExternalLink, Banknote } from "lucide-react";
 
 export const revalidate = 30;
 
@@ -9,7 +9,7 @@ async function getMemorialDetail(id: string) {
   const supabase = createAdminClient();
   const [{ data: memorial }, { data: donations }] = await Promise.all([
     supabase.from("memorials").select("*").eq("id", id).single(),
-    supabase.from("donations").select("*").eq("memorial_id", id).order("created_at", { ascending: false }),
+    supabase.from("donations").select("id, amount, status").eq("memorial_id", id).order("created_at", { ascending: false }),
   ]);
   if (!memorial) return null;
 
@@ -24,15 +24,8 @@ async function getMemorialDetail(id: string) {
   const rejected = donations?.filter(d => d.status === "rejected") ?? [];
   const totalAmount = confirmed.reduce((s, d) => s + (d.amount || 0), 0);
 
-  return { memorial, donations: donations ?? [], confirmed, pending, rejected, totalAmount, centerName };
+  return { memorial, donationCount: donations?.length ?? 0, confirmed, pending, rejected, totalAmount, centerName };
 }
-
-const STATUS_LABEL: Record<string, string> = { pending: "รอตรวจ", confirmed: "ยืนยัน", rejected: "ตีกลับ" };
-const STATUS_COLOR: Record<string, string> = {
-  pending: "bg-amber-50 text-amber-700",
-  confirmed: "bg-emerald-50 text-emerald-700",
-  rejected: "bg-red-50 text-red-600",
-};
 
 export default async function AdminMemorialDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -43,7 +36,7 @@ export default async function AdminMemorialDetailPage({ params }: { params: Prom
     </div>
   );
 
-  const { memorial: m, donations, confirmed, pending, rejected, totalAmount, centerName } = data;
+  const { memorial: m, donationCount, confirmed, pending, rejected, totalAmount, centerName } = data;
 
   return (
     <div className="space-y-4">
@@ -107,30 +100,12 @@ export default async function AdminMemorialDetailPage({ params }: { params: Prom
         </div>
       )}
 
-      {/* Donor list */}
-      <div>
-        <p className="text-xs font-semibold text-gold-700 mb-2">รายชื่อผู้ร่วมบุญ ({donations.length})</p>
-        {donations.length === 0 ? (
-          <div className="bg-cream-50 rounded-2xl gold-border px-4 py-6 text-center">
-            <p className="text-sm text-gold-400">ยังไม่มีผู้ร่วมบุญ</p>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            {donations.map(d => (
-              <div key={d.id} className="flex items-center justify-between bg-cream-50 rounded-xl gold-border px-4 py-2.5">
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gold-800 truncate">
-                    {d.donor_title ? `${d.donor_title} ` : ""}{d.donor_name}
-                  </p>
-                  <p className="text-xs font-bold text-gold-600">{(d.amount || 0).toLocaleString()} บาท</p>
-                </div>
-                <span className={`text-[9px] px-2 py-0.5 rounded-full font-medium shrink-0 ml-2 ${STATUS_COLOR[d.status]}`}>
-                  {STATUS_LABEL[d.status]}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
+      <div className="bg-cream-50 rounded-2xl gold-border px-4 py-4">
+        <p className="text-xs font-semibold text-gold-700">????????????????????</p>
+        <p className="mt-1 text-[11px] leading-relaxed text-gold-600">
+          ?????????????????????????????????: {donationCount.toLocaleString("th-TH")} ?????? ??? {totalAmount.toLocaleString("th-TH")} ???
+          ?????????????????????????????????????????????????????????????????????????????????
+        </p>
       </div>
 
       <div className="h-2" />

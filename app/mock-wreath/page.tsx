@@ -8,9 +8,7 @@ import {
   ArrowLeft,
   Camera,
   Check,
-  Copy,
   Download,
-  Link2,
   Loader2,
   RefreshCw,
   Share2,
@@ -25,7 +23,7 @@ import {
 } from "@/lib/ai-photo-templates";
 
 const MOCK_WREATH_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const MOCK_WREATH_MAX_DIMENSION = 2048;
+const MOCK_WREATH_MAX_DIMENSION = 1024;
 const MOCK_WREATH_TIMEOUT_MS = 240_000;
 
 const DONOR_GENDER_OPTIONS = [
@@ -132,8 +130,6 @@ function MockWreathInner() {
   const [compressing, setCompressing] = useState(false);
   const [error, setError] = useState("");
   const [shared, setShared] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [pageUrl, setPageUrl] = useState("");
   const draftKey = useMemo(
     () =>
       [
@@ -331,32 +327,6 @@ function MockWreathInner() {
     setTimeout(() => setShared(false), 1800);
   }
 
-  useEffect(() => {
-    setPageUrl(window.location.href);
-  }, []);
-
-  async function handleCopyLink() {
-    await navigator.clipboard.writeText(window.location.href).catch(() => {});
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  }
-
-  async function handleShareLink() {
-    if (navigator.share) {
-      await navigator
-        .share({
-          title: "จำลองภาพมอบหรีดร่วมบุญ",
-          text: "ใช้เวลา 2-5 นาทีในการเจนภาพ กลับมาเข้าลิงค์นี้เพื่อรับภาพที่เสร็จแล้ว",
-          url: window.location.href,
-        })
-        .catch(() => {});
-      return;
-    }
-    await navigator.clipboard.writeText(window.location.href).catch(() => {});
-    setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 2000);
-  }
-
   const canGenerate = Boolean(donorPhoto) && Boolean(donorName.trim()) && !compressing;
 
   return (
@@ -543,36 +513,8 @@ function MockWreathInner() {
                   <p className="text-sm font-bold text-gold-800">ใช้เวลา 2–5 นาทีในการเจนภาพ</p>
                 </div>
                 <p className="text-xs leading-5 text-gold-600">
-                  แชร์
+                  ระบบกำลังประมวลผลภาพ กรุณารอสักครู่ หน้านี้จะแสดงผลภาพเมื่อเจนเสร็จ
                 </p>
-                <div className="flex items-center gap-2 rounded-xl border border-gold-200 bg-cream-50 px-3 py-2">
-                  <Link2 className="h-3.5 w-3.5 shrink-0 text-gold-400" />
-                  <span className="min-w-0 flex-1 truncate text-[11px] text-gold-600">
-                    {pageUrl}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="flex items-center justify-center gap-2 rounded-xl border-2 border-gold-300 bg-white py-2.5 text-sm font-semibold text-gold-700 transition hover:bg-cream-50"
-                  >
-                    {copiedLink ? (
-                      <Check className="h-4 w-4 text-emerald-500" />
-                    ) : (
-                      <Copy className="h-4 w-4" />
-                    )}
-                    {copiedLink ? "คัดลอกแล้ว" : "คัดลอกลิงค์"}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleShareLink}
-                    className="flex items-center justify-center gap-2 rounded-xl gold-gradient py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90"
-                  >
-                    <Share2 className="h-4 w-4" />
-                    แชร์
-                  </button>
-                </div>
               </div>
             )}
 
@@ -628,7 +570,7 @@ function MockWreathInner() {
                     className="flex items-center justify-center gap-2 rounded-xl border-2 border-gold-300 bg-white py-3 text-sm font-semibold text-gold-700"
                   >
                     <Share2 className="w-4 h-4" />
-                    {shared ? "คัดลอกลิงก์แล้ว" : "แชร์"}
+                    {shared ? "พร้อมแชร์แล้ว" : "แชร์"}
                   </button>
                 </div>
               </div>

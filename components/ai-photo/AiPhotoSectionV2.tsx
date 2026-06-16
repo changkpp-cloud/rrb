@@ -1,13 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, Copy, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
+import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
 import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const MAX_DIM = 2048;
+const MAX_DIM = 1024;
 
 const DONOR_GENDER_OPTIONS = [
   { value: "male", label: "ชาย" },
@@ -119,7 +119,6 @@ export default function AiPhotoSectionV2({
   const [creditUsed, setCreditUsed] = useState(false);
   const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
-  const [copiedJobUrl, setCopiedJobUrl] = useState(false);
   const donorRef = useRef<HTMLInputElement>(null);
   const draftKey = useMemo(
     () =>
@@ -413,33 +412,6 @@ export default function AiPhotoSectionV2({
     }
   }
 
-  async function copyJobUrl() {
-    if (!activeJob?.jobUrl) return;
-    const text = activeJob.status === "completed" && activeJob.imageUrl
-      ? `ภาพมอบหรีดพร้อมแล้ว เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพ: ${activeJob.jobUrl}`
-      : `กำลังสร้างภาพมอบหรีด เก็บลิงก์นี้ไว้เพื่อกลับมารับภาพภายหลัง: ${activeJob.jobUrl}`;
-    await navigator.clipboard.writeText(text);
-    setCopiedJobUrl(true);
-    setTimeout(() => setCopiedJobUrl(false), 1800);
-  }
-
-  async function shareJobUrl() {
-    if (!activeJob?.jobUrl) return;
-    if (navigator.share) {
-      const ready = activeJob.status === "completed" && activeJob.imageUrl;
-      await navigator.share({
-        title: ready ? "ภาพมอบหรีดพร้อมแล้ว" : "กำลังสร้างภาพมอบหรีด",
-        text: ready
-          ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพมอบหรีด"
-          : "เก็บลิงก์นี้ไว้ แล้วกลับมาเปิดเพื่อรับภาพมอบหรีดภายหลัง",
-        url: activeJob.jobUrl,
-      });
-      return;
-    }
-    await copyJobUrl();
-  }
-
-
   // ── Credit used + existing image ──
   if (creditUsed && (images.length > 0 || existingImageUrl)) {
     const displayImages = images.length > 0 ? images : existingImageUrl ? [existingImageUrl] : [];
@@ -570,38 +542,15 @@ export default function AiPhotoSectionV2({
               </p>
               <p className="mt-0.5 text-[10px] leading-relaxed text-emerald-700">
                 {activeJob.status === "completed"
-                  ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพได้ทุกเมื่อ"
-                  : "คัดลอกหรือแชร์ลิงก์นี้ไว้ได้ ออกจากหน้านี้แล้วกลับมาเปิดลิงก์เพื่อรับภาพภายหลัง"}
-              </p>
-              <p className="mt-0.5 break-all text-[10px] text-emerald-700">
-                {activeJob.jobUrl}
+                  ? "ภาพพร้อมแล้ว สามารถบันทึกหรือแชร์ภาพจากส่วนผลลัพธ์ด้านล่างได้"
+                  : "ระบบกำลังประมวลผลภาพ กรุณารอสักครู่ หน้านี้จะแสดงผลภาพเมื่อเจนเสร็จ"}
               </p>
             </div>
           </div>
           {activeJob.status !== "completed" && (
-            <>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={copyJobUrl}
-                  className="flex items-center justify-center gap-1.5 rounded-lg border border-emerald-200 bg-white px-2 py-2 text-[11px] font-bold text-emerald-700"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  {copiedJobUrl ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
-                </button>
-                <button
-                  type="button"
-                  onClick={shareJobUrl}
-                  className="flex items-center justify-center gap-1.5 rounded-lg bg-emerald-600 px-2 py-2 text-[11px] font-bold text-white"
-                >
-                  <Share2 className="h-3.5 w-3.5" />
-                  แชร์ลิงก์
-                </button>
-              </div>
-              <p className="text-[10px] text-emerald-700">
-                หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
-              </p>
-            </>
+            <p className="text-[10px] text-emerald-700">
+              หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
+            </p>
           )}
         </div>
       )}

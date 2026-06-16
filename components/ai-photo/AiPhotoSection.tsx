@@ -24,7 +24,7 @@ type CreditState =
   | { status: "used"; existingImageUrl: string | null };
 
 const AI_PHOTO_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
-const AI_PHOTO_MAX_DIMENSION = 2048;
+const AI_PHOTO_MAX_DIMENSION = 1024;
 
 function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
   return new Promise<Blob>((resolve, reject) => {

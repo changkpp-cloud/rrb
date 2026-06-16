@@ -10,18 +10,33 @@ type OpenAIImageResponse = {
   output_format?: "png" | "jpeg" | "webp";
 };
 
-const OPENAI_IMAGE_SIZE = "1024x1536"; // portrait 2:3 — matches display aspect ratio
-const OPENAI_IMAGE_QUALITY_GENERATE = "high";
-const OPENAI_IMAGE_QUALITY_EDIT = "high"; // high for face-reference edits
-const OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
-const OPENAI_IMAGE_OUTPUT_COMPRESSION = 92;
+const DEFAULT_OPENAI_IMAGE_SIZE = "1024x1024";
+const DEFAULT_OPENAI_IMAGE_QUALITY = "high";
+const DEFAULT_OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
+const DEFAULT_OPENAI_IMAGE_OUTPUT_COMPRESSION = 72;
 const OPENAI_IMAGE_TIMEOUT_MS = 180_000; // bumped for high-quality edit
-const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1.5";
+const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1-mini";
 const SUPPORTED_OPENAI_IMAGE_MODELS = new Set([
+  "gpt-image-2",
   "gpt-image-1.5",
   "gpt-image-1",
   "gpt-image-1-mini",
 ]);
+const SUPPORTED_OPENAI_IMAGE_QUALITIES = new Set(["low", "medium", "high", "auto"]);
+const SUPPORTED_OPENAI_IMAGE_OUTPUT_FORMATS = new Set(["png", "jpeg", "webp"]);
+
+function envChoice(name: string, fallback: string, supported?: Set<string>) {
+  const value = process.env[name]?.trim();
+  if (!value) return fallback;
+  if (supported && !supported.has(value)) return fallback;
+  return value;
+}
+
+function envNumber(name: string, fallback: number, min: number, max: number) {
+  const value = Number.parseInt(process.env[name] ?? "", 10);
+  if (!Number.isFinite(value)) return fallback;
+  return Math.min(max, Math.max(min, value));
+}
 
 function imageResultToUrl(item: OpenAIImageItem, outputFormat: string) {
   if (item.b64_json) return `data:image/${outputFormat};base64,${item.b64_json}`;
@@ -38,7 +53,7 @@ async function parseOpenAIResponse(res: Response) {
     throw new Error(message);
   }
 
-  const outputFormat = data?.output_format ?? OPENAI_IMAGE_OUTPUT_FORMAT;
+  const outputFormat = data?.output_format ?? getOpenAIImageOutputFormat();
   const images = (data?.data ?? [])
     .map((item) => imageResultToUrl(item, outputFormat))
     .filter(Boolean);
@@ -61,6 +76,38 @@ export function getOpenAIImageModel() {
     : DEFAULT_OPENAI_IMAGE_MODEL;
 }
 
+function getOpenAIImageSize() {
+  return process.env.OPENAI_IMAGE_SIZE?.trim() || DEFAULT_OPENAI_IMAGE_SIZE;
+}
+
+function getOpenAIImageGenerateQuality() {
+  return envChoice(
+    "OPENAI_IMAGE_QUALITY_GENERATE",
+    envChoice("OPENAI_IMAGE_QUALITY", DEFAULT_OPENAI_IMAGE_QUALITY, SUPPORTED_OPENAI_IMAGE_QUALITIES),
+    SUPPORTED_OPENAI_IMAGE_QUALITIES
+  );
+}
+
+function getOpenAIImageEditQuality() {
+  return envChoice(
+    "OPENAI_IMAGE_QUALITY_EDIT",
+    envChoice("OPENAI_IMAGE_QUALITY", DEFAULT_OPENAI_IMAGE_QUALITY, SUPPORTED_OPENAI_IMAGE_QUALITIES),
+    SUPPORTED_OPENAI_IMAGE_QUALITIES
+  );
+}
+
+function getOpenAIImageOutputFormat() {
+  return envChoice(
+    "OPENAI_IMAGE_OUTPUT_FORMAT",
+    DEFAULT_OPENAI_IMAGE_OUTPUT_FORMAT,
+    SUPPORTED_OPENAI_IMAGE_OUTPUT_FORMATS
+  );
+}
+
+function getOpenAIImageOutputCompression() {
+  return envNumber("OPENAI_IMAGE_OUTPUT_COMPRESSION", DEFAULT_OPENAI_IMAGE_OUTPUT_COMPRESSION, 0, 100);
+}
+
 export async function generateOpenAIImage(prompt: string, count = 1) {
   const res = await fetch("https://api.openai.com/v1/images/generations", {
     method: "POST",
@@ -73,10 +120,10 @@ export async function generateOpenAIImage(prompt: string, count = 1) {
       model: getOpenAIImageModel(),
       prompt,
       n: count,
-      size: OPENAI_IMAGE_SIZE,
-      quality: OPENAI_IMAGE_QUALITY_GENERATE,
-      output_format: OPENAI_IMAGE_OUTPUT_FORMAT,
-      output_compression: OPENAI_IMAGE_OUTPUT_COMPRESSION,
+      size: getOpenAIImageSize(),
+      quality: getOpenAIImageGenerateQuality(),
+      output_format: getOpenAIImageOutputFormat(),
+      output_compression: getOpenAIImageOutputCompression(),
     }),
   });
 
@@ -97,11 +144,11 @@ export async function editOpenAIImage(prompt: string, imageInput: File | File[],
   body.append("model", getOpenAIImageModel());
   body.append("prompt", prompt);
   body.append("n", String(count));
-  body.append("size", OPENAI_IMAGE_SIZE);
-  body.append("quality", OPENAI_IMAGE_QUALITY_EDIT);
+  body.append("size", getOpenAIImageSize());
+  body.append("quality", getOpenAIImageEditQuality());
   body.append("input_fidelity", "high");
-  body.append("output_format", OPENAI_IMAGE_OUTPUT_FORMAT);
-  body.append("output_compression", String(OPENAI_IMAGE_OUTPUT_COMPRESSION));
+  body.append("output_format", getOpenAIImageOutputFormat());
+  body.append("output_compression", String(getOpenAIImageOutputCompression()));
   if (images.length === 1) {
     body.append("image", image, image.name || "donor-photo.jpg");
   } else {

@@ -301,7 +301,7 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
           </div>
           {d.slip_url && (
             <div className="mt-2 ml-10">
-              <a href={d.slip_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 underline">
+              <a href={`/api/donations/${d.id}/slip`} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 underline">
                 ดูสลิป
               </a>
             </div>

@@ -10,8 +10,8 @@ import {
   Banknote,
   CheckCircle2,
   ChevronRight,
-  Clock,
   ClipboardList,
+  FileText,
   Printer,
 } from "lucide-react";
 
@@ -39,29 +39,29 @@ type DonationRow = {
 
 async function getOperations(centerId: string) {
   const supabase = createAdminClient();
-  const [{ data: memorialsData }, { data: donationsData }] = await Promise.all([
-    supabase
-      .from("memorials")
-      .select("id, name, ceremony_date, funeral_status, center_id, ceremony_location")
-      .eq("center_id", centerId)
-      .order("ceremony_date", { ascending: true }),
-    supabase
-      .from("donations")
-      .select("id, memorial_id, donor_name, amount, slip_url, status, nameplate_status, created_at")
-      .order("created_at", { ascending: false })
-      .limit(500),
-  ]);
-
+  const { data: memorialsData } = await supabase
+    .from("memorials")
+    .select("id, name, ceremony_date, funeral_status, center_id, ceremony_location")
+    .eq("center_id", centerId)
+    .order("ceremony_date", { ascending: true });
   const memorials = ((memorialsData ?? []) as MemorialRow[]).filter((m) => m.center_id === centerId);
   const memorialIds = new Set(memorials.map((m) => m.id));
-  const donations = ((donationsData ?? []) as DonationRow[]).filter((d) => memorialIds.has(d.memorial_id));
+  const { data: donationsData } = memorials.length > 0
+    ? await supabase
+        .from("donations")
+        .select("id, memorial_id, donor_name, amount, slip_url, status, nameplate_status, created_at")
+        .in("memorial_id", [...memorialIds])
+        .order("created_at", { ascending: false })
+        .limit(1000)
+    : { data: [] };
+  const donations = (donationsData ?? []) as DonationRow[];
   const memorialMap = new Map(memorials.map((m) => [m.id, m]));
 
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const pendingSlips = donations
-    .filter((d) => d.status === "pending")
+  const slipEvidence = donations
+    .filter((d) => d.slip_url)
     .map((d) => ({ donation: d, memorial: memorialMap.get(d.memorial_id)! }))
     .filter((row) => row.memorial)
     .slice(0, 20);
@@ -94,11 +94,11 @@ async function getOperations(centerId: string) {
     .slice(0, 20);
 
   return {
-    pendingSlips,
+    slipEvidence,
     nameplateQueue,
     closeCandidates,
     kpi: {
-      pendingSlips: pendingSlips.length,
+      slipEvidence: slipEvidence.length,
       nameplateQueue: nameplateQueue.length,
       closeCandidates: closeCandidates.length,
       activeMemorials: memorials.filter((m) => m.funeral_status === "active").length,
@@ -128,19 +128,19 @@ export default async function CenterOperationsPage({ params }: { params: Promise
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
         <div className="grid grid-cols-2 gap-3">
-          <Kpi icon={Clock} label="สลิปรอตรวจ" value={data.kpi.pendingSlips.toLocaleString()} tone="amber" />
+          <Kpi icon={FileText} label="หลักฐานสลิป" value={data.kpi.slipEvidence.toLocaleString()} tone="amber" />
           <Kpi icon={Printer} label="ป้ายค้าง" value={data.kpi.nameplateQueue.toLocaleString()} tone="blue" />
           <Kpi icon={ClipboardList} label="ควรเตรียมปิด" value={data.kpi.closeCandidates.toLocaleString()} tone="emerald" />
           <Kpi icon={CheckCircle2} label="งาน active" value={data.kpi.activeMemorials.toLocaleString()} tone="gold" />
         </div>
 
-        <Queue title="สลิปรอตรวจ" hint="ตรวจยอด เวลาโอน บัญชีปลายทาง แล้วกดยืนยันในหน้างาน" empty="ไม่มีสลิปรอตรวจ" icon={AlertTriangle}>
-          {data.pendingSlips.map(({ donation, memorial }) => (
+        <Queue title="หลักฐานสลิปล่าสุด" hint="เก็บไว้ตรวจสอบเฉพาะกรณียอดโอนเข้าบัญชีศูนย์ไม่ตรงกับยอดรายงาน" empty="ยังไม่มีหลักฐานสลิป" icon={FileText}>
+          {data.slipEvidence.map(({ donation, memorial }) => (
             <OperationLink key={donation.id} href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold text-gold-800 truncate">{donation.donor_name}</p>
                 <p className="text-[10px] text-gold-500 truncate">{memorial.name} · {donation.amount?.toLocaleString() ?? 0} บาท</p>
-                <p className="text-[10px] text-amber-600">{donation.slip_url ? "มีสลิปแนบแล้ว" : "ยังไม่มีไฟล์สลิป"} · {new Date(donation.created_at).toLocaleString("th-TH")}</p>
+                <p className="text-[10px] text-amber-600">มีสลิปแนบไว้เป็นหลักฐาน · {new Date(donation.created_at).toLocaleString("th-TH")}</p>
               </div>
             </OperationLink>
           ))}
@@ -161,7 +161,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
           ))}
         </Queue>
 
-        <Queue title="งานที่ควรเตรียมปิด" hint="พิธีถึงวันแล้ว ตรวจสลิปและป้ายค้างก่อนปิดงาน" empty="ยังไม่มีงานที่ถึงรอบปิด" icon={CheckCircle2}>
+        <Queue title="งานที่ควรเตรียมปิด" hint="พิธีถึงวันแล้ว ตรวจยอดรวมและป้ายค้างก่อนปิดงาน" empty="ยังไม่มีงานที่ถึงรอบปิด" icon={CheckCircle2}>
           {data.closeCandidates.map(({ memorial, pending, confirmed, amount, unposted }) => (
             <Link
               key={memorial.id}

@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { Users, Download } from "lucide-react";
+import { Users, Download, ExternalLink } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Donation } from "@/lib/supabase/types";
 import { getMemorialById, formatThaiDate } from "@/lib/memorial";
+import { hasHostSession } from "@/lib/host-session";
+import { redirect } from "next/navigation";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,7 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
   const { id } = await params;
   const memorial = await getMemorialById(id);
   if (!memorial) return null;
+  if (!(await hasHostSession(memorial.id))) redirect("/dashboard/host");
   const donations = await getDonations(memorial.id);
 
   const confirmed = donations.filter(d => d.status === "confirmed");
@@ -78,7 +81,15 @@ export default async function HostDonorsPage({ params }: { params: Promise<{ id:
                 {d.message && <p className="text-[10px] text-gold-400 italic mt-0.5">"{d.message}"</p>}
                 <p className="text-[9px] text-gold-400 mt-0.5">{formatDate(d.created_at)}</p>
               </div>
-              <p className="text-sm font-bold text-gold-700 shrink-0">{d.amount.toLocaleString()} ฿</p>
+              <div className="shrink-0 text-right">
+                <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
+                {d.slip_url && (
+                  <a href={`/api/donations/${d.id}/slip`} target="_blank" rel="noopener noreferrer" className="mt-1 inline-flex items-center gap-1 text-[10px] text-blue-500 underline">
+                    <ExternalLink className="h-3 w-3" />
+                    ดูสลิป
+                  </a>
+                )}
+              </div>
             </div>
           ))}
         </div>

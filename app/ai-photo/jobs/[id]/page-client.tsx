@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckCircle2, Copy, Loader2, Share2, XCircle } from "lucide-react";
+import { CheckCircle2, Loader2, XCircle } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import AiPhotoResult from "@/components/ai-photo/AiPhotoResult";
 
@@ -16,7 +16,6 @@ type JobState = {
 export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
   const [job, setJob] = useState<JobState | null>(null);
   const [selectedIdx, setSelectedIdx] = useState(0);
-  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -49,32 +48,6 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
       if (timer) clearTimeout(timer);
     };
   }, [jobId]);
-
-  async function copyLink() {
-    const url = job?.jobUrl || window.location.href;
-    const text = isDone
-      ? `ภาพมอบหรีดพร้อมแล้ว เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพ: ${url}`
-      : `กำลังสร้างภาพมอบหรีด เก็บลิงก์นี้ไว้เพื่อกลับมารับภาพภายหลัง: ${url}`;
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  }
-
-  async function shareLink() {
-    const url = job?.jobUrl || window.location.href;
-    if (navigator.share) {
-      const ready = job?.status === "completed" && job.imageUrl;
-      await navigator.share({
-        title: ready ? "ภาพมอบหรีดพร้อมแล้ว" : "กำลังสร้างภาพมอบหรีด",
-        text: ready
-          ? "เปิดลิงก์นี้เพื่อบันทึกหรือแชร์ภาพมอบหรีด"
-          : "เก็บลิงก์นี้ไว้ แล้วกลับมาเปิดเพื่อรับภาพมอบหรีดภายหลัง",
-        url,
-      });
-      return;
-    }
-    await copyLink();
-  }
 
   const status = job?.status ?? "pending";
   const isDone = status === "completed" && job?.imageUrl;
@@ -122,28 +95,9 @@ export default function AiPhotoJobPageClient({ jobId }: { jobId: string }) {
                     ? "บันทึกภาพลงเครื่อง หรือแชร์ภาพจากปุ่มด้านล่างได้เลย"
                     : isFailed
                     ? job?.error ?? "กรุณาลองสร้างใหม่อีกครั้ง"
-                    : "งานกำลังประมวลผลบนระบบ สามารถปิดหน้านี้ คัดลอกลิงก์ไว้ แล้วกลับมาเปิดเพื่อรับภาพภายหลังได้"}
+                    : "งานกำลังประมวลผลบนระบบ กรุณารอสักครู่ หน้านี้จะแสดงผลภาพเมื่อเจนเสร็จ"}
                 </p>
               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={copyLink}
-                className="flex items-center justify-center gap-2 rounded-xl border border-gold-200 bg-white px-3 py-2.5 text-xs font-bold text-gold-700"
-              >
-                <Copy className="h-4 w-4" />
-                {copied ? "คัดลอกแล้ว" : "คัดลอกข้อความลิงก์"}
-              </button>
-              <button
-                type="button"
-                onClick={shareLink}
-                className="flex items-center justify-center gap-2 rounded-xl gold-gradient px-3 py-2.5 text-xs font-bold text-white"
-              >
-                <Share2 className="h-4 w-4" />
-                แชร์
-              </button>
             </div>
           </div>
 

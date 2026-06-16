@@ -329,6 +329,7 @@ export interface Database {
         Row: {
           id: string;
           memorial_id: string;
+          center_id: string | null;
           donor_name: string;
           donor_title: string | null;
           amount: number;
@@ -336,11 +337,15 @@ export interface Database {
           slip_url: string | null;
           status: "pending" | "confirmed" | "rejected";
           nameplate_status: "pending" | "queued" | "printed" | "posted";
+          confirmed_at: string | null;
+          reviewed_at: string | null;
+          reviewed_by: string | null;
           created_at: string;
         };
         Insert: {
           id?: string;
           memorial_id: string;
+          center_id?: string | null;
           donor_name: string;
           donor_title?: string | null;
           amount: number;
@@ -348,11 +353,15 @@ export interface Database {
           slip_url?: string | null;
           status: "pending" | "confirmed" | "rejected";
           nameplate_status?: "pending" | "queued" | "printed" | "posted";
+          confirmed_at?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           created_at?: string;
         };
         Update: {
           id?: string;
           memorial_id?: string;
+          center_id?: string | null;
           donor_name?: string;
           donor_title?: string | null;
           amount?: number;
@@ -360,10 +369,54 @@ export interface Database {
           slip_url?: string | null;
           status?: "pending" | "confirmed" | "rejected";
           nameplate_status?: "pending" | "queued" | "printed" | "posted";
+          confirmed_at?: string | null;
+          reviewed_at?: string | null;
+          reviewed_by?: string | null;
           created_at?: string;
         };
         Relationships: [
           { foreignKeyName: "donations_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
+        ];
+      };
+      center_daily_stats: {
+        Row: {
+          center_id: string;
+          report_date: string;
+          donation_count: number;
+          pending_count: number;
+          confirmed_count: number;
+          rejected_count: number;
+          total_amount: number;
+          wreaths_reduced: number;
+          waste_reduced_kg: number;
+          updated_at: string;
+        };
+        Insert: {
+          center_id: string;
+          report_date: string;
+          donation_count?: number;
+          pending_count?: number;
+          confirmed_count?: number;
+          rejected_count?: number;
+          total_amount?: number;
+          wreaths_reduced?: number;
+          waste_reduced_kg?: number;
+          updated_at?: string;
+        };
+        Update: {
+          center_id?: string;
+          report_date?: string;
+          donation_count?: number;
+          pending_count?: number;
+          confirmed_count?: number;
+          rejected_count?: number;
+          total_amount?: number;
+          wreaths_reduced?: number;
+          waste_reduced_kg?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "center_daily_stats_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] }
         ];
       };
       nameplates: {
@@ -565,8 +618,31 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Views: {
+      center_report_totals: {
+        Row: {
+          center_id: string | null;
+          center_name: string | null;
+          province: string | null;
+          amphoe: string | null;
+          center_status: string | null;
+          donation_count: number | null;
+          pending_count: number | null;
+          confirmed_count: number | null;
+          rejected_count: number | null;
+          total_amount: number | null;
+          wreaths_reduced: number | null;
+          waste_reduced_kg: number | null;
+          updated_at: string | null;
+        };
+      };
+    };
+    Functions: {
+      refresh_center_daily_stats: {
+        Args: { p_center_id: string; p_report_date: string };
+        Returns: undefined;
+      };
+    };
     Enums: {
       donation_status: "pending" | "confirmed" | "rejected";
       nameplate_print_status: "pending" | "queued" | "printing" | "printed" | "error" | "reprint";

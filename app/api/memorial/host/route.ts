@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createHostToken, HOST_SESSION_COOKIE } from "@/lib/host-session";
 import { getMemorialByHostCode } from "@/lib/memorial";
 
 export async function GET(request: NextRequest) {
@@ -10,5 +11,13 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "ไม่พบรหัสเจ้าภาพนี้" }, { status: 404 });
   }
 
-  return NextResponse.json({ id: memorial.id, name: memorial.name });
+  const res = NextResponse.json({ id: memorial.id, name: memorial.name });
+  res.cookies.set(HOST_SESSION_COOKIE, createHostToken(memorial.id), {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 8 * 60 * 60,
+  });
+  return res;
 }
