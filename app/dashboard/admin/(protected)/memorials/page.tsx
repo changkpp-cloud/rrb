@@ -119,7 +119,7 @@ export default async function AdminMemorialsPage({
                   </span>
                   <span className="text-[10px] text-gold-600 font-medium">{(donMap[m.id]?.amount ?? 0).toLocaleString()} บาท</span>
                   {(donMap[m.id]?.pending ?? 0) > 0 && (
-                    <span className="text-[10px] text-amber-600">รอตรวจ {donMap[m.id]?.pending}</span>
+                    <span className="text-[10px] text-amber-600">เก่า {donMap[m.id]?.pending}</span>
                   )}
                 </div>
               </div>

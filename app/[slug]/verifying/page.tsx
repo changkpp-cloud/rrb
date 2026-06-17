@@ -6,8 +6,8 @@ import LotusIcon from "@/components/LotusIcon";
 
 const STEPS = [
   "รับสลิปเรียบร้อย",
-  "กำลังตรวจสอบข้อมูล",
-  "กำลังยืนยันการโอน",
+  "บันทึกข้อมูลการร่วมบุญ",
+  "เตรียมพิมพ์ป้ายชื่อ",
 ];
 
 export default function SlugVerifyingPage() {
@@ -27,6 +27,8 @@ function VerifyingInner() {
   const amount = params.get("amount") ?? "";
   const memorial_id = params.get("memorial_id") ?? "";
   const slip_url = params.get("slip_url") ?? "";
+  const slip_hash = params.get("slip_hash") ?? "";
+  const duplicate = params.get("duplicate") ?? "";
 
   useEffect(() => {
     const timers: ReturnType<typeof setTimeout>[] = [];
@@ -36,12 +38,13 @@ function VerifyingInner() {
     timers.push(
       setTimeout(() => {
         setDone(true);
-        const q = new URLSearchParams({ amount, memorial_id, slip_url });
+        const q = new URLSearchParams({ amount, memorial_id, slip_url, slip_hash });
+        if (duplicate) q.set("duplicate", duplicate);
         router.push(`/${slug}/print-name?${q.toString()}`);
       }, STEPS.length * 1200 + 400)
     );
     return () => timers.forEach(clearTimeout);
-  }, [router, amount, memorial_id, slip_url, slug]);
+  }, [router, amount, memorial_id, slip_url, slip_hash, duplicate, slug]);
 
   return (
     <div className="min-h-dvh flex flex-col">
@@ -60,8 +63,8 @@ function VerifyingInner() {
                 </div>
               </div>
               <div className="text-center space-y-1">
-                <p className="text-base font-bold text-gold-800">กำลังตรวจสอบสลิป</p>
-                <p className="text-xs text-gold-500">ระบบกำลังตรวจสอบการโอนเงินของคุณ</p>
+                <p className="text-base font-bold text-gold-800">รับการร่วมบุญเรียบร้อย</p>
+                <p className="text-xs text-gold-500">กำลังเตรียมพิมพ์ป้ายชื่อของคุณ</p>
               </div>
               <div className="w-full space-y-2">
                 {STEPS.map((step, i) => {

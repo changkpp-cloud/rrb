@@ -193,7 +193,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
       {d.pending > 0 && (
         <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
           <Clock className="w-4 h-4 text-amber-500 shrink-0" />
-          <p className="text-xs text-amber-700">สลิปรอตรวจ <span className="font-bold">{d.pending}</span> รายการ · ตีกลับ {d.rejected} รายการ</p>
+          <p className="text-xs text-amber-700">รายการ pending เก่า (ก่อนระบบอัตโนมัติ) <span className="font-bold">{d.pending}</span> รายการ</p>
         </div>
       )}
 
@@ -284,8 +284,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Pr
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4 space-y-2">
             <p className="text-[11px] font-semibold text-gold-700">สรุปการเงิน</p>
             <FinRow label="ยอดร่วมบุญ (ยืนยัน)" value={`${d.totals.amount.toLocaleString()} บาท`} />
-            <FinRow label="สลิปรอตรวจ" value={`${d.pending} รายการ`} />
-            <FinRow label="สลิปตีกลับ" value={`${d.rejected} รายการ`} />
+            <FinRow label="pending เก่า" value={`${d.pending} รายการ`} />
+            <FinRow label="rejected เก่า" value={`${d.rejected} รายการ`} />
             <div className="border-t border-gold-100 pt-2 mt-2">
               <FinRow label="งานที่ยังเปิดอยู่" value={`${d.activeAmount.toLocaleString()} บาท`} highlight />
               <FinRow label="งานที่ปิดแล้ว" value={`${d.closedAmount.toLocaleString()} บาท`} />

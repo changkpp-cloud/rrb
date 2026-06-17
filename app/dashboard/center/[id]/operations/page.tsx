@@ -32,7 +32,8 @@ type DonationRow = {
   donor_name: string;
   amount: number | null;
   slip_url: string | null;
-  status: "pending" | "confirmed" | "rejected";
+  slip_duplicate_warning?: boolean | null;
+  status: string;
   nameplate_status: "pending" | "queued" | "printed" | "posted";
   created_at: string;
 };
@@ -49,7 +50,7 @@ async function getOperations(centerId: string) {
   const { data: donationsData } = memorials.length > 0
     ? await supabase
         .from("donations")
-        .select("id, memorial_id, donor_name, amount, slip_url, status, nameplate_status, created_at")
+        .select("id, memorial_id, donor_name, amount, slip_url, slip_duplicate_warning, status, nameplate_status, created_at")
         .in("memorial_id", [...memorialIds])
         .order("created_at", { ascending: false })
         .limit(1000)
@@ -61,7 +62,7 @@ async function getOperations(centerId: string) {
   today.setHours(0, 0, 0, 0);
 
   const slipEvidence = donations
-    .filter((d) => d.slip_url)
+    .filter((d) => d.slip_url && d.slip_duplicate_warning)
     .map((d) => ({ donation: d, memorial: memorialMap.get(d.memorial_id)! }))
     .filter((row) => row.memorial)
     .slice(0, 20);
@@ -85,12 +86,11 @@ async function getOperations(centerId: string) {
     .map((m) => {
       const rows = donationsByMemorial.get(m.id) ?? [];
       const confirmed = rows.filter((d) => d.status === "confirmed");
-      const pending = rows.filter((d) => d.status === "pending").length;
       const unposted = confirmed.filter((d) => d.nameplate_status !== "posted").length;
       const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-      return { memorial: m, confirmed: confirmed.length, pending, unposted, amount };
+      return { memorial: m, confirmed: confirmed.length, unposted, amount };
     })
-    .sort((a, b) => a.pending - b.pending || a.unposted - b.unposted)
+    .sort((a, b) => a.unposted - b.unposted)
     .slice(0, 20);
 
   return {
@@ -128,13 +128,13 @@ export default async function CenterOperationsPage({ params }: { params: Promise
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-5">
         <div className="grid grid-cols-2 gap-3">
-          <Kpi icon={FileText} label="หลักฐานสลิป" value={data.kpi.slipEvidence.toLocaleString()} tone="amber" />
+          <Kpi icon={FileText} label="แจ้งเตือนสลิป" value={data.kpi.slipEvidence.toLocaleString()} tone="amber" />
           <Kpi icon={Printer} label="ป้ายค้าง" value={data.kpi.nameplateQueue.toLocaleString()} tone="blue" />
           <Kpi icon={ClipboardList} label="ควรเตรียมปิด" value={data.kpi.closeCandidates.toLocaleString()} tone="emerald" />
           <Kpi icon={CheckCircle2} label="งาน active" value={data.kpi.activeMemorials.toLocaleString()} tone="gold" />
         </div>
 
-        <Queue title="หลักฐานสลิปล่าสุด" hint="เก็บไว้ตรวจสอบเฉพาะกรณียอดโอนเข้าบัญชีศูนย์ไม่ตรงกับยอดรายงาน" empty="ยังไม่มีหลักฐานสลิป" icon={FileText}>
+        <Queue title="แจ้งเตือนสลิปย้อนหลัง" hint="สลิปซ้ำหรือรายการที่ควรดูภายหลัง ไม่ใช่คิวอนุมัติ" empty="ไม่มีแจ้งเตือนสลิป" icon={FileText}>
           {data.slipEvidence.map(({ donation, memorial }) => (
             <OperationLink key={donation.id} href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}>
               <div className="flex-1 min-w-0">
@@ -162,7 +162,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
         </Queue>
 
         <Queue title="งานที่ควรเตรียมปิด" hint="พิธีถึงวันแล้ว ตรวจยอดรวมและป้ายค้างก่อนปิดงาน" empty="ยังไม่มีงานที่ถึงรอบปิด" icon={CheckCircle2}>
-          {data.closeCandidates.map(({ memorial, pending, confirmed, amount, unposted }) => (
+          {data.closeCandidates.map(({ memorial, confirmed, amount, unposted }) => (
             <Link
               key={memorial.id}
               href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}
@@ -179,7 +179,7 @@ export default async function CenterOperationsPage({ params }: { params: Promise
               <div className="grid grid-cols-3 gap-2 mt-3 text-center">
                 <Mini label="ยืนยันแล้ว" value={`${confirmed} ราย`} />
                 <Mini label="ยอดรวม" value={`${amount.toLocaleString()} บาท`} />
-                <Mini label="ค้าง" value={`${pending} สลิป · ${unposted} ป้าย`} warning={pending > 0 || unposted > 0} />
+                <Mini label="ค้าง" value={`${unposted} ป้าย`} warning={unposted > 0} />
               </div>
             </Link>
           ))}

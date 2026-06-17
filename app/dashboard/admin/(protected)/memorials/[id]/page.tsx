@@ -74,11 +74,11 @@ export default async function AdminMemorialDetailPage({ params }: { params: Prom
           </div>
           <div>
             <p className="text-lg font-bold text-amber-500">{pending.length}</p>
-            <p className="text-[10px] text-gold-500">รอตรวจ</p>
+            <p className="text-[10px] text-gold-500">เก่า (pending)</p>
           </div>
           <div>
             <p className="text-lg font-bold text-red-400">{rejected.length}</p>
-            <p className="text-[10px] text-gold-500">ตีกลับ</p>
+            <p className="text-[10px] text-gold-500">เก่า (rejected)</p>
           </div>
         </div>
         <div className="mt-3 pt-3 border-t border-gold-100 flex items-center justify-between">

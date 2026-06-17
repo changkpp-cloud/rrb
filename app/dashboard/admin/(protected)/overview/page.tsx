@@ -226,11 +226,11 @@ export default async function AdminOverviewPage() {
 
         <AnalyticPanel title="คุณภาพข้อมูลการเงิน" icon={Gauge}>
           <QualityRow label="ยืนยันแล้ว" value={percent(s.confirmationRate)} tone="good" />
-          <QualityRow label="รอตรวจจากศูนย์" value={`${s.pending.toLocaleString("th-TH")} รายการ`} tone={s.pending > 0 ? "warn" : "good"} />
-          <QualityRow label="สลิปตีกลับ" value={percent(s.rejectionRate)} tone={s.rejectionRate > 10 ? "bad" : "neutral"} />
+          <QualityRow label="pending เก่า (ก่อนระบบอัตโนมัติ)" value={`${s.pending.toLocaleString("th-TH")} รายการ`} tone={s.pending > 0 ? "warn" : "good"} />
+          <QualityRow label="rejected เก่า" value={percent(s.rejectionRate)} tone={s.rejectionRate > 10 ? "bad" : "neutral"} />
           <div className="mt-3 rounded-xl bg-gold-50 px-3 py-2">
             <p className="text-[10px] leading-relaxed text-gold-600">
-              แอดมินกลางใช้ส่วนนี้ดูคุณภาพรวมและแจ้งนโยบายให้ศูนย์ ไม่ใช่จุดอนุมัติสลิปแทนศูนย์
+              ระบบใหม่รับเงินร่วมบุญอัตโนมัติ — pending จะเป็น 0 เสมอสำหรับข้อมูลใหม่
             </p>
           </div>
         </AnalyticPanel>
@@ -247,7 +247,7 @@ export default async function AdminOverviewPage() {
           <RiskRow icon={Clock} label="งาน active ที่เลยวันพิธี" value={data.risk.overdueActive} />
           <RiskRow icon={Banknote} label="งาน active ที่ยังไม่มีบัญชีเจ้าภาพ" value={data.risk.activeWithoutHostBank} />
           <RiskRow icon={Building2} label="ศูนย์ที่ยังไม่ active" value={data.risk.inactiveCenters} />
-          <RiskRow icon={AlertTriangle} label="สัดส่วนสลิปรอตรวจ" valueText={percent(data.risk.pendingRatio)} />
+          <RiskRow icon={AlertTriangle} label="สัดส่วน pending เก่า" valueText={percent(data.risk.pendingRatio)} />
         </AnalyticPanel>
       </section>
 
@@ -273,7 +273,7 @@ export default async function AdminOverviewPage() {
                   <span className="w-7 shrink-0 text-sm font-bold text-gold-400">#{index + 1}</span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold text-gold-900">{center.name}</p>
-                    <p className="text-[10px] text-gold-500">{center.province} · {center.memorials} งาน · pending {center.pending}</p>
+                    <p className="text-[10px] text-gold-500">{center.province} · {center.memorials} งาน{center.pending > 0 ? ` · เก่า ${center.pending}` : ""}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm font-bold text-emerald-700">{shortMoney(center.amount)}</p>

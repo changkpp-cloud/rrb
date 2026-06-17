@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS donations (
   message          TEXT,
   amount           NUMERIC(10,2) NOT NULL DEFAULT 0,
   slip_url         TEXT,
-  status           TEXT NOT NULL DEFAULT 'pending'
+  slip_hash        TEXT,
+  slip_duplicate_warning BOOLEAN NOT NULL DEFAULT FALSE,
+  status           TEXT NOT NULL DEFAULT 'confirmed'
                    CHECK (status IN ('pending','confirmed','rejected')),
   nameplate_status TEXT NOT NULL DEFAULT 'pending'
                    CHECK (nameplate_status IN ('pending','queued','printed','posted')),
@@ -164,6 +166,9 @@ CREATE INDEX IF NOT EXISTS idx_memorials_funeral_status ON memorials(funeral_sta
 CREATE INDEX IF NOT EXISTS idx_memorials_is_active      ON memorials(is_active);
 CREATE INDEX IF NOT EXISTS idx_memorials_host_code      ON memorials(host_code);
 CREATE INDEX IF NOT EXISTS idx_donations_memorial_id    ON donations(memorial_id);
+CREATE INDEX IF NOT EXISTS idx_donations_memorial_slip_hash
+  ON donations(memorial_id, slip_hash)
+  WHERE slip_hash IS NOT NULL;
 CREATE INDEX IF NOT EXISTS idx_donations_status         ON donations(status);
 CREATE INDEX IF NOT EXISTS idx_donations_created_at     ON donations(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_nameplates_memorial_id   ON nameplates(memorial_id);
@@ -173,3 +178,21 @@ CREATE INDEX IF NOT EXISTS idx_print_jobs_status        ON print_jobs(status);
 CREATE INDEX IF NOT EXISTS idx_equipment_center_id      ON equipment(center_id);
 CREATE INDEX IF NOT EXISTS idx_reports_memorial_id      ON reports(memorial_id);
 CREATE INDEX IF NOT EXISTS idx_audit_logs_created_at    ON audit_logs(created_at DESC);
+
+CREATE TABLE IF NOT EXISTS slip_submissions (
+  id                 UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  memorial_id        UUID NOT NULL REFERENCES memorials(id) ON DELETE CASCADE,
+  slip_hash          TEXT NOT NULL,
+  slip_url           TEXT,
+  duplicate_detected BOOLEAN NOT NULL DEFAULT FALSE,
+  duplicate_of       UUID REFERENCES slip_submissions(id) ON DELETE SET NULL,
+  review_status      TEXT NOT NULL DEFAULT 'none'
+                     CHECK (review_status IN ('none','needs_review','reviewed','ignored')),
+  first_seen_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_slip_submissions_memorial_hash
+  ON slip_submissions(memorial_id, slip_hash, first_seen_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_slip_submissions_memorial_id
+  ON slip_submissions(memorial_id, first_seen_at DESC);

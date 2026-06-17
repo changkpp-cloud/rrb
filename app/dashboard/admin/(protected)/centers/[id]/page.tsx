@@ -115,7 +115,7 @@ export default async function AdminCenterDetailPage({ params }: { params: Promis
                     </span>
                     <span className="text-[10px] text-gold-500">{(donMap[m.id]?.amount ?? 0).toLocaleString()} บาท</span>
                     {(donMap[m.id]?.pending ?? 0) > 0 && (
-                      <span className="text-[10px] text-amber-600">รอตรวจ {donMap[m.id]?.pending}</span>
+                      <span className="text-[10px] text-amber-600">เก่า {donMap[m.id]?.pending}</span>
                     )}
                   </div>
                 </div>
