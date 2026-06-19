@@ -1,7 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { CheckCircle2, Clock3, ShieldCheck, UserRound, XCircle } from "lucide-react";
-import { hashPassword, roleLabel, type AppRole } from "@/lib/iam";
+import { roleLabel, type AppRole } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
+import CreateCenterUserForm from "@/components/admin/CreateCenterUserForm";
 
 export const dynamic = "force-dynamic";
 
@@ -129,44 +130,6 @@ async function rejectRequest(formData: FormData) {
   revalidatePath("/dashboard/admin/users");
 }
 
-async function createUser(formData: FormData) {
-  "use server";
-
-  const centerId = String(formData.get("center_id") ?? "");
-  const displayName = String(formData.get("display_name") ?? "").trim();
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const phone = String(formData.get("phone") ?? "").trim();
-  const password = String(formData.get("password") ?? "");
-  const role = String(formData.get("role") ?? "center_staff") as AppRole;
-  if (!centerId || !displayName || !email || password.length < 8) return;
-
-  const supabase = createAdminClient();
-  const { data: user } = await supabase
-    .from("app_users")
-    .upsert({
-      email,
-      display_name: displayName,
-      phone: phone || null,
-      password_hash: hashPassword(password),
-      auth_provider: "password",
-      status: "active",
-      approved_at: new Date().toISOString(),
-    }, { onConflict: "email" })
-    .select("*")
-    .single();
-
-  if (user?.id) {
-    await supabase.from("center_memberships").upsert({
-      center_id: centerId,
-      user_id: user.id,
-      role,
-      status: "active",
-      approved_at: new Date().toISOString(),
-    }, { onConflict: "center_id,user_id" });
-  }
-
-  revalidatePath("/dashboard/admin/users");
-}
 
 export default async function AdminUsersPage() {
   const { centers, iamMissing, memberships, migrationError, requests, users } = await getData();
@@ -195,28 +158,7 @@ export default async function AdminUsersPage() {
         <Stat icon={ShieldCheck} label="สิทธิ์ศูนย์" value={memberships.length} />
       </div>
 
-      <section className="rounded-2xl bg-cream-50 gold-border card-shadow px-4 py-4 space-y-3">
-        <div>
-          <p className="text-sm font-bold text-gold-800">เพิ่มผู้ใช้ศูนย์โดยแอดมินกลาง</p>
-          <p className="text-[11px] text-gold-500">ใช้กรณีสร้างบัญชีให้เจ้าหน้าที่โดยตรง ไม่ต้องรอสมัครเอง</p>
-        </div>
-        <form action={createUser} className="grid grid-cols-1 gap-2">
-          <select name="center_id" className="rounded-xl gold-border bg-white px-3 py-2 text-xs text-gold-800" required>
-            <option value="">เลือกศูนย์</option>
-            {centers.map(center => <option key={center.id} value={center.id}>{center.name}</option>)}
-          </select>
-          <input name="display_name" placeholder="ชื่อผู้ใช้" className="rounded-xl gold-border bg-white px-3 py-2 text-xs" required />
-          <input name="email" type="email" placeholder="อีเมล" className="rounded-xl gold-border bg-white px-3 py-2 text-xs" required />
-          <input name="phone" placeholder="เบอร์โทร" className="rounded-xl gold-border bg-white px-3 py-2 text-xs" />
-          <input name="password" type="password" placeholder="รหัสผ่านอย่างน้อย 8 ตัว" className="rounded-xl gold-border bg-white px-3 py-2 text-xs" required />
-          <select name="role" className="rounded-xl gold-border bg-white px-3 py-2 text-xs text-gold-800" defaultValue="center_staff">
-            <option value="center_manager">ผู้จัดการศูนย์</option>
-            <option value="center_staff">เจ้าหน้าที่ศูนย์</option>
-            <option value="center_viewer">ผู้ดูข้อมูล</option>
-          </select>
-          <button className="rounded-xl gold-gradient py-2.5 text-sm font-semibold text-white">สร้างผู้ใช้และให้สิทธิ์</button>
-        </form>
-      </section>
+      <CreateCenterUserForm centers={centers} />
 
       <section className="space-y-2">
         <p className="text-xs font-semibold text-gold-700">คำขอสมัครรออนุมัติ</p>
