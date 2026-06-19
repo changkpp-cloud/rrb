@@ -188,13 +188,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               href={buildViewHref("ecard")}
               active={activeView === "ecard"}
               icon={<ImageIcon className="w-4 h-4" />}
-              label="E-Card ขอบคุณ"
+              label="E-Card ขอบคุณ (ไม่แสดงยอดเงิน)"
             />
             <MenuLink
               href={buildViewHref("certificate")}
               active={activeView === "certificate"}
               icon={<FileText className="w-4 h-4" />}
-              label="หลักฐานร่วมบุญ"
+              label="E-Card ขอบคุณ แสดงยอดเงิน"
             />
             <MenuLink
               href={buildViewHref("ai")}
@@ -235,10 +235,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             </div>
             <p className="text-xs text-gold-500 -mt-1">
               {showAmount ? "อีการ์ดแสดงยอดเงิน" : "E-Card ขอบคุณ ไม่แสดงยอดเงิน"}
-            </p>
-
-            <p className="text-center text-sm text-gray-600 mb-2">
-              💡 แตะค้างที่รูปภาพเพื่อบันทึก หรือ แคปหน้าจอ (Screenshot)
             </p>
 
             {/* E-card — 1080×1350 px saved (360×450 × pixelRatio 3) */}
