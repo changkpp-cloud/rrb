@@ -1,15 +1,14 @@
 "use client";
 
 import { useRef, useEffect, useMemo, useState } from "react";
-import { flushSync } from "react-dom";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Camera, Check, Download, FileText, Image as ImageIcon, Share2 } from "lucide-react";
+import { Camera, Download, FileText, Image as ImageIcon } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
-import { isSocialInAppBrowser, openImageForManualSave, openUrl, withExternalBrowser } from "@/lib/browser-actions";
+import { isSocialInAppBrowser } from "@/lib/browser-actions";
 
 const SIGN_W = 260;
 const SIGN_H = 72;
@@ -36,11 +35,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [saving, setSaving]         = useState(false);
-  const [downloading, setDownloading] = useState(false);
-  const [sharing, setSharing]       = useState(false);
-  const [downloadDone, setDownloadDone] = useState(false);
-  const [shared, setShared]         = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
   const [memorialPhotoSrc, setMemorialPhotoSrc] = useState(memorial.photo_url ?? "");
 
@@ -68,118 +64,53 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     return `${basePath}/ecard?${q.toString()}`;
   }
 
-  async function handleShare() {
-    setSharing(true);
-    const shareUrl = withExternalBrowser(window.location.href);
-    const shareTitle = showAmount
-      ? `เอกสารมอบหรีด — ${name}${title ? ` (${title})` : ""} ยอด ${parseInt(amount).toLocaleString()} บาท`
-      : `E-Card ขอบคุณ — ${name}${title ? ` · ${title}` : ""}`;
-    const shareText = `ร่วมมอบหรีดร่วมบุญในงานของ ${deceasedName} 🌸\n#หรีดร่วมบุญ #ZeroWaste`;
-
-    // Try Web Share API in full browsers; social in-app browsers often block file sharing.
-    if (navigator.share && !isSocialInAppBrowser()) {
-      try {
-        // Try sharing the card as an image file first
-        if (cardRef.current && !sharing) {
-          const { toPng } = await import("html-to-image");
-          const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
-          const res = await fetch(dataUrl);
-          const blob = await res.blob();
-          const filename = showAmount ? "เอกสารมอบหรีด.png" : "E-card-ขอบคุณ.png";
-          const file = new File([blob], filename, { type: "image/png" });
-          if (navigator.canShare?.({ files: [file] })) {
-            await navigator.share({ files: [file], title: shareTitle, text: shareText });
-            setShared(true); setTimeout(() => setShared(false), 2500);
-            setSharing(false); return;
-          }
-        }
-        await navigator.share({ url: shareUrl, title: shareTitle, text: shareText });
-        setShared(true); setTimeout(() => setShared(false), 2500);
-        setSharing(false); return;
-      } catch (e) {
-        if ((e as Error).name === "AbortError") { setSharing(false); return; }
-      }
-    }
-
-    // Fallback: open LINE share URL
-    const lineUrl = `https://social-plugins.line.me/lineit/share?url=${encodeURIComponent(shareUrl)}`;
-    openUrl(lineUrl);
-    setShared(true); setTimeout(() => setShared(false), 2500);
-    setSharing(false);
-  }
-
-  async function handleSaveCard() {
-    if (!cardRef.current) return;
-    setSaving(true);
+  async function handleDownload() {
+    if (!imageUrl) return;
+    setIsSaving(true);
     try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
-      if (isSocialInAppBrowser()) {
-        await openImageForManualSave(dataUrl);
-        window.alert("เปิดภาพแล้ว กรุณากดค้างที่รูปเพื่อบันทึกลงเครื่อง");
-        setSaving(false);
+      const ua = navigator.userAgent || navigator.vendor || "";
+      const isAndroid = /android/i.test(ua);
+      const isIAB = isSocialInAppBrowser();
+
+      // Android + FB/LINE IAB → force open in Chrome via Intent
+      if (isAndroid && isIAB) {
+        window.location.href =
+          "intent://" +
+          window.location.host +
+          window.location.pathname +
+          window.location.search +
+          "#Intent;scheme=https;end;";
         return;
       }
-      const link = document.createElement("a");
-      link.download = showAmount
-        ? `เอกสารมอบหรีด-${name || "document"}.png`
-        : `E-card-ขอบคุณ-${name || "ecard"}.png`;
-      link.href = dataUrl;
-      link.click();
-    } catch {}
-    setSaving(false);
-  }
 
-  async function handleDownload() {
-    if (!cardRef.current) return;
-
-    flushSync(() => setDownloadDone(true));
-
-    const ua = navigator.userAgent || navigator.vendor || "";
-    const isAndroid = /android/i.test(ua);
-    const isIAB = isSocialInAppBrowser();
-
-    // Android + in-app browser → force open in Chrome via Intent before generating image
-    if (isAndroid && isIAB) {
-      window.location.href =
-        "intent://" +
-        window.location.host +
-        window.location.pathname +
-        window.location.search +
-        "#Intent;scheme=https;end;";
-      return;
-    }
-
-    setDownloading(true);
-    try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
       const filename = showAmount
         ? `เอกสารมอบหรีด-${name || "document"}.png`
         : `rrb-ecard-${name || "ecard"}.png`;
 
-      const res = await fetch(dataUrl);
+      const res = await fetch(imageUrl);
       const blob = await res.blob();
       const file = new File([blob], filename, { type: blob.type });
 
-      // Mobile: trigger native OS share sheet (iOS/Android native "Save Image" option)
+      // Mobile: native OS share sheet (includes "Save Image" option)
       if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({ files: [file], title: "E-Card หรีดร่วมบุญ" });
-      } else {
-        // Desktop or unsupported: standard programmatic download
-        const objectUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(objectUrl);
+        return;
       }
+
+      // Desktop: standard anchor download
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
     } catch (err) {
-      if ((err as Error).name !== "AbortError") console.error("Download failed:", err);
+      if ((err as Error).name !== "AbortError") console.error("Save failed:", err);
+    } finally {
+      setIsSaving(false);
     }
-    setDownloading(false);
   }
 
   useEffect(() => {
@@ -256,6 +187,32 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     };
   }, [activeView]);
 
+  useEffect(() => {
+    if (activeView === "ai") return;
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      if (!cardRef.current) return;
+
+      try {
+        await document.fonts.ready;
+        const { toPng } = await import("html-to-image");
+        const nextImageUrl = await toPng(cardRef.current, {
+          pixelRatio: 3,
+          cacheBust: true,
+        });
+        if (!cancelled) setImageUrl(nextImageUrl);
+      } catch (error) {
+        console.error("E-card preview failed:", error);
+      }
+    }, 300);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [activeView, amount, cardWidth, memorialPhotoSrc, name, showAmount, title]);
+
   const s = cardWidth / 360;
   // sign proportions mirror SignPreview (BASE_W=288)
   const signW = cardWidth - 2 * Math.round(16 * s);
@@ -321,7 +278,12 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               {showAmount ? "อีการ์ดแสดงยอดเงิน" : "E-Card ขอบคุณ ไม่แสดงยอดเงิน"}
             </p>
 
+            <p className="text-center text-sm text-gray-600 mb-2">
+              💡 แตะค้างที่รูปภาพเพื่อบันทึก หรือ แคปหน้าจอ (Screenshot)
+            </p>
+
             {/* E-card — 1080×1350 px saved (360×450 × pixelRatio 3) */}
+            <div className="relative pointer-events-auto select-none [-webkit-touch-callout:default]">
             <div
               ref={cardRef}
               style={{
@@ -448,37 +410,24 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
             </div>
 
-            {/* Primary download button — hidden after first tap */}
-            {!downloadDone && (
-              <button
-                onClick={handleDownload}
-                disabled={downloading || saving || sharing}
-                className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-              >
-                <Download className="w-4 h-4" />
-                {downloading ? "กำลังสร้างภาพ..." : "กดเปิดนอกแชท เพื่อบันทึกภาพ"}
-              </button>
+            {imageUrl && (
+              <img
+                src={imageUrl}
+                alt={showAmount ? "เอกสารมอบหรีด" : "E-Card ขอบคุณ"}
+                className="absolute inset-0 z-10 block w-full h-full object-cover pointer-events-auto select-none [-webkit-touch-callout:default]"
+              />
             )}
-
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                onClick={handleSaveCard}
-                disabled={downloading || saving || sharing}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border border-gold-200 bg-white text-gold-600 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
-              >
-                <Download className="w-3.5 h-3.5" />
-                {saving ? "กำลังบันทึก..." : "บันทึกภาพ"}
-              </button>
-              <button
-                onClick={handleShare}
-                disabled={downloading || saving || sharing}
-                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border border-gold-200 bg-white text-gold-600 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
-                style={{ borderColor: shared ? "#00b900" : undefined, color: shared ? "#00b900" : undefined }}
-              >
-                {shared ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                แชร์
-              </button>
             </div>
+
+            <button
+              type="button"
+              onClick={handleDownload}
+              disabled={!imageUrl || isSaving}
+              className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              <Download className="w-4 h-4" />
+              {isSaving ? "กำลังบันทึก..." : imageUrl ? "บันทึกภาพ / แชร์" : "กำลังเตรียมรูปภาพ..."}
+            </button>
           </div>
           )}
 
