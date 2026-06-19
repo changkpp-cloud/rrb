@@ -415,15 +415,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
           </div>
           )}
 
-          {!basePath && (
-            <Link
-              href={`/print-name?${new URLSearchParams({ name, title, amount, message }).toString()}`}
-              className="flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl border-2 border-gold-300 bg-cream-50 text-gold-700 font-semibold text-sm hover:bg-cream-100 transition-colors shadow-sm"
-            >
-              ← ย้อนกลับ
-            </Link>
-          )}
-
           <div className={basePath ? "h-20" : "h-2"} />
         </div>
       </main>
