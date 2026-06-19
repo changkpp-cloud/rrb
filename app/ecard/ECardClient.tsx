@@ -188,13 +188,13 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               href={buildViewHref("ecard")}
               active={activeView === "ecard"}
               icon={<ImageIcon className="w-4 h-4" />}
-              label="E-Card ขอบคุณ (ไม่แสดงยอดเงิน)"
+              label={<>E-Card ขอบคุณ<br /><span className="font-normal">(ไม่แสดงยอดเงิน)</span></>}
             />
             <MenuLink
               href={buildViewHref("certificate")}
               active={activeView === "certificate"}
               icon={<FileText className="w-4 h-4" />}
-              label="E-Card ขอบคุณ (แสดงยอดเงิน)"
+              label={<>E-Card ขอบคุณ<br /><span className="font-normal">(แสดงยอดเงิน)</span></>}
             />
             <MenuLink
               href={buildViewHref("ai")}
@@ -408,7 +408,7 @@ function MenuLink({
   href: string;
   active: boolean;
   icon: ReactNode;
-  label: string;
+  label: ReactNode;
 }) {
   return (
     <Link
