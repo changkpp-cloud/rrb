@@ -11,31 +11,26 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Log request (best-effort)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from("ai_photo_requests") as any)
-    .insert({
-      donation_id: donationId || null,
-      memorial_id: memorialId || null,
-      template_key: templateKey || null,
-      final_prompt: prompt || null,
-      generated_image_url: imageUrl,
-      status: "completed",
-      completed_at: new Date().toISOString(),
-    })
-    .catch(() => {});
+  // Log request (best-effort — errors ignored)
+  await supabase.from("ai_photo_requests").insert({
+    donation_id: donationId || null,
+    memorial_id: memorialId || null,
+    template_key: templateKey || null,
+    final_prompt: prompt || null,
+    generated_image_url: imageUrl,
+    status: "completed",
+    completed_at: new Date().toISOString(),
+  });
 
   // Update credit (only when donationId provided)
   if (donationId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing } = await (supabase.from("ai_photo_credits") as any)
+    const { data: existing } = await supabase.from("ai_photo_credits")
       .select("used_count")
       .eq("donation_id", donationId)
       .single();
 
     if (existing) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any)
+      await supabase.from("ai_photo_credits")
         .update({
           used_count:
             (existing as { used_count: number }).used_count + 1,
@@ -43,8 +38,7 @@ export async function POST(req: NextRequest) {
         })
         .eq("donation_id", donationId);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any).insert({
+      await supabase.from("ai_photo_credits").insert({
         donation_id: donationId,
         free_quota: 1,
         used_count: 1,

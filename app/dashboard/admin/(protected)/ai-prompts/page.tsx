@@ -18,7 +18,7 @@ type SavedPrompt = {
 
 async function getPromptRows() {
   const supabase = createAdminClient();
-  const { data } = await (supabase.from("ai_photo_templates") as any)
+  const { data } = await supabase.from("ai_photo_templates")
     .select("template_key, prompt_template")
     .in("template_key", AI_PHOTO_TEMPLATES.map((template) => template.templateKey));
 
@@ -51,8 +51,7 @@ async function savePrompts(formData: FormData) {
     };
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error } = await (supabase.from("ai_photo_templates") as any).upsert(rows, {
+  const { error } = await supabase.from("ai_photo_templates").upsert(rows, {
     onConflict: "template_key",
   });
 

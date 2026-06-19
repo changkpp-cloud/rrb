@@ -81,23 +81,20 @@ async function generateViaExternalService(prompt: string, donorFile: File | null
 
 async function markCreditUsed(donationId: string) {
   const supabase = createAdminClient();
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: existing } = await (supabase.from("ai_photo_credits") as any)
+  const { data: existing } = await supabase.from("ai_photo_credits")
     .select("used_count")
     .eq("donation_id", donationId)
     .single();
 
   if (existing) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("ai_photo_credits") as any)
+    await supabase.from("ai_photo_credits")
       .update({
         used_count: Math.max(1, (existing as { used_count: number }).used_count),
         updated_at: new Date().toISOString(),
       })
       .eq("donation_id", donationId);
   } else {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("ai_photo_credits") as any).insert({
+    await supabase.from("ai_photo_credits").insert({
       donation_id: donationId,
       free_quota: 1,
       used_count: 1,
@@ -108,8 +105,7 @@ async function markCreditUsed(donationId: string) {
 export async function processAiPhotoJob(jobId: string) {
   const supabase = createAdminClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: job } = await (supabase.from("ai_photo_requests") as any)
+  const { data: job } = await supabase.from("ai_photo_requests")
     .select("id, final_prompt, reference_image_url, generated_image_url, donation_id, memorial_id, template_key, status")
     .eq("id", jobId)
     .single();
@@ -117,8 +113,7 @@ export async function processAiPhotoJob(jobId: string) {
   const row = job as AiPhotoRequestRow | null;
   if (!row || row.status === "completed") return;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase.from("ai_photo_requests") as any)
+  await supabase.from("ai_photo_requests")
     .update({ status: "processing", error_message: null })
     .eq("id", jobId);
 
@@ -150,8 +145,7 @@ export async function processAiPhotoJob(jobId: string) {
 
     const storedUrl = await uploadGeneratedImage(jobId, generated);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("ai_photo_requests") as any)
+    await supabase.from("ai_photo_requests")
       .update({
         generated_image_url: storedUrl,
         status: "completed",
@@ -163,8 +157,7 @@ export async function processAiPhotoJob(jobId: string) {
     if (row.donation_id) await markCreditUsed(row.donation_id);
   } catch (error) {
     const message = error instanceof Error ? error.message : "สร้างภาพไม่สำเร็จ";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("ai_photo_requests") as any)
+    await supabase.from("ai_photo_requests")
       .update({
         status: "failed",
         error_message: message,

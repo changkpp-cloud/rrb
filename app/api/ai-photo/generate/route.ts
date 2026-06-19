@@ -66,16 +66,14 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   const supabase = createAdminClient();
 
   if (donationId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: credit } = await (supabase.from("ai_photo_credits") as any)
+    const { data: credit } = await supabase.from("ai_photo_credits")
       .select("free_quota, used_count")
       .eq("donation_id", donationId)
       .single();
 
     const c = credit as { free_quota: number; used_count: number } | null;
     if (c && c.used_count >= c.free_quota) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: prev } = await (supabase.from("ai_photo_requests") as any)
+      const { data: prev } = await supabase.from("ai_photo_requests")
         .select("generated_image_url")
         .eq("donation_id", donationId)
         .eq("status", "completed")
@@ -102,7 +100,7 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   let promptOverride: string | undefined;
   let negativeOverride: string | undefined;
   try {
-    const { data } = await (supabase.from("ai_photo_templates") as any)
+    const { data } = await supabase.from("ai_photo_templates")
       .select("prompt_template, negative_prompt")
       .eq("template_key", template.templateKey)
       .eq("is_active", true)
@@ -141,8 +139,7 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   }
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase.from("ai_photo_requests") as any).insert({
+    await supabase.from("ai_photo_requests").insert({
       donation_id: donationId,
       memorial_id: memorialId,
       template_key: template.templateKey,
@@ -157,23 +154,20 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   }
 
   if (donationId && generatedImageUrl) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existing } = await (supabase.from("ai_photo_credits") as any)
+    const { data: existing } = await supabase.from("ai_photo_credits")
       .select("used_count")
       .eq("donation_id", donationId)
       .single();
 
     if (existing) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any)
+      await supabase.from("ai_photo_credits")
         .update({
           used_count: (existing as { used_count: number }).used_count + 1,
           updated_at: new Date().toISOString(),
         })
         .eq("donation_id", donationId);
     } else {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase.from("ai_photo_credits") as any).insert({
+      await supabase.from("ai_photo_credits").insert({
         donation_id: donationId,
         free_quota: 1,
         used_count: 1,

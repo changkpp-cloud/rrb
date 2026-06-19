@@ -53,8 +53,7 @@ export async function POST(req: NextRequest) {
   const supabase = createAdminClient();
 
   if (donationId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: existingJob, error: existingJobError } = await (supabase.from("ai_photo_requests") as any)
+    const { data: existingJob, error: existingJobError } = await supabase.from("ai_photo_requests")
       .select("id, status, generated_image_url")
       .eq("donation_id", donationId)
       .in("status", ["pending", "processing", "completed"])
@@ -82,8 +81,7 @@ export async function POST(req: NextRequest) {
   let promptOverride: string | undefined;
   let negativeOverride: string | undefined;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from("ai_photo_templates") as any)
+    const { data } = await supabase.from("ai_photo_templates")
       .select("prompt_template, negative_prompt")
       .eq("template_key", template.templateKey)
       .eq("is_active", true)
@@ -123,8 +121,7 @@ export async function POST(req: NextRequest) {
     .from("donations")
     .getPublicUrl(uploadData.path).data.publicUrl;
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { error: insertError } = await (supabase.from("ai_photo_requests") as any)
+  const { error: insertError } = await supabase.from("ai_photo_requests")
     .insert({
       id: jobId,
       donation_id: donationId,

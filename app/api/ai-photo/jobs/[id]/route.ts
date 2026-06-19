@@ -18,8 +18,7 @@ export async function GET(
   const { id } = await params;
   const supabase = createAdminClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data, error } = await (supabase.from("ai_photo_requests") as any)
+  const { data, error } = await supabase.from("ai_photo_requests")
     .select("id, status, generated_image_url, error_message, created_at, completed_at, template_key")
     .eq("id", id)
     .single();

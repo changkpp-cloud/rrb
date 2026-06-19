@@ -1,7 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/lib/supabase/types";
 
-// Typed as `any` so it can access migration-era tables not yet in generated types.
-type AdminClient = SupabaseClient<any>;
+type AdminClient = SupabaseClient<Database>;
 
 let _admin: AdminClient | null = null;
 
@@ -9,7 +9,7 @@ let _admin: AdminClient | null = null;
 // Uses the HTTP API (PostgREST) which is already connection-pooled.
 export function getAdminClient(): AdminClient {
   if (!_admin) {
-    _admin = createClient<any>(
+    _admin = createClient<Database>(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       { auth: { persistSession: false, autoRefreshToken: false } },

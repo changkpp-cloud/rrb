@@ -55,12 +55,12 @@ export async function getSystemHealth(): Promise<SystemHealth> {
     stuckPrintJobs,
     centers,
   ] = await Promise.all([
-    (supabase.from("ai_photo_requests") as any)
+    supabase.from("ai_photo_requests")
       .select("id, error_message, created_at", { count: "exact" })
       .eq("status", "failed")
       .gte("created_at", isoAgo(24 * HOUR)),
 
-    (supabase.from("ai_photo_requests") as any)
+    supabase.from("ai_photo_requests")
       .select("id, status, created_at", { count: "exact" })
       .in("status", ["pending", "processing"])
       .lt("created_at", isoAgo(10 * 60 * 1000)),

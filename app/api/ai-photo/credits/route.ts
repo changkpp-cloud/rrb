@@ -18,8 +18,7 @@ export async function GET(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: credit } = await (supabase.from("ai_photo_credits") as any)
+  const { data: credit } = await supabase.from("ai_photo_credits")
     .select("*")
     .eq("donation_id", donationId)
     .single();
@@ -38,8 +37,7 @@ export async function GET(req: NextRequest) {
   // Fetch existing image if already generated
   let existingImageUrl: string | null = null;
   if (c.used_count >= c.free_quota) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: prev } = await (supabase.from("ai_photo_requests") as any)
+    const { data: prev } = await supabase.from("ai_photo_requests")
       .select("generated_image_url")
       .eq("donation_id", donationId)
       .eq("status", "completed")

@@ -35,7 +35,7 @@ async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<{ p
   const buffer = Buffer.from(await slipFile.arrayBuffer());
   const hash = createHash("sha256").update(buffer).digest("hex");
 
-  const { data: existingSubmission, error: duplicateLookupError } = await (supabase.from("slip_submissions") as any)
+  const { data: existingSubmission, error: duplicateLookupError } = await supabase.from("slip_submissions")
     .select("id")
     .eq("memorial_id", memorialId)
     .eq("slip_hash", hash)
@@ -46,7 +46,7 @@ async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<{ p
   if (duplicateLookupError) return null;
 
   const duplicateDetected = Boolean(existingSubmission?.id);
-  const { data: submission, error: reserveError } = await (supabase.from("slip_submissions") as any)
+  const { data: submission, error: reserveError } = await supabase.from("slip_submissions")
     .insert({
       memorial_id: memorialId,
       slip_hash: hash,
@@ -65,12 +65,12 @@ async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<{ p
 
   if (error) {
     if (submission?.id) {
-      await (supabase.from("slip_submissions") as any).delete().eq("id", submission.id);
+      await supabase.from("slip_submissions").delete().eq("id", submission.id);
     }
     return null;
   }
 
-  await (supabase.from("slip_submissions") as any)
+  await supabase.from("slip_submissions")
     .update({ slip_url: data.path })
     .eq("id", submission.id);
 
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest) {
       confirmed_at: acceptedAt,
     };
 
-    const { data, error } = await (supabase.from("donations") as any)
+    const { data, error } = await supabase.from("donations")
       .insert(insertPayload)
       .select()
       .single();
@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       console.error("Insert error:", error);
 
       if (error.message.includes("Could not find")) {
-        const { data: data2, error: error2 } = await (supabase.from("donations") as any)
+        const { data: data2, error: error2 } = await supabase.from("donations")
           .insert({
             memorial_id,
             donor_name,

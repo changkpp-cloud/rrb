@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     const slipHash = createHash("sha256").update(buffer).digest("hex");
 
     const supabase = createAdminClient();
-    const { data: existingSubmission, error: duplicateLookupError } = await (supabase.from("slip_submissions") as any)
+    const { data: existingSubmission, error: duplicateLookupError } = await supabase.from("slip_submissions")
       .select("id")
       .eq("memorial_id", memorial_id)
       .eq("slip_hash", slipHash)
@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     const duplicateDetected = Boolean(existingSubmission?.id);
-    const { data: submission, error: reserveError } = await (supabase.from("slip_submissions") as any)
+    const { data: submission, error: reserveError } = await supabase.from("slip_submissions")
       .insert({
         memorial_id,
         slip_hash: slipHash,
@@ -66,13 +66,13 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       if (submission?.id) {
-        await (supabase.from("slip_submissions") as any).delete().eq("id", submission.id);
+        await supabase.from("slip_submissions").delete().eq("id", submission.id);
       }
       console.error("Slip upload error:", uploadError);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    await (supabase.from("slip_submissions") as any)
+    await supabase.from("slip_submissions")
       .update({ slip_url: uploadData.path })
       .eq("id", submission.id);
 

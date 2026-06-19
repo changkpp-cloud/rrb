@@ -87,16 +87,14 @@ export async function POST(req: NextRequest) {
 
   // Credit check (only when donationId provided)
   if (donationId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: credit } = await (supabase.from("ai_photo_credits") as any)
+    const { data: credit } = await supabase.from("ai_photo_credits")
       .select("free_quota, used_count")
       .eq("donation_id", donationId)
       .single();
 
     const c = credit as { free_quota: number; used_count: number } | null;
     if (c && c.used_count >= c.free_quota) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: prev } = await (supabase.from("ai_photo_requests") as any)
+      const { data: prev } = await supabase.from("ai_photo_requests")
         .select("generated_image_url")
         .eq("donation_id", donationId)
         .eq("status", "completed")
@@ -122,8 +120,7 @@ export async function POST(req: NextRequest) {
   let promptOverride: string | undefined;
   let negativeOverride: string | undefined;
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase.from("ai_photo_templates") as any)
+    const { data } = await supabase.from("ai_photo_templates")
       .select("prompt_template, negative_prompt")
       .eq("template_key", template.templateKey)
       .eq("is_active", true)

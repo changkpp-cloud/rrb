@@ -14,7 +14,7 @@ type JobMeta = {
 async function getJobMeta(id: string): Promise<JobMeta | null> {
   try {
     const supabase = createAdminClient();
-    const { data, error } = await (supabase.from("ai_photo_requests") as any)
+    const { data, error } = await supabase.from("ai_photo_requests")
       .select("status, generated_image_url")
       .eq("id", id)
       .single();

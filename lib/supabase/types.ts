@@ -623,6 +623,243 @@ export interface Database {
         };
         Relationships: [];
       };
+      slip_submissions: {
+        Row: {
+          id: string;
+          memorial_id: string;
+          slip_hash: string;
+          slip_url: string | null;
+          duplicate_detected: boolean;
+          duplicate_of: string | null;
+          review_status: "none" | "needs_review" | "reviewed" | "ignored";
+          first_seen_at: string;
+        };
+        Insert: {
+          id?: string;
+          memorial_id: string;
+          slip_hash: string;
+          slip_url?: string | null;
+          duplicate_detected?: boolean;
+          duplicate_of?: string | null;
+          review_status?: "none" | "needs_review" | "reviewed" | "ignored";
+          first_seen_at?: string;
+        };
+        Update: {
+          id?: string;
+          memorial_id?: string;
+          slip_hash?: string;
+          slip_url?: string | null;
+          duplicate_detected?: boolean;
+          duplicate_of?: string | null;
+          review_status?: "none" | "needs_review" | "reviewed" | "ignored";
+          first_seen_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "slip_submissions_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
+        ];
+      };
+      ai_photo_templates: {
+        Row: {
+          id: string;
+          template_key: string;
+          template_name: string;
+          description: string | null;
+          prompt_template: string;
+          negative_prompt: string | null;
+          required_inputs: Json | null;
+          sort_order: number;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          template_key: string;
+          template_name: string;
+          description?: string | null;
+          prompt_template: string;
+          negative_prompt?: string | null;
+          required_inputs?: Json | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          template_key?: string;
+          template_name?: string;
+          description?: string | null;
+          prompt_template?: string;
+          negative_prompt?: string | null;
+          required_inputs?: Json | null;
+          sort_order?: number;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ai_photo_requests: {
+        Row: {
+          id: string;
+          donation_id: string | null;
+          memorial_id: string | null;
+          template_key: string | null;
+          final_prompt: string | null;
+          reference_image_url: string | null;
+          generated_image_url: string | null;
+          status: "pending" | "processing" | "completed" | "failed";
+          error_message: string | null;
+          created_at: string;
+          completed_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          donation_id?: string | null;
+          memorial_id?: string | null;
+          template_key?: string | null;
+          final_prompt?: string | null;
+          reference_image_url?: string | null;
+          generated_image_url?: string | null;
+          status?: "pending" | "processing" | "completed" | "failed";
+          error_message?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          donation_id?: string | null;
+          memorial_id?: string | null;
+          template_key?: string | null;
+          final_prompt?: string | null;
+          reference_image_url?: string | null;
+          generated_image_url?: string | null;
+          status?: "pending" | "processing" | "completed" | "failed";
+          error_message?: string | null;
+          created_at?: string;
+          completed_at?: string | null;
+        };
+        Relationships: [
+          { foreignKeyName: "ai_photo_requests_donation_id_fkey"; columns: ["donation_id"]; referencedRelation: "donations"; referencedColumns: ["id"] },
+          { foreignKeyName: "ai_photo_requests_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
+        ];
+      };
+      ai_photo_credits: {
+        Row: {
+          id: string;
+          donation_id: string;
+          free_quota: number;
+          used_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          donation_id: string;
+          free_quota?: number;
+          used_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          donation_id?: string;
+          free_quota?: number;
+          used_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "ai_photo_credits_donation_id_fkey"; columns: ["donation_id"]; referencedRelation: "donations"; referencedColumns: ["id"] }
+        ];
+      };
+      outbox_jobs: {
+        Row: {
+          id: string;
+          job_type: string;
+          payload: Record<string, unknown>;
+          status: "pending" | "processing" | "completed" | "failed";
+          dedupe_key: string | null;
+          attempts: number;
+          max_attempts: number;
+          last_error: string | null;
+          scheduled_at: string;
+          claimed_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          job_type: string;
+          payload: Record<string, unknown>;
+          status?: "pending" | "processing" | "completed" | "failed";
+          dedupe_key?: string | null;
+          attempts?: number;
+          max_attempts?: number;
+          last_error?: string | null;
+          scheduled_at?: string;
+          claimed_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          job_type?: string;
+          payload?: Record<string, unknown>;
+          status?: "pending" | "processing" | "completed" | "failed";
+          dedupe_key?: string | null;
+          attempts?: number;
+          max_attempts?: number;
+          last_error?: string | null;
+          scheduled_at?: string;
+          claimed_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      memorial_persons: {
+        Row: {
+          id: string;
+          memorial_id: string;
+          display_name: string;
+          relationship: string;
+          role_in_photo: string;
+          photo_url: string | null;
+          allow_in_sim: boolean;
+          is_primary: boolean;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          memorial_id: string;
+          display_name: string;
+          relationship: string;
+          role_in_photo?: string;
+          photo_url?: string | null;
+          allow_in_sim?: boolean;
+          is_primary?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          memorial_id?: string;
+          display_name?: string;
+          relationship?: string;
+          role_in_photo?: string;
+          photo_url?: string | null;
+          allow_in_sim?: boolean;
+          is_primary?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          { foreignKeyName: "memorial_persons_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
+        ];
+      };
     };
     Views: {
       center_report_totals: {
@@ -641,12 +878,27 @@ export interface Database {
           waste_reduced_kg: number | null;
           updated_at: string | null;
         };
+        Relationships: [];
       };
     };
     Functions: {
       refresh_center_daily_stats: {
         Args: { p_center_id: string; p_report_date: string };
         Returns: undefined;
+      };
+      claim_outbox_jobs: {
+        Args: { p_batch_size: number };
+        Returns: unknown;
+      };
+      confirm_donation: {
+        Args: {
+          p_donation_id: string;
+          p_provider: string;
+          p_provider_ref: string;
+          p_amount: number;
+          p_metadata: Record<string, unknown>;
+        };
+        Returns: { ok: boolean; reason?: string; memorial_id?: string } | null;
       };
     };
     Enums: {

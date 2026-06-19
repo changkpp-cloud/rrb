@@ -62,7 +62,7 @@ async function handleTemplateForm(request: NextRequest) {
   let promptOverride: string | undefined;
   let negativeOverride: string | undefined;
   try {
-    const { data } = await (supabase.from("ai_photo_templates") as any)
+    const { data } = await supabase.from("ai_photo_templates")
       .select("prompt_template, negative_prompt")
       .eq("template_key", template.templateKey)
       .eq("is_active", true)
