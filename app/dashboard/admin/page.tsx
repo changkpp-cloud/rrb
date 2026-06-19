@@ -39,7 +39,7 @@ export default function AdminLoginPage() {
             <div className="w-16 h-16 rounded-full bg-gold-100 border-2 border-gold-300 flex items-center justify-center mx-auto">
               <BarChart3 className="w-8 h-8 text-gold-600" />
             </div>
-            <h2 className="text-xl font-bold text-gold-800">Dashboard ESG แอดมิน</h2>
+            <h2 className="text-xl font-bold text-gold-800">Dashboard RRB Admin</h2>
             <p className="text-xs text-gold-500 leading-relaxed">
               ภาพรวมระบบทั้งหมด · ศูนย์ · งานศพ · ESG · การเงิน
             </p>
