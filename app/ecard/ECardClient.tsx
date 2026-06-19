@@ -8,7 +8,6 @@ import { Camera, Download, FileText, Image as ImageIcon } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
-import { isSocialInAppBrowser } from "@/lib/browser-actions";
 
 const SIGN_W = 260;
 const SIGN_H = 72;
@@ -36,7 +35,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const cardRef = useRef<HTMLDivElement>(null);
 
   const [imageUrl, setImageUrl] = useState("");
-  const [isSaving, setIsSaving] = useState(false);
+  const [storageUrl, setStorageUrl] = useState("");
   const [cardWidth, setCardWidth] = useState(360);
   const [memorialPhotoSrc, setMemorialPhotoSrc] = useState(memorial.photo_url ?? "");
 
@@ -62,55 +61,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     if (donationId) q.set("donation_id", donationId);
     q.set("view", view);
     return `${basePath}/ecard?${q.toString()}`;
-  }
-
-  async function handleDownload() {
-    if (!imageUrl) return;
-    setIsSaving(true);
-    try {
-      const ua = navigator.userAgent || navigator.vendor || "";
-      const isAndroid = /android/i.test(ua);
-      const isIAB = isSocialInAppBrowser();
-
-      // Android + FB/LINE IAB → force open in Chrome via Intent
-      if (isAndroid && isIAB) {
-        window.location.href =
-          "intent://" +
-          window.location.host +
-          window.location.pathname +
-          window.location.search +
-          "#Intent;scheme=https;end;";
-        return;
-      }
-
-      const filename = showAmount
-        ? `เอกสารมอบหรีด-${name || "document"}.png`
-        : `rrb-ecard-${name || "ecard"}.png`;
-
-      const res = await fetch(imageUrl);
-      const blob = await res.blob();
-      const file = new File([blob], filename, { type: blob.type });
-
-      // Mobile: native OS share sheet (includes "Save Image" option)
-      if (navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({ files: [file], title: "E-Card หรีดร่วมบุญ" });
-        return;
-      }
-
-      // Desktop: standard anchor download
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
-    } catch (err) {
-      if ((err as Error).name !== "AbortError") console.error("Save failed:", err);
-    } finally {
-      setIsSaving(false);
-    }
   }
 
   useEffect(() => {
@@ -191,19 +141,28 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     if (activeView === "ai") return;
 
     let cancelled = false;
+    setStorageUrl("");
+
     const timer = window.setTimeout(async () => {
       if (!cardRef.current) return;
 
       try {
         await document.fonts.ready;
         const { toPng } = await import("html-to-image");
-        const nextImageUrl = await toPng(cardRef.current, {
-          pixelRatio: 3,
-          cacheBust: true,
+        const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+        if (cancelled) return;
+        setImageUrl(dataUrl);
+
+        // Upload to storage → get HTTPS URL for /api/download proxy
+        const res = await fetch("/api/upload-ecard", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageDataUrl: dataUrl, memorialId: memorial.id }),
         });
-        if (!cancelled) setImageUrl(nextImageUrl);
+        const json = await res.json() as { url?: string };
+        if (!cancelled && json.url) setStorageUrl(json.url);
       } catch (error) {
-        console.error("E-card preview failed:", error);
+        console.error("E-card generation failed:", error);
       }
     }, 300);
 
@@ -211,7 +170,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [activeView, amount, cardWidth, memorialPhotoSrc, name, showAmount, title]);
+  }, [activeView, amount, cardWidth, memorial.id, memorialPhotoSrc, name, showAmount, title]);
 
   const s = cardWidth / 360;
   // sign proportions mirror SignPreview (BASE_W=288)
@@ -421,12 +380,14 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
             <button
               type="button"
-              onClick={handleDownload}
-              disabled={!imageUrl || isSaving}
+              onClick={() => {
+                window.location.href = `/api/download?url=${encodeURIComponent(storageUrl)}`;
+              }}
+              disabled={!storageUrl}
               className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <Download className="w-4 h-4" />
-              {isSaving ? "กำลังบันทึก..." : imageUrl ? "บันทึกภาพ / แชร์" : "กำลังเตรียมรูปภาพ..."}
+              {storageUrl ? "บันทึกภาพ / แชร์" : "กำลังเตรียมรูปภาพ..."}
             </button>
           </div>
           )}
