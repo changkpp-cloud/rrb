@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 
 export default function SiteHeader() {
   return (
@@ -7,19 +6,16 @@ export default function SiteHeader() {
 
       {/* Dynamic Island — dark floating pill */}
       <div className="ios-dynamic-island flex items-center gap-2.5 px-5 py-[9px]">
-        <Image src="/rrb-logo-removebg-preview.png" alt="RRB" width={60} height={24} className="h-5 w-auto object-contain" unoptimized />
+        <span className="text-gold-400 text-sm select-none">❖</span>
         <div className="flex items-baseline gap-2">
-          <span
-            className="text-sm font-bold text-white leading-none"
-          >
+          <span className="text-sm font-bold text-white leading-none">
             หรีดร่วมบุญ
           </span>
-          <span
-            className="text-sm font-bold text-gold-400 uppercase leading-none"
-          >
+          <span className="text-sm font-bold text-gold-400 uppercase leading-none">
             Zero Waste
           </span>
         </div>
+        <span className="text-gold-400 text-sm select-none">❖</span>
       </div>
 
       {/* Dashboard button — floating right */}

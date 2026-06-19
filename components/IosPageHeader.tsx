@@ -1,5 +1,3 @@
-import Image from "next/image";
-
 interface Props {
   title: string;
   subtitle?: string;
@@ -24,21 +22,18 @@ export default function IosPageHeader({ title, subtitle, backHref, rightSlot }: 
 
       {/* Dynamic Island pill */}
       <div className="flex items-center gap-2.5 px-5 py-[9px]" style={darkPill}>
-        <Image src="/rrb-logo-removebg-preview.png" alt="RRB" width={60} height={24} className="h-5 w-auto object-contain" unoptimized />
+        <span className="text-gold-400 text-sm select-none">❖</span>
         <div className="flex items-baseline gap-2">
-          <span
-            className="text-sm font-bold text-white leading-none"
-          >
+          <span className="text-sm font-bold text-white leading-none">
             {title}
           </span>
           {subtitle && (
-            <span
-              className="text-sm font-bold text-gold-400 uppercase leading-none"
-            >
+            <span className="text-sm font-bold text-gold-400 uppercase leading-none">
               {subtitle}
             </span>
           )}
         </div>
+        <span className="text-gold-400 text-sm select-none">❖</span>
       </div>
 
       {/* Right action slot */}
