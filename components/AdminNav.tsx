@@ -68,7 +68,7 @@ export default function AdminNav() {
               style={{ fontSize: "clamp(11px,1.6vw,14px)" }}
               className="font-bold gold-gradient-text leading-tight"
             >
-              ESG Admin
+              RRB Admin
             </p>
             <p style={{ fontSize: "clamp(8px,1vw,9px)" }} className="text-gold-500 -mt-0.5">
               หรีดร่วมบุญ · ส่วนกลาง

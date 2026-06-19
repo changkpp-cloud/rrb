@@ -31,7 +31,7 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <IosPageHeader title="ESG Admin" subtitle="ส่วนกลาง" backHref="/dashboard" />
+      <IosPageHeader title="RRB Admin" subtitle="ส่วนกลาง" backHref="/dashboard" />
 
       <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
         <div className="w-full max-w-sm space-y-6">

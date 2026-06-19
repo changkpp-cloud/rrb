@@ -51,7 +51,7 @@ export default function DashboardPage() {
                 <BarChart3 className="w-6 h-6 text-gold-600" />
               </div>
               <div>
-                <p className="text-base font-bold text-gold-800">ESG Admin</p>
+                <p className="text-base font-bold text-gold-800">RRB Admin</p>
                 <p className="text-xs text-gold-500 mt-0.5 leading-relaxed">ภาพรวมระบบ · ศูนย์ · งานศพ · รายงาน ESG</p>
               </div>
             </div>
