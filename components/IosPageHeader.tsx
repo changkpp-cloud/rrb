@@ -24,7 +24,7 @@ export default function IosPageHeader({ title, subtitle, backHref, rightSlot }: 
 
       {/* Dynamic Island pill */}
       <div className="flex items-center gap-2.5 px-5 py-[9px]" style={darkPill}>
-        <Image src="/rrb-logo.jpg" alt="RRB" width={60} height={24} className="h-5 w-auto object-contain" />
+        <Image src="/rrb-logo.jpg" alt="RRB" width={60} height={24} className="h-5 w-auto object-contain" unoptimized />
         <div className="flex items-baseline gap-2">
           <span
             className="text-sm font-bold text-white leading-none"

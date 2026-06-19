@@ -66,6 +66,7 @@ export default function AdminNav() {
             height={24}
             className="object-contain"
             style={{ height: "clamp(14px,2vw,20px)", width: "auto" }}
+            unoptimized
           />
           <div>
             <p
