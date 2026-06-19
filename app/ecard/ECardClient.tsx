@@ -134,18 +134,25 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     try {
       const { toPng } = await import("html-to-image");
       const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
-      const res = await fetch(dataUrl);
-      const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
       const filename = showAmount
         ? `เอกสารมอบหรีด-${name || "document"}.png`
         : `rrb-ecard-${name || "ecard"}.png`;
 
       if (isSocialInAppBrowser()) {
-        // FB/LINE IAB: open blob URL as new page so user can long-press to save
-        openUrl(objectUrl);
-        setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+        // FB/LINE IAB: blob URLs are blocked — upload to storage and navigate to real HTTPS URL
+        const res = await fetch("/api/upload-ecard", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ imageDataUrl: dataUrl, memorialId: memorial.id }),
+        });
+        const json = await res.json() as { url?: string };
+        if (json.url) {
+          window.location.href = json.url;
+        }
       } else {
+        const uploadRes = await fetch(dataUrl);
+        const blob = await uploadRes.blob();
+        const objectUrl = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = objectUrl;
         a.download = filename;
