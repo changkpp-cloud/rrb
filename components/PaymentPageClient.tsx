@@ -182,14 +182,19 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               </div>
 
               {/* Bank info side */}
-              <div className="flex-1 pl-4 flex flex-col justify-center space-y-1.5">
-                <p className="text-[11px] font-semibold text-gold-800 leading-snug">
-                  ชื่อบัญชี ศูนย์หรีดร่วมบุญ
-                </p>
-                <p className="text-[11px] text-gold-600">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
-                <p className="text-sm font-bold text-gold-800 tracking-widest pt-0.5">
-                  {memorial.bank_account_number}
-                </p>
+              <div className="flex-1 pl-4 flex flex-col justify-center space-y-2">
+                <div>
+                  <p className="text-[10px] text-gold-500 font-medium">ชื่อบัญชี</p>
+                  <p className="text-base font-bold text-gold-800 leading-tight">ศูนย์หรีดร่วมบุญ</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gold-500 font-medium">ธนาคาร</p>
+                  <p className="text-sm font-semibold text-gold-700">{memorial.bank_name.split("\n")[1] ?? memorial.bank_name}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-gold-500 font-medium">เลขบัญชี</p>
+                  <p className="text-xl font-bold text-gold-800 tracking-widest">{memorial.bank_account_number}</p>
+                </div>
               </div>
             </div>
 
