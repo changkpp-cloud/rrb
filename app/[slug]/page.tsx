@@ -53,13 +53,13 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
 
   if (!memorial) {
     return {
-      title: "หน้ารำลึกผู้วายชนม์",
+      title: "หรีดร่วมบุญ",
       description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ",
       alternates: { canonical: pageUrl },
     };
   }
 
-  const title = `${memorial.name} | หน้ารำลึกผู้วายชนม์`;
+  const title = memorial.name;
   const description = buildShareDescription(memorial);
   const imageUrl = absoluteUrl(memorial.photo_url);
   const images = imageUrl ? [{ url: imageUrl, alt: memorial.name }] : undefined;
@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
       title,
       description,
       url: pageUrl,
-      siteName: "หน้ารำลึกผู้วายชนม์",
+      siteName: "หรีดร่วมบุญ",
       type: "website",
       images,
     },
