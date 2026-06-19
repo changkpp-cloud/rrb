@@ -12,7 +12,7 @@ import {
   Users,
   WandSparkles,
 } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
+import Image from "next/image";
 
 const NAV = [
   { href: "/dashboard/admin/overview", label: "ภาพรวม", icon: LayoutDashboard },
@@ -59,9 +59,13 @@ export default function AdminNav() {
     <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
       <div className="max-w-4xl mx-auto px-4 py-2 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <LotusIcon
-            style={{ width: "clamp(14px,2vw,20px)", height: "clamp(14px,2vw,20px)" }}
-            className="text-gold-600"
+          <Image
+            src="/RRB Logo.jpg"
+            alt="RRB"
+            width={60}
+            height={24}
+            className="object-contain"
+            style={{ height: "clamp(14px,2vw,20px)", width: "auto" }}
           />
           <div>
             <p

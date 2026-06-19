@@ -1,4 +1,4 @@
-import LotusIcon from "./LotusIcon";
+import Image from "next/image";
 
 interface Props {
   title: string;
@@ -24,7 +24,7 @@ export default function IosPageHeader({ title, subtitle, backHref, rightSlot }: 
 
       {/* Dynamic Island pill */}
       <div className="flex items-center gap-2.5 px-5 py-[9px]" style={darkPill}>
-        <LotusIcon className="w-[14px] h-[14px] text-gold-300 opacity-90" />
+        <Image src="/RRB Logo.jpg" alt="RRB" width={60} height={24} className="h-5 w-auto object-contain" />
         <div className="flex items-baseline gap-2">
           <span
             className="text-sm font-bold text-white leading-none"
@@ -39,7 +39,6 @@ export default function IosPageHeader({ title, subtitle, backHref, rightSlot }: 
             </span>
           )}
         </div>
-        <LotusIcon className="w-[14px] h-[14px] text-gold-300 opacity-90 scale-x-[-1]" />
       </div>
 
       {/* Right action slot */}

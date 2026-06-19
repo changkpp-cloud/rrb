@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CreditCard, Heart, Home, Plus, Tag } from "lucide-react";
-import LotusIcon from "./LotusIcon";
 
 const NAV_ITEMS = [
   {
@@ -82,14 +82,13 @@ export default function SmartAppHeader() {
       >
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-center px-4 sm:h-16 sm:px-6">
           <Link href="/evt-2026-rra8" className="flex items-center gap-3" aria-label="หรีดร่วมบุญ Zero Waste">
-            <LotusIcon className="h-6 w-6 text-gold-600 sm:h-7 sm:w-7" />
+            <Image src="/RRB Logo.jpg" alt="RRB" width={120} height={40} className="h-9 w-auto object-contain" />
             <div className="text-center leading-none">
               <p className="text-[17px] font-bold text-gold-900 sm:text-xl">หรีดร่วมบุญ</p>
               <p className="mt-1 text-[11px] font-bold uppercase tracking-[0.2em] text-gold-500 sm:text-xs">
                 Zero Waste
               </p>
             </div>
-            <LotusIcon className="h-6 w-6 scale-x-[-1] text-gold-600 sm:h-7 sm:w-7" />
           </Link>
           <Link
             href="/dashboard"
