@@ -17,7 +17,45 @@ CREATE TABLE IF NOT EXISTS payments (
 
 CREATE INDEX IF NOT EXISTS payments_donation_id_idx ON payments (donation_id);
 
--- ── 2. outbox_jobs (transactional outbox) ────────────────────
+-- ── 2. slip_submissions (duplicate slip warning per memorial) ──
+ALTER TABLE donations
+  ADD COLUMN IF NOT EXISTS slip_hash text,
+  ADD COLUMN IF NOT EXISTS slip_duplicate_warning boolean NOT NULL DEFAULT false;
+
+CREATE TABLE IF NOT EXISTS slip_submissions (
+  id                 uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
+  memorial_id        uuid        NOT NULL REFERENCES memorials(id) ON DELETE CASCADE,
+  slip_hash          text        NOT NULL,
+  slip_url           text,
+  duplicate_detected boolean     NOT NULL DEFAULT false,
+  duplicate_of       uuid        REFERENCES slip_submissions(id) ON DELETE SET NULL,
+  review_status      text        NOT NULL DEFAULT 'none'
+                     CHECK (review_status IN ('none','needs_review','reviewed','ignored')),
+  first_seen_at      timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE slip_submissions
+  ADD COLUMN IF NOT EXISTS duplicate_detected boolean NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS duplicate_of uuid REFERENCES slip_submissions(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS review_status text NOT NULL DEFAULT 'none';
+
+ALTER TABLE slip_submissions
+  DROP CONSTRAINT IF EXISTS slip_submissions_memorial_hash_unique;
+
+DROP INDEX IF EXISTS donations_memorial_slip_hash_unique;
+DROP INDEX IF EXISTS idx_donations_memorial_slip_hash;
+
+CREATE INDEX IF NOT EXISTS donations_memorial_slip_hash_idx
+  ON donations (memorial_id, slip_hash)
+  WHERE slip_hash IS NOT NULL;
+
+CREATE INDEX IF NOT EXISTS slip_submissions_memorial_hash_idx
+  ON slip_submissions (memorial_id, slip_hash, first_seen_at DESC);
+
+CREATE INDEX IF NOT EXISTS slip_submissions_memorial_id_idx
+  ON slip_submissions (memorial_id, first_seen_at DESC);
+
+-- ── 3. outbox_jobs (transactional outbox) ────────────────────
 CREATE TABLE IF NOT EXISTS outbox_jobs (
   id           uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
   job_type     text        NOT NULL,
@@ -38,7 +76,7 @@ CREATE INDEX IF NOT EXISTS outbox_jobs_claimable_idx
   ON outbox_jobs (scheduled_at)
   WHERE status = 'pending';
 
--- ── 3. ceremony_stats (per-memorial summary) ─────────────────
+-- ── 4. ceremony_stats (per-memorial summary) ─────────────────
 CREATE TABLE IF NOT EXISTS ceremony_stats (
   memorial_id          uuid        PRIMARY KEY REFERENCES memorials(id) ON DELETE CASCADE,
   total_donations      int         NOT NULL DEFAULT 0,
@@ -51,7 +89,7 @@ CREATE TABLE IF NOT EXISTS ceremony_stats (
   updated_at           timestamptz NOT NULL DEFAULT now()
 );
 
--- ── 4. tenant_stats (per-center summary) ─────────────────────
+-- ── 5. tenant_stats (per-center summary) ─────────────────────
 CREATE TABLE IF NOT EXISTS tenant_stats (
   center_id            uuid        PRIMARY KEY REFERENCES centers(id) ON DELETE CASCADE,
   total_memorials      int         NOT NULL DEFAULT 0,
@@ -64,7 +102,7 @@ CREATE TABLE IF NOT EXISTS tenant_stats (
   updated_at           timestamptz NOT NULL DEFAULT now()
 );
 
--- ── 5. Trigger: ceremony_stats ← donations ───────────────────
+-- ── 6. Trigger: ceremony_stats ← donations ───────────────────
 CREATE OR REPLACE FUNCTION fn_update_ceremony_stats()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
@@ -138,7 +176,7 @@ CREATE TRIGGER trg_donations_ceremony_stats
   AFTER INSERT OR UPDATE OF status OR DELETE ON donations
   FOR EACH ROW EXECUTE FUNCTION fn_update_ceremony_stats();
 
--- ── 6. Trigger: tenant_stats ← memorials (memorial counts) ──
+-- ── 7. Trigger: tenant_stats ← memorials (memorial counts) ──
 CREATE OR REPLACE FUNCTION fn_update_tenant_memorial_counts()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 BEGIN
@@ -179,7 +217,7 @@ CREATE TRIGGER trg_memorials_tenant_stats
   AFTER INSERT OR UPDATE OF funeral_status ON memorials
   FOR EACH ROW EXECUTE FUNCTION fn_update_tenant_memorial_counts();
 
--- ── 7. Trigger: tenant_stats ← donations (donation totals) ───
+-- ── 8. Trigger: tenant_stats ← donations (donation totals) ───
 CREATE OR REPLACE FUNCTION fn_update_tenant_donation_stats()
 RETURNS TRIGGER LANGUAGE plpgsql AS $$
 DECLARE
@@ -242,7 +280,7 @@ CREATE TRIGGER trg_donations_tenant_stats
   AFTER INSERT OR UPDATE OF status OR DELETE ON donations
   FOR EACH ROW EXECUTE FUNCTION fn_update_tenant_donation_stats();
 
--- ── 8. claim_outbox_jobs (FOR UPDATE SKIP LOCKED) ────────────
+-- ── 9. claim_outbox_jobs (FOR UPDATE SKIP LOCKED) ────────────
 CREATE OR REPLACE FUNCTION claim_outbox_jobs(p_batch_size int DEFAULT 10)
 RETURNS SETOF outbox_jobs LANGUAGE sql AS $$
   UPDATE outbox_jobs
@@ -262,13 +300,14 @@ RETURNS SETOF outbox_jobs LANGUAGE sql AS $$
   RETURNING *;
 $$;
 
--- ── 9. confirm_donation (atomic confirm + enqueue print) ──────
+-- ── 10. confirm_donation (atomic confirm + enqueue print) ─────
 CREATE OR REPLACE FUNCTION confirm_donation(
   p_donation_id  uuid,
   p_provider     text,
   p_provider_ref text,
   p_amount       numeric,
-  p_metadata     jsonb DEFAULT NULL
+  p_metadata     jsonb DEFAULT NULL,
+  p_slip_hash    text DEFAULT NULL
 )
 RETURNS jsonb LANGUAGE plpgsql AS $$
 DECLARE
@@ -289,7 +328,8 @@ BEGIN
   UPDATE donations
   SET status       = 'confirmed',
       confirmed_at = now(),
-      reviewed_at  = now()
+      reviewed_at  = now(),
+      slip_hash    = COALESCE(slip_hash, p_slip_hash)
   WHERE id = p_donation_id
   RETURNING memorial_id INTO v_memorial_id;
 
@@ -310,7 +350,7 @@ BEGIN
 END;
 $$;
 
--- ── 10. Backfill ceremony_stats from existing donations ───────
+-- ── 11. Backfill ceremony_stats from existing donations ───────
 INSERT INTO ceremony_stats (
   memorial_id, total_donations, confirmed_donations,
   pending_donations, rejected_donations, total_amount, wreaths_reduced
@@ -327,7 +367,7 @@ FROM donations
 GROUP BY memorial_id
 ON CONFLICT (memorial_id) DO NOTHING;
 
--- ── 11. Backfill tenant_stats ────────────────────────────────
+-- ── 12. Backfill tenant_stats ────────────────────────────────
 INSERT INTO tenant_stats (center_id, total_memorials, active_memorials, closed_memorials)
 SELECT
   center_id,

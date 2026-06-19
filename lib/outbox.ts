@@ -1,6 +1,6 @@
 import { getAdminClient } from "@/lib/supabase";
 
-export type JobType = "print_nameplate";
+export type JobType = "print_nameplate" | "dispatch_print";
 
 export type OutboxJob = {
   id: string;

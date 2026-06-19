@@ -27,6 +27,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const [savedQR, setSavedQR] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verified, setVerified] = useState(false);
+  const [slipError, setSlipError] = useState("");
 
   const fileRef = useRef<HTMLInputElement>(null);
   const qrRef = useRef<HTMLDivElement>(null);
@@ -40,6 +41,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     setSlipPreview(URL.createObjectURL(f));
     setVerifying(false);
     setVerified(false);
+    setSlipError("");
   }
 
   function copyAccount() {
@@ -102,23 +104,43 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   async function handleVerify() {
     if (!slipFile || parsedAmount <= 0) return;
     setVerifying(true);
+    setSlipError("");
 
     // Upload slip first, defer donation creation until user enters name
     let slipUrl = "";
+    let slipHash = "";
+    let duplicateSlip = false;
     try {
       const form = new FormData();
       form.append("memorial_id", memorial.id);
       form.append("slip", slipFile);
       const res = await fetch("/api/upload-slip", { method: "POST", body: form });
       const data = await res.json();
+      if (!res.ok) {
+        setSlipError(
+          res.status === 409 || data?.duplicate
+            ? "สลิปนี้ถูกใช้แล้วในงานนี้ กรุณาใช้สลิปการโอนใหม่"
+            : "อัปโหลดสลิปไม่สำเร็จ กรุณาลองอีกครั้ง",
+        );
+        setVerifying(false);
+        return;
+      }
       slipUrl = data?.slip_url ?? "";
-    } catch { /* slip upload failed — continue without URL */ }
+      slipHash = data?.slip_hash ?? "";
+      duplicateSlip = Boolean(data?.duplicate);
+    } catch {
+      setSlipError("อัปโหลดสลิปไม่สำเร็จ กรุณาลองอีกครั้ง");
+      setVerifying(false);
+      return;
+    }
 
     const q = new URLSearchParams({
       memorial_id: memorial.id,
       amount: String(parsedAmount),
       slip_url: slipUrl,
+      slip_hash: slipHash,
     });
+    if (duplicateSlip) q.set("duplicate", "true");
     setVerified(true);
     if (slug) {
       savePaidData(slug, { memorial_id: memorial.id, slip_url: slipUrl, amount: String(parsedAmount) });
@@ -246,6 +268,11 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               >
                 ตรวจสอบสลิป
               </Button>
+              {slipError && (
+                <p className="mt-2 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-center text-xs font-medium text-red-700">
+                  {slipError}
+                </p>
+              )}
             </div>
 
           </Card>

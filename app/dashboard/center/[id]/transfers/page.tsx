@@ -62,14 +62,13 @@ async function getTransfers(centerId: string) {
       const rows = donationMap.get(m.id) ?? [];
       const confirmed = rows.filter((d) => d.status === "confirmed");
       const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-      const pending = rows.filter((d) => d.status === "pending").length;
       const unposted = confirmed.filter((d) => d.nameplate_status !== "posted").length;
       const ceremonyReached = new Date(m.ceremony_date) <= today;
       const netAmount = Math.max(amount - SYSTEM_FEE, 0);
       const hasHostBank = Boolean(m.host_bank_account_number);
-      const ready = m.funeral_status === "active" && ceremonyReached && pending === 0 && unposted === 0 && confirmed.length > 0 && hasHostBank;
+      const ready = m.funeral_status === "active" && ceremonyReached && unposted === 0 && confirmed.length > 0 && hasHostBank;
 
-      return { memorial: m, amount, netAmount, confirmed: confirmed.length, pending, unposted, ceremonyReached, hasHostBank, ready };
+      return { memorial: m, amount, netAmount, confirmed: confirmed.length, unposted, ceremonyReached, hasHostBank, ready };
     })
     .filter((row) => row.memorial.funeral_status === "active" || row.amount > 0)
     .sort((a, b) => Number(b.ready) - Number(a.ready) || Number(b.ceremonyReached) - Number(a.ceremonyReached));
@@ -105,7 +104,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
           <p className="text-[11px] font-semibold text-amber-800">หลักการทำงาน</p>
-          <p className="text-[10px] text-amber-700 mt-0.5">ตรวจสลิปและป้ายให้ครบก่อน แล้วกดเข้าไปปิดงานในหน้ารายละเอียดงาน ระบบไม่โอนเงินอัตโนมัติ</p>
+          <p className="text-[10px] text-amber-700 mt-0.5">ตรวจยอดรวมและป้ายให้ครบก่อน แล้วกดเข้าไปปิดงานในหน้ารายละเอียดงาน ระบบไม่โอนเงินอัตโนมัติ</p>
         </div>
 
         {rows.length === 0 ? (
@@ -135,7 +134,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <Mini icon={Users} label="ราย" value={row.confirmed.toLocaleString()} />
                   <Mini icon={Banknote} label="สุทธิ" value={row.netAmount.toLocaleString()} />
-                  <Mini icon={AlertTriangle} label="ค้าง" value={`${row.pending}/${row.unposted}`} warning={row.pending > 0 || row.unposted > 0} />
+                  <Mini icon={AlertTriangle} label="ค้าง" value={`${row.unposted} ป้าย`} warning={row.unposted > 0} />
                   <Mini icon={Clock} label="บัญชี" value={row.hasHostBank ? "มี" : "ไม่มี"} warning={!row.hasHostBank} />
                 </div>
               </Link>

@@ -19,8 +19,6 @@ import { getCenterAccess } from "@/lib/iam";
 import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
-import VerifyDonationButton from "./VerifyDonationButton";
-import StatusBadge from "@/components/ui/StatusBadge";
 
 const SYSTEM_FEE = 100;
 
@@ -45,9 +43,8 @@ const NAMEPLATE_LABEL: Record<string, string> = {
   queued: "รอพิมพ์",
   printed: "พิมพ์แล้ว",
   posted: "ติดบอร์ดแล้ว",
-  error:  "พิมพ์ไม่สำเร็จ",
+  error: "พิมพ์ไม่สำเร็จ",
 };
-
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", {
@@ -72,14 +69,15 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   if (memorial.center_id !== id) redirect(`/dashboard/center/${centerRouteKey}`);
 
   const donations = await getDonations(memorial.id);
-  const pending = donations.filter((d) => d.status === "pending");
   const confirmed = donations.filter((d) => d.status === "confirmed");
-  const rejected = donations.filter((d) => d.status === "rejected");
+  const legacyPending = donations.filter((d) => d.status === "pending");
+  const legacyRejected = donations.filter((d) => d.status === "rejected");
+  const slipEvidence = donations.filter((d) => d.slip_url);
+  const slipWarnings = donations.filter((d) => d.slip_duplicate_warning);
   const printQueue = confirmed.filter((d) => d.nameplate_status === "pending" || d.nameplate_status === "queued");
   const printed = confirmed.filter((d) => d.nameplate_status === "printed");
   const posted = confirmed.filter((d) => d.nameplate_status === "posted");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const printError = confirmed.filter((d) => (d.nameplate_status as any) === "error");
+  const printError = confirmed.filter((d) => (d.nameplate_status as string) === "error");
   const total = confirmed.reduce((s, d) => s + d.amount, 0);
   const netAmount = Math.max(total - SYSTEM_FEE, 0);
 
@@ -99,8 +97,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
         <div className="grid grid-cols-3 gap-3 text-center">
-          <Stat label="ยืนยันแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
-          <Stat label="รอตรวจ" value={pending.length.toLocaleString()} tone="amber" />
+          <Stat label="รับร่วมบุญแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
+          <Stat label="แจ้งเตือนสลิป" value={slipWarnings.length.toLocaleString()} tone="amber" />
           <Stat label="ยอดรวม" value={total.toLocaleString()} tone="gold" />
         </div>
 
@@ -112,7 +110,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <InfoRow label="รหัสเจ้าภาพ" value={memorial.host_code || "-"} strong />
             <InfoRow label="เจ้าภาพ" value={memorial.host_name || "-"} />
             <InfoRow label="สถานที่" value={memorial.ceremony_location || "-"} />
-            <InfoRow label="วันที่ฌาปนกิจ" value={formatThaiDate(memorial.ceremony_date)} />
+            <InfoRow label="วันฌาปนกิจ" value={formatThaiDate(memorial.ceremony_date)} />
             <div className="flex justify-between gap-2">
               <span className="text-gold-400 shrink-0">ลิงก์หน้างาน</span>
               <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline truncate text-right">
@@ -130,8 +128,17 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="slips" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={AlertTriangle} title="ตรวจสลิป" subtitle={`${pending.length} รายการรอตรวจ · ${rejected.length} รายการปฏิเสธ`} />
-          {pending.length === 0 ? <Empty icon={CheckCircle2} text="ไม่มีสลิปรอตรวจ" /> : <DonationList donations={pending} mode="verify" />}
+          <SectionHeader icon={AlertTriangle} title="หลักฐานสลิปและแจ้งเตือน" subtitle={`${slipEvidence.length} หลักฐาน · ${slipWarnings.length} รายการแจ้งเตือนย้อนหลัง`} />
+          {slipWarnings.length === 0 ? (
+            <Empty icon={CheckCircle2} text="ไม่มีสลิปซ้ำที่ต้องดูย้อนหลัง" />
+          ) : (
+            <DonationList donations={slipWarnings} mode="warning" />
+          )}
+          {legacyPending.length > 0 || legacyRejected.length > 0 ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] leading-relaxed text-amber-800">
+              พบ donation สถานะเก่า pending {legacyPending.length} รายการ / rejected {legacyRejected.length} รายการ ระบบใหม่ไม่ใช้สถานะนี้เป็นคิวอนุมัติสลิปแล้ว
+            </div>
+          ) : null}
         </section>
 
         <section id="print" className="scroll-mt-36 space-y-3">
@@ -140,11 +147,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 space-y-1">
               <div className="flex items-center gap-2">
                 <AlertTriangle className="w-4 h-4 text-red-500 shrink-0" />
-                <p className="text-sm font-semibold text-red-700">ปริ้นไม่สำเร็จ {printError.length} รายการ</p>
+                <p className="text-sm font-semibold text-red-700">พิมพ์ไม่สำเร็จ {printError.length} รายการ</p>
               </div>
-              <p className="text-[11px] text-red-600 leading-relaxed">
-                กรุณาติดต่อเจ้าหน้าที่หรือพิมพ์ใหม่ด้วยตนเองที่เครื่องพิมพ์
-              </p>
               <div className="space-y-1.5 pt-1">
                 {printError.map((d) => (
                   <div key={d.id} className="flex items-center justify-between text-xs text-red-700 bg-red-100 rounded-xl px-3 py-2">
@@ -163,14 +167,14 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="donors" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Users} title="รายชื่อผู้ร่วมบุญ" subtitle={`${confirmed.length} รายการยืนยันแล้ว`} />
-          {confirmed.length === 0 ? <Empty icon={Users} text="ยังไม่มีผู้ร่วมบุญที่ยืนยันแล้ว" /> : <DonationList donations={confirmed} mode="donor" />}
+          <SectionHeader icon={Users} title="รายชื่อผู้ร่วมบุญ" subtitle={`${confirmed.length} รายการรับร่วมบุญแล้ว`} />
+          {confirmed.length === 0 ? <Empty icon={Users} text="ยังไม่มีผู้ร่วมบุญ" /> : <DonationList donations={confirmed} mode="donor" />}
         </section>
 
         <section id="finance" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Banknote} title="การเงิน" subtitle={`ยอดสุทธิประมาณ ${netAmount.toLocaleString()} บาท หลังหักค่าดำเนินการ ${SYSTEM_FEE.toLocaleString()} บาท`} />
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
-            <InfoRow label="ยอดร่วมบุญยืนยันแล้ว" value={`${total.toLocaleString()} บาท`} strong />
+            <InfoRow label="ยอดร่วมบุญรับแล้ว" value={`${total.toLocaleString()} บาท`} strong />
             <InfoRow label="ค่าดำเนินการระบบ" value={`-${SYSTEM_FEE.toLocaleString()} บาท`} />
             <InfoRow label="ยอดสุทธิโอนเจ้าภาพ" value={`${netAmount.toLocaleString()} บาท`} strong />
             <InfoRow label="ธนาคารเจ้าภาพ" value={memorial.host_bank_name || "-"} />
@@ -180,13 +184,11 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="close" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={ScrollText} title="ปิดงาน" subtitle="ตรวจสลิป คิวป้าย และการเงินให้ครบก่อนปิดงาน" />
-          {pending.length > 0 || printQueue.length > 0 ? (
+          <SectionHeader icon={ScrollText} title="ปิดงาน" subtitle="ตรวจยอดรวม ป้ายค้าง และข้อมูลโอนเงินก่อนปิดงาน" />
+          {printQueue.length > 0 ? (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-              <p className="text-xs font-semibold text-amber-800">ควรตรวจรายการค้างก่อนปิดงาน</p>
-              <p className="text-[10px] text-amber-700 mt-0.5">
-                ยังมี {pending.length} สลิปรอตรวจ และ {printQueue.length} ป้ายรอพิมพ์
-              </p>
+              <p className="text-xs font-semibold text-amber-800">ยังมีป้ายที่ควรจัดการก่อนปิดงาน</p>
+              <p className="text-[10px] text-amber-700 mt-0.5">ยังมี {printQueue.length} ป้ายรอพิมพ์หรือรอเข้าคิว</p>
             </div>
           ) : null}
           <CloseMemorialButton
@@ -273,7 +275,7 @@ function Empty({ icon: Icon, text }: { icon: React.ElementType; text: string }) 
   );
 }
 
-function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor" | "nameplate" | "verify" }) {
+function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor" | "nameplate" | "warning" }) {
   return (
     <div className="space-y-2">
       {donations.map((d, i) => (
@@ -289,9 +291,11 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
               <p className="text-[9px] text-gold-400 mt-0.5">{formatDate(d.created_at)}</p>
             </div>
             <div className="text-right shrink-0">
-              <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
-              {mode === "verify" ? (
-                <StatusBadge status={d.status as "pending" | "confirmed" | "rejected"} className="mt-0.5" />
+              <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} บาท</p>
+              {mode === "warning" ? (
+                <span className="mt-0.5 inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700">
+                  แจ้งเตือน
+                </span>
               ) : (
                 <span className="mt-0.5 inline-flex items-center text-[10px] font-semibold px-2 py-0.5 rounded-full bg-gold-50 border border-gold-200 text-gold-600">
                   {NAMEPLATE_LABEL[d.nameplate_status] ?? d.nameplate_status}
@@ -306,10 +310,9 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
               </a>
             </div>
           )}
-          {mode === "verify" && (
-            <div className="mt-2 ml-10 flex gap-2">
-              <VerifyDonationButton donationId={d.id} action="confirmed" label="ยืนยัน" />
-              <VerifyDonationButton donationId={d.id} action="rejected" label="ปฏิเสธ" variant="danger" />
+          {mode === "warning" && d.slip_duplicate_warning && (
+            <div className="mt-2 ml-10 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-medium text-amber-700">
+              สลิปนี้ซ้ำกับรายการก่อนหน้า ระบบปล่อยผ่านให้พิมพ์ป้ายแล้ว เก็บไว้ตรวจย้อนหลังเท่านั้น
             </div>
           )}
         </div>

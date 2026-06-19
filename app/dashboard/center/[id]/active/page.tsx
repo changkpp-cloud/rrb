@@ -22,6 +22,7 @@ type DonationRow = {
   amount: number | null;
   status: string;
   nameplate_status: string;
+  slip_duplicate_warning?: boolean | null;
 };
 
 async function getActiveMemorials(centerId: string) {
@@ -39,7 +40,7 @@ async function getActiveMemorials(centerId: string) {
   const ids = memorials.map((m) => m.id);
   const { data: donationsData } = await supabase
     .from("donations")
-    .select("memorial_id, amount, status, nameplate_status")
+    .select("memorial_id, amount, status, nameplate_status, slip_duplicate_warning")
     .in("memorial_id", ids);
 
   const donationMap = new Map<string, DonationRow[]>();
@@ -56,7 +57,7 @@ async function getActiveMemorials(centerId: string) {
       memorial: m,
       amount: confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0),
       confirmed: confirmed.length,
-      pending: rows.filter((d) => d.status === "pending").length,
+      slipWarnings: rows.filter((d) => d.slip_duplicate_warning).length,
       nameplateQueue: confirmed.filter((d) => d.nameplate_status !== "posted").length,
     };
   });
@@ -99,7 +100,7 @@ export default async function CenterActivePage({ params }: { params: Promise<{ i
           </div>
         ) : (
           <div className="space-y-2">
-            {rows.map(({ amount, confirmed, memorial, nameplateQueue, pending }) => (
+            {rows.map(({ amount, confirmed, memorial, nameplateQueue, slipWarnings }) => (
               <Link
                 key={memorial.id}
                 href={`/dashboard/center/${centerRouteKey}/memorial/${memorial.id}`}
@@ -116,7 +117,7 @@ export default async function CenterActivePage({ params }: { params: Promise<{ i
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <Mini icon={Users} label="ราย" value={confirmed.toLocaleString()} />
                   <Mini icon={Banknote} label="บาท" value={amount.toLocaleString()} />
-                  <Mini icon={AlertTriangle} label="สลิป" value={pending.toLocaleString()} warning={pending > 0} />
+                  <Mini icon={AlertTriangle} label="สลิป" value={slipWarnings.toLocaleString()} warning={slipWarnings > 0} />
                   <Mini icon={ScrollText} label="ป้าย" value={nameplateQueue.toLocaleString()} warning={nameplateQueue > 0} />
                 </div>
               </Link>

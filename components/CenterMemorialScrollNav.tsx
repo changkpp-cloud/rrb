@@ -7,7 +7,7 @@ type SectionId = "overview" | "slips" | "print" | "donors" | "finance" | "close"
 
 const ITEMS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "ภาพรวมงาน", icon: Info },
-  { id: "slips", label: "ตรวจสลิป", icon: ClipboardCheck },
+  { id: "slips", label: "สลิป/เตือน", icon: ClipboardCheck },
   { id: "print", label: "คิวพิมพ์ป้าย", icon: Printer },
   { id: "donors", label: "รายชื่อผู้ร่วมบุญ", icon: Users },
   { id: "finance", label: "การเงิน", icon: Banknote },

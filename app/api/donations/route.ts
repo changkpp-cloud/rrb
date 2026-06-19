@@ -4,6 +4,7 @@ import { getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyHost, msgNewDonation } from "@/lib/notify";
 import { bangkokDateWindow, getCenterDailyDonationLimit, isCenterDailyLimitReached, toPublicDonation } from "@/lib/donation-policy";
+import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
 const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
@@ -23,7 +24,7 @@ function extensionFor(file: File) {
   return "jpg";
 }
 
-async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<string | null> {
+async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<{ path: string; hash: string; duplicate: boolean } | null> {
   if (slipFile.size > MAX_SLIP_SIZE || !ALLOWED_SLIP_TYPES.has(slipFile.type)) {
     return null;
   }
@@ -31,13 +32,49 @@ async function uploadLegacySlip(memorialId: string, slipFile: File): Promise<str
   const supabase = createAdminClient();
   const ext = extensionFor(slipFile);
   const fileName = `slips/${memorialId}/${crypto.randomUUID()}.${ext}`;
-  const buffer = await slipFile.arrayBuffer();
+  const buffer = Buffer.from(await slipFile.arrayBuffer());
+  const hash = createHash("sha256").update(buffer).digest("hex");
+
+  const { data: existingSubmission, error: duplicateLookupError } = await (supabase.from("slip_submissions") as any)
+    .select("id")
+    .eq("memorial_id", memorialId)
+    .eq("slip_hash", hash)
+    .order("first_seen_at", { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (duplicateLookupError) return null;
+
+  const duplicateDetected = Boolean(existingSubmission?.id);
+  const { data: submission, error: reserveError } = await (supabase.from("slip_submissions") as any)
+    .insert({
+      memorial_id: memorialId,
+      slip_hash: hash,
+      duplicate_detected: duplicateDetected,
+      duplicate_of: existingSubmission?.id ?? null,
+      review_status: duplicateDetected ? "needs_review" : "none",
+    })
+    .select("id")
+    .single();
+
+  if (reserveError) return null;
+
   const { data, error } = await supabase.storage
     .from("donations")
     .upload(fileName, buffer, { contentType: slipFile.type, upsert: false });
 
-  if (error) return null;
-  return data.path;
+  if (error) {
+    if (submission?.id) {
+      await (supabase.from("slip_submissions") as any).delete().eq("id", submission.id);
+    }
+    return null;
+  }
+
+  await (supabase.from("slip_submissions") as any)
+    .update({ slip_url: data.path })
+    .eq("id", submission.id);
+
+  return { path: data.path, hash, duplicate: duplicateDetected };
 }
 
 export async function POST(request: NextRequest) {
@@ -49,6 +86,8 @@ export async function POST(request: NextRequest) {
     let amount = 0;
     let message: string | null = null;
     let slip_url: string | null = null;
+    let slip_hash: string | null = null;
+    let slip_duplicate_warning = false;
 
     if (contentType.includes("application/json")) {
       const body = await request.json();
@@ -58,6 +97,8 @@ export async function POST(request: NextRequest) {
       amount = parseFloat(body.amount) || 0;
       message = body.message || null;
       slip_url = body.slip_url || null;
+      slip_hash = body.slip_hash || null;
+      slip_duplicate_warning = Boolean(body.slip_duplicate_warning || body.duplicate);
     } else {
       const formData = await request.formData();
       memorial_id = (formData.get("memorial_id") as string) ?? "";
@@ -68,7 +109,10 @@ export async function POST(request: NextRequest) {
 
       const slipFile = formData.get("slip") as File | null;
       if (slipFile && slipFile.size > 0) {
-        slip_url = await uploadLegacySlip(memorial_id, slipFile);
+        const uploaded = await uploadLegacySlip(memorial_id, slipFile);
+        slip_url = uploaded?.path ?? null;
+        slip_hash = uploaded?.hash ?? null;
+        slip_duplicate_warning = uploaded?.duplicate ?? false;
       }
     }
 
@@ -120,6 +164,8 @@ export async function POST(request: NextRequest) {
       amount,
       message: message ?? null,
       slip_url: slip_url ?? null,
+      slip_hash: slip_hash ?? null,
+      slip_duplicate_warning,
       status: "confirmed" as const,
       confirmed_at: acceptedAt,
     };

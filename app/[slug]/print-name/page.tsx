@@ -82,6 +82,8 @@ function PrintNameInner() {
   const amount = params.get("amount") ?? "";
   const memorial_id = params.get("memorial_id") ?? "";
   const slip_url = params.get("slip_url") ?? "";
+  const slip_hash = params.get("slip_hash") ?? "";
+  const duplicate = params.get("duplicate") ?? "";
   const [name, setName] = useState(params.get("name") ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [showModal, setShowModal] = useState(false);
@@ -103,6 +105,8 @@ function PrintNameInner() {
           donor_name: trimmedName,
           amount: parseFloat(amount) || 0,
           slip_url: slip_url || undefined,
+          slip_hash: slip_hash || undefined,
+          slip_duplicate_warning: duplicate === "true",
         };
         if (trimmedTitle) body.donor_title = trimmedTitle;
         const res = await fetch("/api/donations", {
@@ -111,6 +115,11 @@ function PrintNameInner() {
           body: JSON.stringify(body),
         });
         const data = await res.json();
+        if (!res.ok) {
+          setSending(false);
+          setShowModal(false);
+          return;
+        }
         donationId = data?.donation?.id ?? "";
       } catch {}
     }

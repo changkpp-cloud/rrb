@@ -335,6 +335,8 @@ export interface Database {
           amount: number;
           message: string | null;
           slip_url: string | null;
+          slip_hash: string | null;
+          slip_duplicate_warning: boolean;
           status: "pending" | "confirmed" | "rejected";
           nameplate_status: "pending" | "queued" | "printed" | "posted";
           confirmed_at: string | null;
@@ -351,6 +353,8 @@ export interface Database {
           amount: number;
           message?: string | null;
           slip_url?: string | null;
+          slip_hash?: string | null;
+          slip_duplicate_warning?: boolean;
           status: "pending" | "confirmed" | "rejected";
           nameplate_status?: "pending" | "queued" | "printed" | "posted";
           confirmed_at?: string | null;
@@ -367,6 +371,8 @@ export interface Database {
           amount?: number;
           message?: string | null;
           slip_url?: string | null;
+          slip_hash?: string | null;
+          slip_duplicate_warning?: boolean;
           status?: "pending" | "confirmed" | "rejected";
           nameplate_status?: "pending" | "queued" | "printed" | "posted";
           confirmed_at?: string | null;

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
 const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
@@ -22,22 +23,65 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unsupported slip file type" }, { status: 415 });
     }
 
-    const supabase = createAdminClient();
     const rawExt = slipFile.name.split(".").pop()?.toLowerCase();
     const ext = rawExt && /^[a-z0-9]+$/.test(rawExt) ? rawExt : "jpg";
     const fileName = `slips/${memorial_id}/${crypto.randomUUID()}.${ext}`;
-    const buffer = await slipFile.arrayBuffer();
+    const buffer = Buffer.from(await slipFile.arrayBuffer());
+    const slipHash = createHash("sha256").update(buffer).digest("hex");
+
+    const supabase = createAdminClient();
+    const { data: existingSubmission, error: duplicateLookupError } = await (supabase.from("slip_submissions") as any)
+      .select("id")
+      .eq("memorial_id", memorial_id)
+      .eq("slip_hash", slipHash)
+      .order("first_seen_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+
+    if (duplicateLookupError) {
+      console.error("Slip duplicate lookup error:", duplicateLookupError);
+      return NextResponse.json({ error: "Failed to check slip duplicate" }, { status: 500 });
+    }
+
+    const duplicateDetected = Boolean(existingSubmission?.id);
+    const { data: submission, error: reserveError } = await (supabase.from("slip_submissions") as any)
+      .insert({
+        memorial_id,
+        slip_hash: slipHash,
+        duplicate_detected: duplicateDetected,
+        duplicate_of: existingSubmission?.id ?? null,
+        review_status: duplicateDetected ? "needs_review" : "none",
+      })
+      .select("id")
+      .single();
+
+    if (reserveError) {
+      console.error("Slip reservation error:", reserveError);
+      return NextResponse.json({ error: "Failed to check slip duplicate" }, { status: 500 });
+    }
 
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from("donations")
       .upload(fileName, buffer, { contentType: slipFile.type, upsert: false });
 
     if (uploadError) {
+      if (submission?.id) {
+        await (supabase.from("slip_submissions") as any).delete().eq("id", submission.id);
+      }
       console.error("Slip upload error:", uploadError);
       return NextResponse.json({ error: "Upload failed" }, { status: 500 });
     }
 
-    return NextResponse.json({ slip_url: uploadData.path });
+    await (supabase.from("slip_submissions") as any)
+      .update({ slip_url: uploadData.path })
+      .eq("id", submission.id);
+
+    return NextResponse.json({
+      slip_url: uploadData.path,
+      slip_hash: slipHash,
+      duplicate: duplicateDetected,
+      duplicate_submission_id: existingSubmission?.id ?? null,
+    });
   } catch (err) {
     console.error("upload-slip error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

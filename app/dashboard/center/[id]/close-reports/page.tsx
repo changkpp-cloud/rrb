@@ -73,20 +73,19 @@ async function getReports(centerId: string) {
   const rows = memorials.map((m) => {
     const allDonations = donationMap.get(m.id) ?? [];
     const confirmed = allDonations.filter((d) => d.status === "confirmed");
-    const pending = allDonations.filter((d) => d.status === "pending");
     const rejected = allDonations.filter((d) => d.status === "rejected");
     const unposted = confirmed.filter((d) => d.nameplate_status !== "posted");
     const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
     const donors = confirmed.length;
     const ceremonyReached = new Date(m.ceremony_date) <= today;
-    const readyToClose = m.funeral_status === "active" && ceremonyReached && pending.length === 0 && unposted.length === 0 && donors > 0;
-    const needsReview = pending.length > 0 || unposted.length > 0 || (m.funeral_status === "closed" && !m.host_bank_account_number);
+    const readyToClose = m.funeral_status === "active" && ceremonyReached && unposted.length === 0 && donors > 0;
+    const needsReview = unposted.length > 0 || (m.funeral_status === "closed" && !m.host_bank_account_number);
 
     return {
       memorial: m,
       amount,
       donors,
-      pending: pending.length,
+      pending: 0,
       rejected: rejected.length,
       unposted: unposted.length,
       wasteKg: donors * 2,
@@ -141,7 +140,7 @@ function buildReportText({
     `ผู้ร่วมทำบุญที่ยืนยันแล้ว: ${donors.toLocaleString()} ราย`,
     `ยอดร่วมทำบุญรวม: ${amount.toLocaleString()} บาท`,
     `ผลลัพธ์ Zero Waste: ลดพวงหรีดสด ${donors.toLocaleString()} ชิ้น หรือประมาณ ${wasteKg.toLocaleString()} กก. ขยะ`,
-    "หมายเหตุ: กรุณาตรวจสลิปและสถานะป้ายก่อนส่งรายงานนี้",
+    "หมายเหตุ: กรุณาตรวจยอดรวมและสถานะป้ายก่อนส่งรายงานนี้",
   ].filter(Boolean).join("\n");
 }
 
@@ -170,16 +169,16 @@ export default async function CenterCloseReportsPage({ params }: { params: Promi
           <Kpi icon={Users} label="ผู้ร่วมทำบุญ" value={`${data.totals.donors.toLocaleString()} ราย`} />
           <Kpi icon={Banknote} label="ยอด confirmed" value={`${data.totals.amount.toLocaleString()} บาท`} />
           <Kpi icon={Leaf} label="ลดขยะประมาณ" value={`${(data.totals.donors * 2).toLocaleString()} กก.`} />
-          <Kpi icon={AlertCircle} label="ค้างตรวจ" value={`${data.totals.pending} สลิป · ${data.totals.unposted} ป้าย`} />
+          <Kpi icon={AlertCircle} label="ค้างจัดการ" value={`${data.totals.unposted} ป้าย`} />
         </div>
 
-        <ReportSection title="พร้อมปิดงาน" hint="ไม่มีสลิป pending และป้าย confirmed ติดบอร์ดครบแล้ว" empty="ยังไม่มีงานพร้อมปิด" icon={ClipboardCheck}>
+        <ReportSection title="พร้อมปิดงาน" hint="ป้ายของรายการรับร่วมบุญจัดการครบแล้ว" empty="ยังไม่มีงานพร้อมปิด" icon={ClipboardCheck}>
           {data.ready.map((row) => (
             <ReportCard key={row.memorial.id} row={row} centerId={centerRouteKey} centerName={centerName} />
           ))}
         </ReportSection>
 
-        <ReportSection title="ต้องตรวจต่อก่อนปิด" hint="ยังมีสลิปหรือป้ายค้างในงาน active" empty="ไม่มีรายการที่ต้องตรวจต่อ" icon={AlertCircle}>
+        <ReportSection title="ต้องจัดการต่อก่อนปิด" hint="ยังมีป้ายค้างหรือข้อมูลโอนเงินไม่ครบในงาน active" empty="ไม่มีรายการที่ต้องจัดการต่อ" icon={AlertCircle}>
           {data.attention.map((row) => (
             <ReportCard key={row.memorial.id} row={row} centerId={centerRouteKey} centerName={centerName} attention />
           ))}
@@ -236,7 +235,7 @@ function ReportCard({
         <Mini icon={Users} label="ราย" value={row.donors.toLocaleString()} />
         <Mini icon={Banknote} label="บาท" value={row.amount.toLocaleString()} />
         <Mini icon={Leaf} label="กก." value={row.wasteKg.toLocaleString()} />
-        <Mini icon={Printer} label="ค้าง" value={`${row.pending}/${row.unposted}`} warning={row.pending > 0 || row.unposted > 0} />
+        <Mini icon={Printer} label="ค้าง" value={`${row.unposted} ป้าย`} warning={row.unposted > 0} />
       </div>
 
       {showDraft && (

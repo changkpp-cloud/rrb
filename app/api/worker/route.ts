@@ -62,6 +62,9 @@ async function processJob(job: OutboxJob) {
     case "print_nameplate":
       await handlePrintNameplate(job.payload);
       break;
+    case "dispatch_print":
+      await handleDispatchPrint(job.payload);
+      break;
     default:
       throw new Error(`Unknown job_type: ${job.job_type}`);
   }
@@ -80,6 +83,46 @@ async function handlePrintNameplate(payload: Record<string, unknown>) {
     .eq("nameplate_status", "pending"); // idempotent: skip if already queued/printed
 
   if (error) throw error;
+}
+
+async function handleDispatchPrint(payload: Record<string, unknown>) {
+  const printServiceUrl = process.env.PRINT_SERVICE_URL;
+  if (!printServiceUrl) return;
+
+  const donation_id = payload.donation_id as string | undefined;
+  const image_url = payload.image_url as string | undefined;
+  if (!donation_id || !image_url) throw new Error("Missing print payload");
+
+  const ctrl = new AbortController();
+  const timeout = setTimeout(() => ctrl.abort(), 10_000);
+
+  try {
+    const printRes = await fetch(`${printServiceUrl}/print`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        donation_id,
+        image_url,
+        donor_name: payload.donor_name ?? "",
+        donor_title: payload.donor_title ?? "",
+      }),
+      signal: ctrl.signal,
+    });
+
+    if (!printRes.ok) {
+      throw new Error(`Print service HTTP ${printRes.status}`);
+    }
+
+    const { error } = await getAdminClient()
+      .from("donations")
+      .update({ nameplate_status: "printed" })
+      .eq("id", donation_id)
+      .in("nameplate_status", ["pending", "queued"]);
+
+    if (error) throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 // ── Route handlers ────────────────────────────────────────────

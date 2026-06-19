@@ -27,7 +27,7 @@ export const revalidate = 30;
 type DonationStats = {
   amount: number;
   confirmed: number;
-  pendingSlip: number;
+  slipWarning: number;
   nameplatePending: number;
   nameplateQueued: number;
   nameplatePrinted: number;
@@ -60,7 +60,7 @@ async function getDonationStats(memorialIds: string[]): Promise<Record<string, D
     const supabase = createAdminClient();
     const { data } = await supabase
       .from("donations")
-      .select("memorial_id, status, amount, nameplate_status")
+      .select("memorial_id, status, amount, nameplate_status, slip_duplicate_warning")
       .in("memorial_id", memorialIds);
 
     const stats: Record<string, DonationStats> = {};
@@ -69,7 +69,7 @@ async function getDonationStats(memorialIds: string[]): Promise<Record<string, D
         stats[d.memorial_id] = {
           amount: 0,
           confirmed: 0,
-          pendingSlip: 0,
+          slipWarning: 0,
           nameplatePending: 0,
           nameplateQueued: 0,
           nameplatePrinted: 0,
@@ -78,7 +78,7 @@ async function getDonationStats(memorialIds: string[]): Promise<Record<string, D
       }
 
       const row = stats[d.memorial_id];
-      if (d.status === "pending") row.pendingSlip++;
+      if (d.slip_duplicate_warning) row.slipWarning++;
       if (d.status !== "confirmed") continue;
 
       row.confirmed++;
@@ -97,7 +97,7 @@ async function getDonationStats(memorialIds: string[]): Promise<Record<string, D
 const emptyStats: DonationStats = {
   amount: 0,
   confirmed: 0,
-  pendingSlip: 0,
+  slipWarning: 0,
   nameplatePending: 0,
   nameplateQueued: 0,
   nameplatePrinted: 0,
@@ -132,7 +132,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const closedRows = summaries.filter((row) => row.memorial.funeral_status === "closed");
   const totalAmount = summaries.reduce((sum, row) => sum + row.amount, 0);
   const totalDonors = summaries.reduce((sum, row) => sum + row.confirmed, 0);
-  const pendingSlipCount = summaries.reduce((sum, row) => sum + row.pendingSlip, 0);
+  const slipWarningCount = summaries.reduce((sum, row) => sum + row.slipWarning, 0);
   const pendingPrintCount = summaries.reduce((sum, row) => sum + row.nameplatePending + row.nameplateQueued, 0);
   const canEditSettings = canManageCenterSettings(access.role);
 
@@ -168,7 +168,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           <SectionHeader
             icon={ScrollText}
             title="2. งานเปิดอยู่"
-            subtitle={`${activeRows.length} งาน · ${pendingSlipCount} สลิปรอตรวจ · ${pendingPrintCount} ป้ายรอพิมพ์`}
+            subtitle={`${activeRows.length} งาน · ${slipWarningCount} แจ้งเตือนสลิป · ${pendingPrintCount} ป้ายรอพิมพ์`}
           />
           {activeRows.length === 0 ? (
             <Empty text="ยังไม่มีงานศพที่เปิดอยู่" />
@@ -239,7 +239,7 @@ function ActiveMemorialCard({ centerId, row }: { centerId: string; row: Memorial
         <ChevronRight className="w-4 h-4 text-gold-400 shrink-0 mt-0.5" />
       </div>
       <div className="grid grid-cols-4 gap-2 mt-3 text-center">
-        <StatusMini label="รอตรวจสลิป" value={row.pendingSlip} warning={row.pendingSlip > 0} />
+        <StatusMini label="แจ้งเตือนสลิป" value={row.slipWarning} warning={row.slipWarning > 0} />
         <StatusMini label="รอพิมพ์ป้าย" value={row.nameplatePending + row.nameplateQueued} warning={row.nameplatePending + row.nameplateQueued > 0} />
         <StatusMini label="พิมพ์แล้ว" value={row.nameplatePrinted} />
         <StatusMini label="ติดบอร์ดแล้ว" value={row.nameplatePosted} done />

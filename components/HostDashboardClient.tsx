@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { Users, Download, Pencil, ExternalLink } from "lucide-react";
+import { AlertTriangle, Users, Download, Pencil, ExternalLink } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostBankForm from "./HostBankForm";
@@ -43,6 +43,7 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
   const netAmount   = Math.max(0, totalAmount - serviceFee);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const printErrors = confirmed.filter(d => (d.nameplate_status as any) === "error");
+  const slipWarnings = donations.filter(d => d.slip_duplicate_warning);
 
   // Highlight active tab as user scrolls
   useEffect(() => {
@@ -172,6 +173,28 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
             </div>
           )}
 
+          {slipWarnings.length > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800">พบสลิปซ้ำ {slipWarnings.length} รายการ</p>
+                  <p className="text-[11px] text-amber-700 leading-relaxed">
+                    ระบบปล่อยให้กรอกชื่อและพิมพ์ป้ายแล้ว รายการนี้เป็นเพียงแจ้งเตือนให้เจ้าภาพและศูนย์รับทราบร่วมกัน หากยอดรวมไม่ตรงค่อยตรวจสอบย้อนหลัง
+                  </p>
+                </div>
+              </div>
+              <div className="pl-6 space-y-1">
+                {slipWarnings.slice(0, 5).map(d => (
+                  <p key={d.id} className="text-xs font-semibold text-amber-800">• {d.donor_name} · {d.amount.toLocaleString()} บาท</p>
+                ))}
+                {slipWarnings.length > 5 && (
+                  <p className="text-[11px] text-amber-700">และอีก {slipWarnings.length - 5} รายการ</p>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Financial summary */}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-4 space-y-3">
             <p className="text-xs font-bold text-gold-600 uppercase tracking-wider">สรุปยอดเงิน</p>
@@ -232,6 +255,12 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
                     {d.donor_title && <p className="text-[10px] text-gold-500">{d.donor_title}</p>}
                     {d.message && <p className="text-[10px] text-gold-400 italic mt-0.5">"{d.message}"</p>}
                     <p className="text-[9px] text-gold-400 mt-0.5">{formatDateTime(d.created_at)}</p>
+                    {d.slip_duplicate_warning && (
+                      <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-700">
+                        <AlertTriangle className="h-3 w-3" />
+                        สลิปซ้ำ รับทราบร่วมกัน
+                      </span>
+                    )}
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-bold text-gold-700">{d.amount.toLocaleString()} ฿</p>
