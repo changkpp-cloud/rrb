@@ -2,31 +2,52 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { KeyRound } from "lucide-react";
+import { KeyRound, LogIn, Mail } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
+import { roleLabel } from "@/lib/iam";
+
+type CenterOption = {
+  centerId: string;
+  name: string;
+  role: string;
+  routeKey: string;
+};
 
 export default function CenterLoginClient() {
-  const [code, setCode] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [centers, setCenters] = useState<CenterOption[] | null>(null);
   const router = useRouter();
 
   async function handleLogin() {
-    if (!code.trim()) return;
-    setLoading(true); setError("");
+    if (!email.trim() || !password) return;
+    setLoading(true);
+    setError("");
     try {
       const res = await fetch("/api/center/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code: code.trim() }),
+        body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json();
-      if (!res.ok || !data.id) throw new Error(data.error ?? "เข้าสู่ระบบไม่สำเร็จ");
-      router.push(`/dashboard/center/${data.routeKey || data.id}`);
+      if (!res.ok) throw new Error(data.error ?? "เข้าสู่ระบบไม่สำเร็จ");
+
+      const list: CenterOption[] = data.centers ?? [];
+      if (list.length === 1) {
+        router.push(`/dashboard/center/${list[0].routeKey}`);
+      } else {
+        setCenters(list);
+      }
     } catch (e) {
       setError(e instanceof Error ? e.message : "เข้าสู่ระบบไม่สำเร็จ");
     }
     setLoading(false);
+  }
+
+  function handleSelectCenter(c: CenterOption) {
+    router.push(`/dashboard/center/${c.routeKey}`);
   }
 
   return (
@@ -41,44 +62,83 @@ export default function CenterLoginClient() {
               <KeyRound className="w-8 h-8 text-gold-600" />
             </div>
             <h2 className="text-xl font-bold text-gold-800">เข้าสู่ระบบศูนย์บริหาร</h2>
-            <p className="text-xs text-gold-500">กรอกรหัสที่ได้รับจากผู้ดูแลระบบ</p>
+            <p className="text-xs text-gold-500">ใช้อีเมลและรหัสผ่านที่ได้รับจากผู้ดูแลระบบ</p>
           </div>
 
-          <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 space-y-4">
-            <label className="block space-y-1.5">
-              <span className="text-xs font-semibold text-gold-700">รหัสเข้าใช้งาน</span>
-              <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
-                <KeyRound className="w-4 h-4 text-gold-400 shrink-0" />
-                <input
-                  type="text"
-                  value={code}
-                  onChange={e => setCode(e.target.value)}
-                  onKeyDown={e => e.key === "Enter" && handleLogin()}
-                  placeholder=""
-                  name="rrb-center-token-entry"
-                  className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm font-mono tracking-widest"
-                  autoComplete="new-password"
-                  autoCorrect="off"
-                  autoCapitalize="none"
-                  spellCheck={false}
-                />
+          {!centers ? (
+            /* ── Login form ── */
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 space-y-4">
+              <label className="block space-y-1.5">
+                <span className="text-xs font-semibold text-gold-700">อีเมล</span>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
+                  <Mail className="w-4 h-4 text-gold-400 shrink-0" />
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                    placeholder="email@example.com"
+                    autoComplete="email"
+                    className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
+                  />
+                </div>
+              </label>
+
+              <label className="block space-y-1.5">
+                <span className="text-xs font-semibold text-gold-700">รหัสผ่าน</span>
+                <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
+                  <KeyRound className="w-4 h-4 text-gold-400 shrink-0" />
+                  <input
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                    placeholder="รหัสผ่าน"
+                    autoComplete="current-password"
+                    className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
+                  />
+                </div>
+              </label>
+
+              {error && <p className="text-xs text-red-500 text-center">{error}</p>}
+
+              <button
+                onClick={handleLogin}
+                disabled={loading || !email.trim() || !password}
+                className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                <LogIn className="w-5 h-5" />
+                {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
+              </button>
+            </div>
+          ) : (
+            /* ── Center picker (multiple centers) ── */
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-5 space-y-3">
+              <p className="text-sm font-bold text-gold-800">เลือกศูนย์ที่ต้องการเข้าใช้งาน</p>
+              <p className="text-xs text-gold-500">บัญชีของคุณมีสิทธิ์เข้าถึง {centers.length} ศูนย์</p>
+              <div className="space-y-2 pt-1">
+                {centers.map((c) => (
+                  <button
+                    key={c.centerId}
+                    onClick={() => handleSelectCenter(c)}
+                    className="w-full bg-white gold-border rounded-2xl px-4 py-3.5 text-left hover:bg-gold-50 active:scale-[0.98] transition-all"
+                  >
+                    <p className="text-sm font-semibold text-gold-800 leading-tight">{c.name}</p>
+                    <p className="text-[11px] text-gold-500 mt-0.5">{roleLabel(c.role)}</p>
+                  </button>
+                ))}
               </div>
-            </label>
-
-            {error && <p className="text-xs text-red-500 text-center">{error}</p>}
-
-            <button
-              onClick={handleLogin}
-              disabled={loading || !code.trim()}
-              className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <KeyRound className="w-5 h-5" />
-              {loading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
-            </button>
-          </div>
+              <button
+                onClick={() => setCenters(null)}
+                className="w-full text-xs text-gold-500 underline underline-offset-2 pt-1"
+              >
+                ← กลับไปหน้าล็อกอิน
+              </button>
+            </div>
+          )}
 
           <p className="text-center text-[11px] text-gold-400 leading-relaxed">
-            ติดต่อผู้ดูแลระบบหากไม่มีรหัสเข้าใช้งาน
+            ติดต่อผู้ดูแลระบบหากไม่มีบัญชีเข้าใช้งาน
           </p>
 
         </div>
