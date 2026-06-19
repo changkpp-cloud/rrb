@@ -15,6 +15,7 @@ import {
 import CenterDashboardScrollNav from "@/components/CenterDashboardScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
 import CenterSettingsForm from "@/components/CenterSettingsForm";
+import ChangePasswordForm from "@/components/center/ChangePasswordForm";
 import CreateMemorialClient from "./create/CreateMemorialClient";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
@@ -214,6 +215,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
               <InfoRow label="สถานะศูนย์" value={center.status || "-"} />
             </div>
           )}
+          {access.user && !access.legacy && <ChangePasswordForm />}
         </section>
           }
         />
