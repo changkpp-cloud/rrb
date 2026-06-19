@@ -4,917 +4,1185 @@ export type Json =
   | boolean
   | null
   | { [key: string]: Json | undefined }
-  | Json[];
+  | Json[]
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   public: {
     Tables: {
-      centers: {
-        Row: {
-          id: string;
-          name: string;
-          center_code: string | null;
-          municipality: string | null;
-          tambon: string | null;
-          amphoe: string | null;
-          province: string | null;
-          manager_name: string | null;
-          phone: string | null;
-          status: "active" | "inactive";
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          center_code?: string | null;
-          municipality?: string | null;
-          tambon?: string | null;
-          amphoe?: string | null;
-          province?: string | null;
-          manager_name?: string | null;
-          phone?: string | null;
-          status?: "active" | "inactive";
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          center_code?: string | null;
-          municipality?: string | null;
-          tambon?: string | null;
-          amphoe?: string | null;
-          province?: string | null;
-          manager_name?: string | null;
-          phone?: string | null;
-          status?: "active" | "inactive";
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      app_users: {
-        Row: {
-          id: string;
-          email: string | null;
-          display_name: string;
-          phone: string | null;
-          auth_provider: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id: string | null;
-          password_hash: string | null;
-          global_role: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
-          status: "pending" | "active" | "suspended" | "rejected";
-          approved_by: string | null;
-          approved_at: string | null;
-          last_login_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          email?: string | null;
-          display_name: string;
-          phone?: string | null;
-          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id?: string | null;
-          password_hash?: string | null;
-          global_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_by?: string | null;
-          approved_at?: string | null;
-          last_login_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string | null;
-          display_name?: string;
-          phone?: string | null;
-          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id?: string | null;
-          password_hash?: string | null;
-          global_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer" | null;
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_by?: string | null;
-          approved_at?: string | null;
-          last_login_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      center_memberships: {
-        Row: {
-          id: string;
-          center_id: string;
-          user_id: string;
-          role: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          status: "pending" | "active" | "suspended" | "rejected";
-          approved_by: string | null;
-          approved_at: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          center_id: string;
-          user_id: string;
-          role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_by?: string | null;
-          approved_at?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          center_id?: string;
-          user_id?: string;
-          role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_by?: string | null;
-          approved_at?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "center_memberships_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] },
-          { foreignKeyName: "center_memberships_user_id_fkey"; columns: ["user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
-        ];
-      };
-      center_user_requests: {
-        Row: {
-          id: string;
-          center_id: string;
-          email: string;
-          display_name: string;
-          phone: string | null;
-          requested_role: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          auth_provider: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id: string | null;
-          password_hash: string | null;
-          status: "pending" | "active" | "suspended" | "rejected";
-          approved_user_id: string | null;
-          reviewed_by: string | null;
-          reviewed_at: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          center_id: string;
-          email: string;
-          display_name: string;
-          phone?: string | null;
-          requested_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id?: string | null;
-          password_hash?: string | null;
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_user_id?: string | null;
-          reviewed_by?: string | null;
-          reviewed_at?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          center_id?: string;
-          email?: string;
-          display_name?: string;
-          phone?: string | null;
-          requested_role?: "super_admin" | "center_manager" | "center_staff" | "center_viewer";
-          auth_provider?: "password" | "email" | "line" | "facebook" | "google";
-          provider_user_id?: string | null;
-          password_hash?: string | null;
-          status?: "pending" | "active" | "suspended" | "rejected";
-          approved_user_id?: string | null;
-          reviewed_by?: string | null;
-          reviewed_at?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "center_user_requests_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] },
-          { foreignKeyName: "center_user_requests_approved_user_id_fkey"; columns: ["approved_user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
-        ];
-      };
-      app_user_sessions: {
-        Row: {
-          id: string;
-          user_id: string;
-          token_hash: string;
-          expires_at: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          token_hash: string;
-          expires_at: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          token_hash?: string;
-          expires_at?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "app_user_sessions_user_id_fkey"; columns: ["user_id"]; referencedRelation: "app_users"; referencedColumns: ["id"] }
-        ];
-      };
-      memorials: {
-        Row: {
-          id: string;
-          slug: string;
-          center_id: string | null;
-          name: string;
-          birth_date: string;
-          death_date: string;
-          age: number;
-          photo_url: string | null;
-          ceremony_date: string;
-          ceremony_time: string;
-          ceremony_location: string;
-          ceremony_hall: string | null;
-          prayer_date: string | null;
-          prayer_location: string | null;
-          host_name: string | null;
-          host_phone: string | null;
-          host_code: string | null;
-          funeral_status: "draft" | "active" | "closed";
-          bank_name: string;
-          bank_account_number: string;
-          bank_account_name: string;
-          bank_account_image_url: string | null;
-          is_active: boolean;
-          created_at: string;
-          event_code: string | null;
-          consent_confirmed: boolean;
-          host_relationship: string | null;
-          host_bank_name: string | null;
-          host_bank_account_number: string | null;
-          host_bank_account_name: string | null;
-          death_certificate_url: string | null;
-          host_id_card_url: string | null;
-        };
-        Insert: {
-          id?: string;
-          slug: string;
-          center_id?: string | null;
-          name: string;
-          birth_date: string;
-          death_date: string;
-          age: number;
-          photo_url?: string | null;
-          ceremony_date: string;
-          ceremony_time: string;
-          ceremony_location: string;
-          ceremony_hall?: string | null;
-          prayer_date?: string | null;
-          prayer_location?: string | null;
-          host_name?: string | null;
-          host_phone?: string | null;
-          host_code?: string | null;
-          funeral_status?: "draft" | "active" | "closed";
-          bank_name: string;
-          bank_account_number: string;
-          bank_account_name: string;
-          bank_account_image_url?: string | null;
-          is_active?: boolean;
-          created_at?: string;
-          event_code?: string | null;
-          consent_confirmed?: boolean;
-          host_relationship?: string | null;
-          host_bank_name?: string | null;
-          host_bank_account_number?: string | null;
-          host_bank_account_name?: string | null;
-          death_certificate_url?: string | null;
-          host_id_card_url?: string | null;
-        };
-        Update: {
-          id?: string;
-          slug?: string;
-          center_id?: string | null;
-          name?: string;
-          birth_date?: string;
-          death_date?: string;
-          age?: number;
-          photo_url?: string | null;
-          ceremony_date?: string;
-          ceremony_time?: string;
-          ceremony_location?: string;
-          ceremony_hall?: string | null;
-          prayer_date?: string | null;
-          prayer_location?: string | null;
-          host_name?: string | null;
-          host_phone?: string | null;
-          host_code?: string | null;
-          funeral_status?: "draft" | "active" | "closed";
-          bank_name?: string;
-          bank_account_number?: string;
-          bank_account_name?: string;
-          bank_account_image_url?: string | null;
-          is_active?: boolean;
-          created_at?: string;
-          event_code?: string | null;
-          consent_confirmed?: boolean;
-          host_relationship?: string | null;
-          host_bank_name?: string | null;
-          host_bank_account_number?: string | null;
-          host_bank_account_name?: string | null;
-          death_certificate_url?: string | null;
-          host_id_card_url?: string | null;
-        };
-        Relationships: [
-          { foreignKeyName: "memorials_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] }
-        ];
-      };
-      donations: {
-        Row: {
-          id: string;
-          memorial_id: string;
-          center_id: string | null;
-          donor_name: string;
-          donor_title: string | null;
-          amount: number;
-          message: string | null;
-          slip_url: string | null;
-          slip_hash: string | null;
-          slip_duplicate_warning: boolean;
-          status: "pending" | "confirmed" | "rejected";
-          nameplate_status: "pending" | "queued" | "printed" | "posted";
-          confirmed_at: string | null;
-          reviewed_at: string | null;
-          reviewed_by: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          memorial_id: string;
-          center_id?: string | null;
-          donor_name: string;
-          donor_title?: string | null;
-          amount: number;
-          message?: string | null;
-          slip_url?: string | null;
-          slip_hash?: string | null;
-          slip_duplicate_warning?: boolean;
-          status: "pending" | "confirmed" | "rejected";
-          nameplate_status?: "pending" | "queued" | "printed" | "posted";
-          confirmed_at?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          memorial_id?: string;
-          center_id?: string | null;
-          donor_name?: string;
-          donor_title?: string | null;
-          amount?: number;
-          message?: string | null;
-          slip_url?: string | null;
-          slip_hash?: string | null;
-          slip_duplicate_warning?: boolean;
-          status?: "pending" | "confirmed" | "rejected";
-          nameplate_status?: "pending" | "queued" | "printed" | "posted";
-          confirmed_at?: string | null;
-          reviewed_at?: string | null;
-          reviewed_by?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "donations_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
-        ];
-      };
-      center_daily_stats: {
-        Row: {
-          center_id: string;
-          report_date: string;
-          donation_count: number;
-          pending_count: number;
-          confirmed_count: number;
-          rejected_count: number;
-          total_amount: number;
-          wreaths_reduced: number;
-          waste_reduced_kg: number;
-          updated_at: string;
-        };
-        Insert: {
-          center_id: string;
-          report_date: string;
-          donation_count?: number;
-          pending_count?: number;
-          confirmed_count?: number;
-          rejected_count?: number;
-          total_amount?: number;
-          wreaths_reduced?: number;
-          waste_reduced_kg?: number;
-          updated_at?: string;
-        };
-        Update: {
-          center_id?: string;
-          report_date?: string;
-          donation_count?: number;
-          pending_count?: number;
-          confirmed_count?: number;
-          rejected_count?: number;
-          total_amount?: number;
-          wreaths_reduced?: number;
-          waste_reduced_kg?: number;
-          updated_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "center_daily_stats_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] }
-        ];
-      };
-      nameplates: {
-        Row: {
-          id: string;
-          donation_id: string | null;
-          memorial_id: string;
-          donor_name: string;
-          donor_title: string | null;
-          message: string | null;
-          pdf_url: string | null;
-          print_status: "pending" | "queued" | "printing" | "printed" | "error" | "reprint";
-          board_status: "pending" | "posted";
-          print_job_id: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          donation_id?: string | null;
-          memorial_id: string;
-          donor_name: string;
-          donor_title?: string | null;
-          message?: string | null;
-          pdf_url?: string | null;
-          print_status?: "pending" | "queued" | "printing" | "printed" | "error" | "reprint";
-          board_status?: "pending" | "posted";
-          print_job_id?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          donation_id?: string | null;
-          memorial_id?: string;
-          donor_name?: string;
-          donor_title?: string | null;
-          message?: string | null;
-          pdf_url?: string | null;
-          print_status?: "pending" | "queued" | "printing" | "printed" | "error" | "reprint";
-          board_status?: "pending" | "posted";
-          print_job_id?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "nameplates_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] },
-          { foreignKeyName: "nameplates_donation_id_fkey"; columns: ["donation_id"]; referencedRelation: "donations"; referencedColumns: ["id"] }
-        ];
-      };
-      print_jobs: {
-        Row: {
-          id: string;
-          nameplate_id: string;
-          printer_id: string | null;
-          status: "queued" | "printing" | "printed" | "error";
-          queued_at: string;
-          printed_at: string | null;
-          printed_by: string | null;
-          error_message: string | null;
-        };
-        Insert: {
-          id?: string;
-          nameplate_id: string;
-          printer_id?: string | null;
-          status?: "queued" | "printing" | "printed" | "error";
-          queued_at?: string;
-          printed_at?: string | null;
-          printed_by?: string | null;
-          error_message?: string | null;
-        };
-        Update: {
-          id?: string;
-          nameplate_id?: string;
-          printer_id?: string | null;
-          status?: "queued" | "printing" | "printed" | "error";
-          queued_at?: string;
-          printed_at?: string | null;
-          printed_by?: string | null;
-          error_message?: string | null;
-        };
-        Relationships: [
-          { foreignKeyName: "print_jobs_nameplate_id_fkey"; columns: ["nameplate_id"]; referencedRelation: "nameplates"; referencedColumns: ["id"] }
-        ];
-      };
-      equipment: {
-        Row: {
-          id: string;
-          center_id: string;
-          type: "board" | "printer" | "flower_box" | "other";
-          name: string;
-          status: "available" | "in_use" | "maintenance" | "returned";
-          current_memorial_id: string | null;
-          location: string | null;
-          notes: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          center_id: string;
-          type: "board" | "printer" | "flower_box" | "other";
-          name: string;
-          status?: "available" | "in_use" | "maintenance" | "returned";
-          current_memorial_id?: string | null;
-          location?: string | null;
-          notes?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          center_id?: string;
-          type?: "board" | "printer" | "flower_box" | "other";
-          name?: string;
-          status?: "available" | "in_use" | "maintenance" | "returned";
-          current_memorial_id?: string | null;
-          location?: string | null;
-          notes?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "equipment_center_id_fkey"; columns: ["center_id"]; referencedRelation: "centers"; referencedColumns: ["id"] }
-        ];
-      };
-      reports: {
-        Row: {
-          id: string;
-          memorial_id: string;
-          center_id: string | null;
-          total_amount: number;
-          donor_count: number;
-          service_fee: number;
-          net_amount: number;
-          wreaths_reduced: number;
-          waste_reduced_kg: number;
-          closed_at: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          memorial_id: string;
-          center_id?: string | null;
-          total_amount?: number;
-          donor_count?: number;
-          service_fee?: number;
-          net_amount?: number;
-          wreaths_reduced?: number;
-          waste_reduced_kg?: number;
-          closed_at?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          memorial_id?: string;
-          center_id?: string | null;
-          total_amount?: number;
-          donor_count?: number;
-          service_fee?: number;
-          net_amount?: number;
-          wreaths_reduced?: number;
-          waste_reduced_kg?: number;
-          closed_at?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "reports_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
-        ];
-      };
-      audit_logs: {
-        Row: {
-          id: string;
-          user_id: string | null;
-          action: string;
-          table_name: string | null;
-          record_id: string | null;
-          old_value: Json | null;
-          new_value: Json | null;
-          ip_address: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id?: string | null;
-          action: string;
-          table_name?: string | null;
-          record_id?: string | null;
-          old_value?: Json | null;
-          new_value?: Json | null;
-          ip_address?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string | null;
-          action?: string;
-          table_name?: string | null;
-          record_id?: string | null;
-          old_value?: Json | null;
-          new_value?: Json | null;
-          ip_address?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      slip_submissions: {
-        Row: {
-          id: string;
-          memorial_id: string;
-          slip_hash: string;
-          slip_url: string | null;
-          duplicate_detected: boolean;
-          duplicate_of: string | null;
-          review_status: "none" | "needs_review" | "reviewed" | "ignored";
-          first_seen_at: string;
-        };
-        Insert: {
-          id?: string;
-          memorial_id: string;
-          slip_hash: string;
-          slip_url?: string | null;
-          duplicate_detected?: boolean;
-          duplicate_of?: string | null;
-          review_status?: "none" | "needs_review" | "reviewed" | "ignored";
-          first_seen_at?: string;
-        };
-        Update: {
-          id?: string;
-          memorial_id?: string;
-          slip_hash?: string;
-          slip_url?: string | null;
-          duplicate_detected?: boolean;
-          duplicate_of?: string | null;
-          review_status?: "none" | "needs_review" | "reviewed" | "ignored";
-          first_seen_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "slip_submissions_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
-        ];
-      };
-      ai_photo_templates: {
-        Row: {
-          id: string;
-          template_key: string;
-          template_name: string;
-          description: string | null;
-          prompt_template: string;
-          negative_prompt: string | null;
-          required_inputs: Json | null;
-          sort_order: number;
-          is_active: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          template_key: string;
-          template_name: string;
-          description?: string | null;
-          prompt_template: string;
-          negative_prompt?: string | null;
-          required_inputs?: Json | null;
-          sort_order?: number;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          template_key?: string;
-          template_name?: string;
-          description?: string | null;
-          prompt_template?: string;
-          negative_prompt?: string | null;
-          required_inputs?: Json | null;
-          sort_order?: number;
-          is_active?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      ai_photo_requests: {
-        Row: {
-          id: string;
-          donation_id: string | null;
-          memorial_id: string | null;
-          template_key: string | null;
-          final_prompt: string | null;
-          reference_image_url: string | null;
-          generated_image_url: string | null;
-          status: "pending" | "processing" | "completed" | "failed";
-          error_message: string | null;
-          created_at: string;
-          completed_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          donation_id?: string | null;
-          memorial_id?: string | null;
-          template_key?: string | null;
-          final_prompt?: string | null;
-          reference_image_url?: string | null;
-          generated_image_url?: string | null;
-          status?: "pending" | "processing" | "completed" | "failed";
-          error_message?: string | null;
-          created_at?: string;
-          completed_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          donation_id?: string | null;
-          memorial_id?: string | null;
-          template_key?: string | null;
-          final_prompt?: string | null;
-          reference_image_url?: string | null;
-          generated_image_url?: string | null;
-          status?: "pending" | "processing" | "completed" | "failed";
-          error_message?: string | null;
-          created_at?: string;
-          completed_at?: string | null;
-        };
-        Relationships: [
-          { foreignKeyName: "ai_photo_requests_donation_id_fkey"; columns: ["donation_id"]; referencedRelation: "donations"; referencedColumns: ["id"] },
-          { foreignKeyName: "ai_photo_requests_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
-        ];
-      };
       ai_photo_credits: {
         Row: {
-          id: string;
-          donation_id: string;
-          free_quota: number;
-          used_count: number;
-          created_at: string;
-          updated_at: string;
-        };
+          created_at: string
+          donation_id: string
+          free_quota: number
+          id: string
+          updated_at: string
+          used_count: number
+        }
         Insert: {
-          id?: string;
-          donation_id: string;
-          free_quota?: number;
-          used_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
+          created_at?: string
+          donation_id: string
+          free_quota?: number
+          id?: string
+          updated_at?: string
+          used_count?: number
+        }
         Update: {
-          id?: string;
-          donation_id?: string;
-          free_quota?: number;
-          used_count?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          { foreignKeyName: "ai_photo_credits_donation_id_fkey"; columns: ["donation_id"]; referencedRelation: "donations"; referencedColumns: ["id"] }
-        ];
-      };
-      outbox_jobs: {
+          created_at?: string
+          donation_id?: string
+          free_quota?: number
+          id?: string
+          updated_at?: string
+          used_count?: number
+        }
+        Relationships: []
+      }
+      ai_photo_templates: {
         Row: {
-          id: string;
-          job_type: string;
-          payload: Record<string, unknown>;
-          status: "pending" | "processing" | "completed" | "failed";
-          dedupe_key: string | null;
-          attempts: number;
-          max_attempts: number;
-          last_error: string | null;
-          scheduled_at: string;
-          claimed_at: string | null;
-          completed_at: string | null;
-          created_at: string;
-        };
+          id: string
+          template_key: string
+          template_name: string
+          description: string
+          prompt_template: string
+          negative_prompt: string
+          required_inputs: string[]
+          sort_order: number
+          is_active: boolean
+          created_at: string
+          updated_at: string
+        }
         Insert: {
-          id?: string;
-          job_type: string;
-          payload: Record<string, unknown>;
-          status?: "pending" | "processing" | "completed" | "failed";
-          dedupe_key?: string | null;
-          attempts?: number;
-          max_attempts?: number;
-          last_error?: string | null;
-          scheduled_at?: string;
-          claimed_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-        };
+          id?: string
+          template_key: string
+          template_name: string
+          description?: string
+          prompt_template: string
+          negative_prompt?: string
+          required_inputs?: string[]
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
         Update: {
-          id?: string;
-          job_type?: string;
-          payload?: Record<string, unknown>;
-          status?: "pending" | "processing" | "completed" | "failed";
-          dedupe_key?: string | null;
-          attempts?: number;
-          max_attempts?: number;
-          last_error?: string | null;
-          scheduled_at?: string;
-          claimed_at?: string | null;
-          completed_at?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
+          id?: string
+          template_key?: string
+          template_name?: string
+          description?: string
+          prompt_template?: string
+          negative_prompt?: string
+          required_inputs?: string[]
+          sort_order?: number
+          is_active?: boolean
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_photo_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          donation_id: string | null
+          error_message: string | null
+          final_prompt: string | null
+          generated_image_url: string | null
+          id: string
+          memorial_id: string | null
+          reference_image_url: string | null
+          status: string
+          template_key: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          final_prompt?: string | null
+          generated_image_url?: string | null
+          id?: string
+          memorial_id?: string | null
+          reference_image_url?: string | null
+          status?: string
+          template_key: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          donation_id?: string | null
+          error_message?: string | null
+          final_prompt?: string | null
+          generated_image_url?: string | null
+          id?: string
+          memorial_id?: string | null
+          reference_image_url?: string | null
+          status?: string
+          template_key?: string
+        }
+        Relationships: []
+      }
+      app_user_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          token_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          token_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          token_hash?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_user_sessions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      app_users: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          auth_provider: Database["public"]["Enums"]["auth_provider"]
+          created_at: string
+          display_name: string
+          email: string | null
+          global_role: Database["public"]["Enums"]["app_user_role"] | null
+          id: string
+          last_login_at: string | null
+          password_hash: string | null
+          phone: string | null
+          provider_user_id: string | null
+          status: Database["public"]["Enums"]["app_user_status"]
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auth_provider?: Database["public"]["Enums"]["auth_provider"]
+          created_at?: string
+          display_name: string
+          email?: string | null
+          global_role?: Database["public"]["Enums"]["app_user_role"] | null
+          id?: string
+          last_login_at?: string | null
+          password_hash?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          status?: Database["public"]["Enums"]["app_user_status"]
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          auth_provider?: Database["public"]["Enums"]["auth_provider"]
+          created_at?: string
+          display_name?: string
+          email?: string | null
+          global_role?: Database["public"]["Enums"]["app_user_role"] | null
+          id?: string
+          last_login_at?: string | null
+          password_hash?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          status?: Database["public"]["Enums"]["app_user_status"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_users_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_logs: {
+        Row: {
+          action: string | null
+          actor_role: string | null
+          actor_user_id: string | null
+          center_id: string | null
+          created_at: string
+          id: string
+          ip_address: string | null
+          new_value: Json | null
+          old_value: Json | null
+          record_id: string | null
+          table_name: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action?: string | null
+          actor_role?: string | null
+          actor_user_id?: string | null
+          center_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string | null
+          actor_role?: string | null
+          actor_user_id?: string | null
+          center_id?: string | null
+          created_at?: string
+          id?: string
+          ip_address?: string | null
+          new_value?: Json | null
+          old_value?: Json | null
+          record_id?: string | null
+          table_name?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_logs_actor_user_id_fkey"
+            columns: ["actor_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_logs_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: false
+            referencedRelation: "centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      center_memberships: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          center_id: string
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_user_role"]
+          status: Database["public"]["Enums"]["app_user_status"]
+          user_id: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          center_id: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_user_role"]
+          status?: Database["public"]["Enums"]["app_user_status"]
+          user_id: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          center_id?: string
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_user_role"]
+          status?: Database["public"]["Enums"]["app_user_status"]
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "center_memberships_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "center_memberships_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: false
+            referencedRelation: "centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "center_memberships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      center_user_requests: {
+        Row: {
+          approved_user_id: string | null
+          auth_provider: Database["public"]["Enums"]["auth_provider"]
+          center_id: string
+          created_at: string
+          display_name: string
+          email: string
+          id: string
+          password_hash: string | null
+          phone: string | null
+          provider_user_id: string | null
+          requested_role: Database["public"]["Enums"]["app_user_role"]
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["app_user_status"]
+        }
+        Insert: {
+          approved_user_id?: string | null
+          auth_provider?: Database["public"]["Enums"]["auth_provider"]
+          center_id: string
+          created_at?: string
+          display_name: string
+          email: string
+          id?: string
+          password_hash?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          requested_role?: Database["public"]["Enums"]["app_user_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["app_user_status"]
+        }
+        Update: {
+          approved_user_id?: string | null
+          auth_provider?: Database["public"]["Enums"]["auth_provider"]
+          center_id?: string
+          created_at?: string
+          display_name?: string
+          email?: string
+          id?: string
+          password_hash?: string | null
+          phone?: string | null
+          provider_user_id?: string | null
+          requested_role?: Database["public"]["Enums"]["app_user_role"]
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["app_user_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "center_user_requests_approved_user_id_fkey"
+            columns: ["approved_user_id"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "center_user_requests_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: false
+            referencedRelation: "centers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "center_user_requests_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "app_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      centers: {
+        Row: {
+          access_code: string | null
+          amphoe: string | null
+          bank_account_image_url: string | null
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          center_code: string | null
+          created_at: string
+          id: string
+          manager_name: string | null
+          municipality: string | null
+          name: string
+          official_lgo_code: string | null
+          phone: string | null
+          province: string | null
+          status: string
+          tambon: string | null
+        }
+        Insert: {
+          access_code?: string | null
+          amphoe?: string | null
+          bank_account_image_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          center_code?: string | null
+          created_at?: string
+          id?: string
+          manager_name?: string | null
+          municipality?: string | null
+          name: string
+          official_lgo_code?: string | null
+          phone?: string | null
+          province?: string | null
+          status?: string
+          tambon?: string | null
+        }
+        Update: {
+          access_code?: string | null
+          amphoe?: string | null
+          bank_account_image_url?: string | null
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          center_code?: string | null
+          created_at?: string
+          id?: string
+          manager_name?: string | null
+          municipality?: string | null
+          name?: string
+          official_lgo_code?: string | null
+          phone?: string | null
+          province?: string | null
+          status?: string
+          tambon?: string | null
+        }
+        Relationships: []
+      }
+      ceremony_stats: {
+        Row: {
+          confirmed_donations: number
+          last_donation_at: string | null
+          memorial_id: string
+          pending_donations: number
+          rejected_donations: number
+          total_amount: number
+          total_donations: number
+          updated_at: string
+          wreaths_reduced: number
+        }
+        Insert: {
+          confirmed_donations?: number
+          last_donation_at?: string | null
+          memorial_id: string
+          pending_donations?: number
+          rejected_donations?: number
+          total_amount?: number
+          total_donations?: number
+          updated_at?: string
+          wreaths_reduced?: number
+        }
+        Update: {
+          confirmed_donations?: number
+          last_donation_at?: string | null
+          memorial_id?: string
+          pending_donations?: number
+          rejected_donations?: number
+          total_amount?: number
+          total_donations?: number
+          updated_at?: string
+          wreaths_reduced?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ceremony_stats_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: true
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      donations: {
+        Row: {
+          amount: number
+          center_id: string | null
+          confirmed_at: string | null
+          created_at: string
+          donor_name: string
+          donor_title: string | null
+          id: string
+          memorial_id: string
+          message: string | null
+          nameplate_status: string
+          slip_duplicate_warning: boolean | null
+          slip_hash: string | null
+          slip_url: string | null
+          status: Database["public"]["Enums"]["donation_status"]
+        }
+        Insert: {
+          amount?: number
+          center_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          donor_name: string
+          donor_title?: string | null
+          id?: string
+          memorial_id: string
+          message?: string | null
+          nameplate_status?: string
+          slip_duplicate_warning?: boolean | null
+          slip_hash?: string | null
+          slip_url?: string | null
+          status?: Database["public"]["Enums"]["donation_status"]
+        }
+        Update: {
+          amount?: number
+          center_id?: string | null
+          confirmed_at?: string | null
+          created_at?: string
+          donor_name?: string
+          donor_title?: string | null
+          id?: string
+          memorial_id?: string
+          message?: string | null
+          nameplate_status?: string
+          slip_duplicate_warning?: boolean | null
+          slip_hash?: string | null
+          slip_url?: string | null
+          status?: Database["public"]["Enums"]["donation_status"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "donations_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       memorial_persons: {
         Row: {
-          id: string;
-          memorial_id: string;
-          display_name: string;
-          relationship: string;
-          role_in_photo: string;
-          photo_url: string | null;
-          allow_in_sim: boolean;
-          is_primary: boolean;
-          sort_order: number;
-          created_at: string;
-        };
+          allow_in_sim: boolean
+          created_at: string
+          display_name: string
+          id: string
+          is_primary: boolean
+          memorial_id: string
+          photo_url: string | null
+          relationship: string
+          role_in_photo: string
+          sort_order: number
+        }
         Insert: {
-          id?: string;
-          memorial_id: string;
-          display_name: string;
-          relationship: string;
-          role_in_photo?: string;
-          photo_url?: string | null;
-          allow_in_sim?: boolean;
-          is_primary?: boolean;
-          sort_order?: number;
-          created_at?: string;
-        };
+          allow_in_sim?: boolean
+          created_at?: string
+          display_name: string
+          id?: string
+          is_primary?: boolean
+          memorial_id: string
+          photo_url?: string | null
+          relationship: string
+          role_in_photo?: string
+          sort_order?: number
+        }
         Update: {
-          id?: string;
-          memorial_id?: string;
-          display_name?: string;
-          relationship?: string;
-          role_in_photo?: string;
-          photo_url?: string | null;
-          allow_in_sim?: boolean;
-          is_primary?: boolean;
-          sort_order?: number;
-          created_at?: string;
-        };
+          allow_in_sim?: boolean
+          created_at?: string
+          display_name?: string
+          id?: string
+          is_primary?: boolean
+          memorial_id?: string
+          photo_url?: string | null
+          relationship?: string
+          role_in_photo?: string
+          sort_order?: number
+        }
         Relationships: [
-          { foreignKeyName: "memorial_persons_memorial_id_fkey"; columns: ["memorial_id"]; referencedRelation: "memorials"; referencedColumns: ["id"] }
-        ];
-      };
-    };
-    Views: {
+          {
+            foreignKeyName: "memorial_persons_memorial_id_fkey"
+            columns: ["memorial_id"]
+            isOneToOne: false
+            referencedRelation: "memorials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      memorials: {
+        Row: {
+          age: number
+          bank_account_image_url: string | null
+          bank_account_name: string
+          bank_account_number: string
+          bank_name: string
+          birth_date: string
+          center_id: string | null
+          ceremony_date: string
+          ceremony_hall: string | null
+          ceremony_location: string
+          ceremony_time: string
+          created_at: string
+          death_certificate_url: string | null
+          death_date: string
+          event_code: string | null
+          funeral_status: string
+          host_bank_account_name: string | null
+          host_bank_account_number: string | null
+          host_bank_name: string | null
+          host_code: string | null
+          host_id_card_url: string | null
+          host_name: string | null
+          host_phone: string | null
+          host_relationship: string | null
+          id: string
+          is_active: boolean
+          name: string
+          photo_url: string | null
+          prayer_date: string | null
+          prayer_location: string | null
+          slug: string
+        }
+        Insert: {
+          age: number
+          bank_account_image_url?: string | null
+          bank_account_name: string
+          bank_account_number: string
+          bank_name: string
+          birth_date: string
+          center_id?: string | null
+          ceremony_date: string
+          ceremony_hall?: string | null
+          ceremony_location: string
+          ceremony_time: string
+          created_at?: string
+          death_certificate_url?: string | null
+          death_date: string
+          event_code?: string | null
+          funeral_status?: string
+          host_bank_account_name?: string | null
+          host_bank_account_number?: string | null
+          host_bank_name?: string | null
+          host_code?: string | null
+          host_id_card_url?: string | null
+          host_name?: string | null
+          host_phone?: string | null
+          host_relationship?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          photo_url?: string | null
+          prayer_date?: string | null
+          prayer_location?: string | null
+          slug: string
+        }
+        Update: {
+          age?: number
+          bank_account_image_url?: string | null
+          bank_account_name?: string
+          bank_account_number?: string
+          bank_name?: string
+          birth_date?: string
+          center_id?: string | null
+          ceremony_date?: string
+          ceremony_hall?: string | null
+          ceremony_location?: string
+          ceremony_time?: string
+          created_at?: string
+          death_certificate_url?: string | null
+          death_date?: string
+          event_code?: string | null
+          funeral_status?: string
+          host_bank_account_name?: string | null
+          host_bank_account_number?: string | null
+          host_bank_name?: string | null
+          host_code?: string | null
+          host_id_card_url?: string | null
+          host_name?: string | null
+          host_phone?: string | null
+          host_relationship?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          photo_url?: string | null
+          prayer_date?: string | null
+          prayer_location?: string | null
+          slug?: string
+        }
+        Relationships: []
+      }
+      outbox_jobs: {
+        Row: {
+          attempts: number
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          job_type: string
+          last_error: string | null
+          max_attempts: number
+          payload: Record<string, unknown>
+          scheduled_at: string
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          job_type: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Record<string, unknown>
+          scheduled_at?: string
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          claimed_at?: string | null
+          completed_at?: string | null
+          created_at?: string
+          dedupe_key?: string | null
+          id?: string
+          job_type?: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Record<string, unknown>
+          scheduled_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      slip_submissions: {
+        Row: {
+          id: string
+          memorial_id: string
+          slip_hash: string
+          slip_url: string | null
+          duplicate_detected: boolean
+          duplicate_of: string | null
+          review_status: string
+          first_seen_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          memorial_id: string
+          slip_hash: string
+          slip_url?: string | null
+          duplicate_detected?: boolean
+          duplicate_of?: string | null
+          review_status?: string
+          first_seen_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          memorial_id?: string
+          slip_hash?: string
+          slip_url?: string | null
+          duplicate_detected?: boolean
+          duplicate_of?: string | null
+          review_status?: string
+          first_seen_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      center_daily_stats: {
+        Row: {
+          id: string
+          center_id: string
+          report_date: string
+          donation_count: number
+          pending_count: number
+          confirmed_count: number
+          rejected_count: number
+          confirmed_donations: number
+          total_amount: number
+          wreaths_reduced: number
+          waste_reduced_kg: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          center_id: string
+          report_date: string
+          donation_count?: number
+          pending_count?: number
+          confirmed_count?: number
+          rejected_count?: number
+          confirmed_donations?: number
+          total_amount?: number
+          wreaths_reduced?: number
+          waste_reduced_kg?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          center_id?: string
+          report_date?: string
+          donation_count?: number
+          pending_count?: number
+          confirmed_count?: number
+          rejected_count?: number
+          confirmed_donations?: number
+          total_amount?: number
+          wreaths_reduced?: number
+          waste_reduced_kg?: number
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       center_report_totals: {
         Row: {
-          center_id: string | null;
-          center_name: string | null;
-          province: string | null;
-          amphoe: string | null;
-          center_status: string | null;
-          donation_count: number | null;
-          pending_count: number | null;
-          confirmed_count: number | null;
-          rejected_count: number | null;
-          total_amount: number | null;
-          wreaths_reduced: number | null;
-          waste_reduced_kg: number | null;
-          updated_at: string | null;
-        };
-        Relationships: [];
-      };
-    };
+          center_id: string
+          donation_count: number
+          pending_count: number
+          confirmed_count: number
+          rejected_count: number
+          total_amount: number
+          wreaths_reduced: number
+          waste_reduced_kg: number
+          updated_at: string | null
+        }
+        Insert: {
+          center_id: string
+          donation_count?: number
+          pending_count?: number
+          confirmed_count?: number
+          rejected_count?: number
+          total_amount?: number
+          wreaths_reduced?: number
+          waste_reduced_kg?: number
+          updated_at?: string | null
+        }
+        Update: {
+          center_id?: string
+          donation_count?: number
+          pending_count?: number
+          confirmed_count?: number
+          rejected_count?: number
+          total_amount?: number
+          wreaths_reduced?: number
+          waste_reduced_kg?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      print_jobs: {
+        Row: {
+          id: string
+          status: string
+          error_message: string | null
+          queued_at: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          status?: string
+          error_message?: string | null
+          queued_at?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          status?: string
+          error_message?: string | null
+          queued_at?: string
+          created_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          created_at: string
+          donation_id: string
+          id: string
+          metadata: Json | null
+          provider: string
+          provider_ref: string
+          status: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          donation_id: string
+          id?: string
+          metadata?: Json | null
+          provider: string
+          provider_ref: string
+          status?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          donation_id?: string
+          id?: string
+          metadata?: Json | null
+          provider?: string
+          provider_ref?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_donation_id_fkey"
+            columns: ["donation_id"]
+            isOneToOne: false
+            referencedRelation: "donations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tenant_stats: {
+        Row: {
+          active_memorials: number
+          center_id: string
+          closed_memorials: number
+          confirmed_donations: number
+          total_amount: number
+          total_donations: number
+          total_memorials: number
+          updated_at: string
+          wreaths_reduced: number
+        }
+        Insert: {
+          active_memorials?: number
+          center_id: string
+          closed_memorials?: number
+          confirmed_donations?: number
+          total_amount?: number
+          total_donations?: number
+          total_memorials?: number
+          updated_at?: string
+          wreaths_reduced?: number
+        }
+        Update: {
+          active_memorials?: number
+          center_id?: string
+          closed_memorials?: number
+          confirmed_donations?: number
+          total_amount?: number
+          total_donations?: number
+          total_memorials?: number
+          updated_at?: string
+          wreaths_reduced?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_stats_center_id_fkey"
+            columns: ["center_id"]
+            isOneToOne: true
+            referencedRelation: "centers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
     Functions: {
       refresh_center_daily_stats: {
-        Args: { p_center_id: string; p_report_date: string };
-        Returns: undefined;
-      };
+        Args: { p_center_id: string; p_report_date: string }
+        Returns: undefined
+      }
       claim_outbox_jobs: {
-        Args: { p_batch_size: number };
-        Returns: unknown;
-      };
+        Args: { p_batch_size?: number }
+        Returns: {
+          attempts: number
+          claimed_at: string | null
+          completed_at: string | null
+          created_at: string
+          dedupe_key: string | null
+          id: string
+          job_type: string
+          last_error: string | null
+          max_attempts: number
+          payload: Json
+          scheduled_at: string
+          status: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "outbox_jobs"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       confirm_donation: {
         Args: {
-          p_donation_id: string;
-          p_provider: string;
-          p_provider_ref: string;
-          p_amount: number;
-          p_metadata: Record<string, unknown>;
-        };
-        Returns: { ok: boolean; reason?: string; memorial_id?: string } | null;
-      };
-    };
+          p_amount: number
+          p_donation_id: string
+          p_metadata?: Record<string, unknown>
+          p_provider: string
+          p_provider_ref: string
+        }
+        Returns: Json
+      }
+    }
     Enums: {
-      donation_status: "pending" | "confirmed" | "rejected";
-      nameplate_print_status: "pending" | "queued" | "printing" | "printed" | "error" | "reprint";
-      funeral_status: "draft" | "active" | "closed";
-      equipment_status: "available" | "in_use" | "maintenance" | "returned";
-    };
-  };
+      app_user_role:
+        | "super_admin"
+        | "center_manager"
+        | "center_staff"
+        | "center_viewer"
+      app_user_status: "pending" | "active" | "suspended" | "rejected"
+      auth_provider: "password" | "email" | "line" | "facebook" | "google"
+      donation_status: "pending" | "confirmed" | "rejected"
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
 
-export type Center    = Database["public"]["Tables"]["centers"]["Row"];
-export type Memorial  = Database["public"]["Tables"]["memorials"]["Row"];
-export type Donation  = Database["public"]["Tables"]["donations"]["Row"];
-export type Nameplate = Database["public"]["Tables"]["nameplates"]["Row"];
-export type PrintJob  = Database["public"]["Tables"]["print_jobs"]["Row"];
-export type Equipment = Database["public"]["Tables"]["equipment"]["Row"];
-export type Report    = Database["public"]["Tables"]["reports"]["Row"];
-export type AuditLog  = Database["public"]["Tables"]["audit_logs"]["Row"];
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {
+      app_user_role: [
+        "super_admin",
+        "center_manager",
+        "center_staff",
+        "center_viewer",
+      ],
+      app_user_status: ["pending", "active", "suspended", "rejected"],
+      auth_provider: ["password", "email", "line", "facebook", "google"],
+      donation_status: ["pending", "confirmed", "rejected"],
+    },
+  },
+} as const
+
+// Convenience row-type aliases used across the codebase
+export type Memorial = Database["public"]["Tables"]["memorials"]["Row"]
+export type Donation = Database["public"]["Tables"]["donations"]["Row"]
+export type Center = Database["public"]["Tables"]["centers"]["Row"]
