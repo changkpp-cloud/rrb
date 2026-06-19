@@ -137,10 +137,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
     const ua = navigator.userAgent || navigator.vendor || "";
     const isAndroid = /android/i.test(ua);
-    const isIOS = /iphone|ipad|ipod/i.test(ua);
     const isIAB = isSocialInAppBrowser();
 
-    // Android + in-app browser → force open current page in default browser via Intent
+    // Android + in-app browser → force open in Chrome via Intent before generating image
     if (isAndroid && isIAB) {
       window.location.href =
         "intent://" +
@@ -159,25 +158,27 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
         ? `เอกสารมอบหรีด-${name || "document"}.png`
         : `rrb-ecard-${name || "ecard"}.png`;
 
-      // iOS + in-app browser → open generated image in new tab (long-press to save)
-      if (isIOS && isIAB) {
-        window.open(dataUrl, "_blank");
-        setDownloading(false);
-        return;
-      }
-
-      // Standard browser → Blob + Object URL download
       const res = await fetch(dataUrl);
       const blob = await res.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = objectUrl;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(objectUrl);
-    } catch {}
+      const file = new File([blob], filename, { type: blob.type });
+
+      // Mobile: trigger native OS share sheet (iOS/Android native "Save Image" option)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({ files: [file], title: "E-Card หรีดร่วมบุญ" });
+      } else {
+        // Desktop or unsupported: standard programmatic download
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+      }
+    } catch (err) {
+      if ((err as Error).name !== "AbortError") console.error("Download failed:", err);
+    }
     setDownloading(false);
   }
 
