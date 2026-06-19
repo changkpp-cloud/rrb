@@ -38,6 +38,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   const [saving, setSaving]         = useState(false);
   const [downloading, setDownloading] = useState(false);
   const [sharing, setSharing]       = useState(false);
+  const [downloadDone, setDownloadDone] = useState(false);
   const [shared, setShared]         = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
   const [memorialPhotoSrc, setMemorialPhotoSrc] = useState(memorial.photo_url ?? "");
@@ -144,6 +145,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
         window.location.pathname +
         window.location.search +
         "#Intent;scheme=https;end;";
+      setDownloadDone(true);
       return;
     }
 
@@ -159,6 +161,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       if (isIOS && isIAB) {
         window.open(dataUrl, "_blank");
         setDownloading(false);
+        setDownloadDone(true);
         return;
       }
 
@@ -173,6 +176,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(objectUrl);
+      setDownloadDone(true);
     } catch {}
     setDownloading(false);
   }
@@ -443,15 +447,17 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
             </div>
 
-            {/* Primary download button — works in all browsers incl. FB IAB */}
-            <button
-              onClick={handleDownload}
-              disabled={downloading || saving || sharing}
-              className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
-            >
-              <Download className="w-4 h-4" />
-              {downloading ? "กำลังสร้างภาพ..." : "กดเปิดนอกแชท เพื่อบันทึกภาพ"}
-            </button>
+            {/* Primary download button — hidden after first tap */}
+            {!downloadDone && (
+              <button
+                onClick={handleDownload}
+                disabled={downloading || saving || sharing}
+                className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+              >
+                <Download className="w-4 h-4" />
+                {downloading ? "กำลังสร้างภาพ..." : "กดเปิดนอกแชท เพื่อบันทึกภาพ"}
+              </button>
+            )}
 
             <div className="grid grid-cols-2 gap-2">
               <button
