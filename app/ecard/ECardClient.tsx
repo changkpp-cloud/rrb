@@ -132,6 +132,8 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   async function handleDownload() {
     if (!cardRef.current) return;
 
+    setDownloadDone(true);
+
     const ua = navigator.userAgent || navigator.vendor || "";
     const isAndroid = /android/i.test(ua);
     const isIOS = /iphone|ipad|ipod/i.test(ua);
@@ -145,7 +147,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
         window.location.pathname +
         window.location.search +
         "#Intent;scheme=https;end;";
-      setDownloadDone(true);
       return;
     }
 
@@ -161,7 +162,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       if (isIOS && isIAB) {
         window.open(dataUrl, "_blank");
         setDownloading(false);
-        setDownloadDone(true);
         return;
       }
 
@@ -176,7 +176,6 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(objectUrl);
-      setDownloadDone(true);
     } catch {}
     setDownloading(false);
   }
