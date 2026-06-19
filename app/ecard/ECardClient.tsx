@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useMemo, useState } from "react";
+import { flushSync } from "react-dom";
 import type { ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -132,7 +133,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
   async function handleDownload() {
     if (!cardRef.current) return;
 
-    setDownloadDone(true);
+    flushSync(() => setDownloadDone(true));
 
     const ua = navigator.userAgent || navigator.vendor || "";
     const isAndroid = /android/i.test(ua);
