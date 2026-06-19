@@ -378,6 +378,9 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
             )}
             </div>
 
+            <p className="text-center text-xs text-gold-600 font-medium">
+              กด ดาวน์โหลด → ดำเนินการต่อ → ภาพบันทึกอัตโนมัติ
+            </p>
             <button
               type="button"
               onClick={() => {
@@ -387,7 +390,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <Download className="w-4 h-4" />
-              {storageUrl ? "บันทึกภาพ / แชร์" : "กำลังเตรียมรูปภาพ..."}
+              {storageUrl ? "ดาวน์โหลด" : "กำลังเตรียมรูปภาพ..."}
             </button>
           </div>
           )}
