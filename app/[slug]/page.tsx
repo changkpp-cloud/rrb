@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
     };
   }
 
-  const title = `${memorial.name}\nผู้วายชนม์`;
+  const title = `หรีดร่วมบุญ ผู้วายชนม์ ${memorial.name}`;
   const description = buildShareDescription(memorial);
   const imageUrl = absoluteUrl(memorial.photo_url);
   const images = imageUrl ? [{ url: imageUrl, alt: memorial.name }] : undefined;
