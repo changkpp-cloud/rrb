@@ -450,7 +450,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
             >
               <Download className="w-4 h-4" />
-              {downloading ? "กำลังสร้างภาพ..." : "ดาวน์โหลด E-Card"}
+              {downloading ? "กำลังสร้างภาพ..." : "กดเปิดนอกแชท เพื่อบันทึกภาพ"}
             </button>
 
             <div className="grid grid-cols-2 gap-2">

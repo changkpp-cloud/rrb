@@ -61,7 +61,7 @@ export default function ECardDownload({
       className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
     >
       <Download className="w-4 h-4" />
-      {isDownloading ? 'กำลังดาวน์โหลด...' : 'ดาวน์โหลด E-Card'}
+      {isDownloading ? 'กำลังดาวน์โหลด...' : 'กดเปิดนอกแชท เพื่อบันทึกภาพ'}
     </button>
   );
 }
