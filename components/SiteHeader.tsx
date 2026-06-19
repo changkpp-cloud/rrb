@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SiteHeader() {
   return (
@@ -6,7 +7,14 @@ export default function SiteHeader() {
 
       {/* Dynamic Island — dark floating pill */}
       <div className="ios-dynamic-island flex items-center gap-2.5 px-5 py-[9px]">
-        <span className="text-gold-400 text-sm select-none">❖</span>
+        <Image
+          src="/rrb-logo-removebg-preview.png"
+          alt="RRB"
+          width={60}
+          height={24}
+          className="h-5 w-auto object-contain"
+          unoptimized
+        />
         <div className="flex items-baseline gap-2">
           <span className="text-sm font-bold text-white leading-none">
             หรีดร่วมบุญ
@@ -15,7 +23,6 @@ export default function SiteHeader() {
             Zero Waste
           </span>
         </div>
-        <span className="text-gold-400 text-sm select-none">❖</span>
       </div>
 
       {/* Dashboard button — floating right */}
