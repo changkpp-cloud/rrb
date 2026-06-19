@@ -194,7 +194,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               href={buildViewHref("certificate")}
               active={activeView === "certificate"}
               icon={<FileText className="w-4 h-4" />}
-              label="E-Card ขอบคุณ แสดงยอดเงิน"
+              label="E-Card ขอบคุณ (แสดงยอดเงิน)"
             />
             <MenuLink
               href={buildViewHref("ai")}
