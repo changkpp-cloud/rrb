@@ -15,6 +15,7 @@ import {
   Sparkles,
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import { withExternalBrowser } from "@/lib/browser-actions";
 import {
   buildAiPhotoPrompt,
   buildWreathLabelText,
@@ -311,18 +312,19 @@ function MockWreathInner() {
   }
 
   async function handleShare() {
+    const shareUrl = withExternalBrowser(window.location.href);
     if (navigator.share) {
       await navigator
         .share({
           title: "จำลองภาพมอบหรีดร่วมบุญ",
           text: `${donorName || "ผู้ร่วมบุญ"} ร่วมมอบหรีดร่วมบุญ`,
-          url: window.location.href,
+          url: shareUrl,
         })
         .catch(() => {});
       return;
     }
 
-    await navigator.clipboard.writeText(window.location.href).catch(() => {});
+    await navigator.clipboard.writeText(shareUrl).catch(() => {});
     setShared(true);
     setTimeout(() => setShared(false), 1800);
   }

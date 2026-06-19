@@ -60,6 +60,10 @@ export async function downloadOrOpenImage(imageUrl: string, filename: string) {
   link.click();
 }
 
+export function withExternalBrowser(url: string): string {
+  return url.includes("?") ? `${url}&openExternalBrowser=1` : `${url}?openExternalBrowser=1`;
+}
+
 export async function shareOrCopyUrl(params: { url: string; title: string; text: string }) {
   if (navigator.share) {
     try {

@@ -8,7 +8,7 @@ import { Camera, Check, Download, FileText, Image as ImageIcon, Share2 } from "l
 import LotusIcon from "@/components/LotusIcon";
 import AiPhotoSectionV2 from "@/components/ai-photo/AiPhotoSectionV2";
 import type { Memorial } from "@/lib/supabase/types";
-import { isSocialInAppBrowser, openImageForManualSave, openUrl } from "@/lib/browser-actions";
+import { isSocialInAppBrowser, openImageForManualSave, openUrl, withExternalBrowser } from "@/lib/browser-actions";
 
 const SIGN_W = 260;
 const SIGN_H = 72;
@@ -67,7 +67,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   async function handleShare() {
     setSharing(true);
-    const shareUrl = window.location.href;
+    const shareUrl = withExternalBrowser(window.location.href);
     const shareTitle = showAmount
       ? `เอกสารมอบหรีด — ${name}${title ? ` (${title})` : ""} ยอด ${parseInt(amount).toLocaleString()} บาท`
       : `E-Card ขอบคุณ — ${name}${title ? ` · ${title}` : ""}`;

@@ -21,6 +21,8 @@ import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
 import MemorialPersonManager from "@/components/host/MemorialPersonManager";
+import CopyLinkButton from "@/components/CopyLinkButton";
+import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
 
@@ -113,11 +115,19 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <InfoRow label="เจ้าภาพ" value={memorial.host_name || "-"} />
             <InfoRow label="สถานที่" value={memorial.ceremony_location || "-"} />
             <InfoRow label="วันฌาปนกิจ" value={formatThaiDate(memorial.ceremony_date)} />
-            <div className="flex justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-gold-400 shrink-0">ลิงก์หน้างาน</span>
-              <a href={`/${memorial.slug}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 underline truncate text-right">
-                {memorial.slug}
-              </a>
+              <div className="flex items-center gap-2 min-w-0">
+                <a
+                  href={`/${memorial.slug}?openExternalBrowser=1`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline truncate text-right"
+                >
+                  {memorial.slug}
+                </a>
+                <CopyLinkButton url={`${getSiteUrl()}/${memorial.slug}?openExternalBrowser=1`} />
+              </div>
             </div>
           </div>
           <Link
