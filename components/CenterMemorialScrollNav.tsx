@@ -1,15 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Banknote, ClipboardCheck, Info, Printer, ScrollText, Users } from "lucide-react";
+import { Banknote, Camera, ClipboardCheck, Info, Printer, ScrollText, Users } from "lucide-react";
 
-type SectionId = "overview" | "slips" | "print" | "donors" | "finance" | "close";
+type SectionId = "overview" | "slips" | "print" | "donors" | "persons" | "finance" | "close";
 
 const ITEMS: { id: SectionId; label: string; icon: React.ElementType }[] = [
-  { id: "overview", label: "ภาพรวมงาน", icon: Info },
+  { id: "overview", label: "ภาพรวม", icon: Info },
   { id: "slips", label: "สลิป/เตือน", icon: ClipboardCheck },
-  { id: "print", label: "คิวพิมพ์ป้าย", icon: Printer },
-  { id: "donors", label: "รายชื่อผู้ร่วมบุญ", icon: Users },
+  { id: "print", label: "พิมพ์ป้าย", icon: Printer },
+  { id: "donors", label: "รายชื่อ", icon: Users },
+  { id: "persons", label: "บุคคลภาพ", icon: Camera },
   { id: "finance", label: "การเงิน", icon: Banknote },
   { id: "close", label: "ปิดงาน", icon: ScrollText },
 ];
@@ -41,7 +42,7 @@ export default function CenterMemorialScrollNav() {
 
   return (
     <nav className="sticky top-[76px] z-30 -mx-4 bg-white/92 backdrop-blur-md border-y border-gold-100 px-4 py-2">
-      <div className="grid grid-cols-3 gap-1.5">
+      <div className="flex gap-1.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {ITEMS.map(({ id, label, icon: Icon }) => {
           const isActive = active === id;
           return (
@@ -49,7 +50,7 @@ export default function CenterMemorialScrollNav() {
               key={id}
               type="button"
               onClick={() => scrollTo(id)}
-              className={`min-h-[58px] rounded-xl border px-1.5 py-2 transition-colors ${
+              className={`flex-none min-w-[60px] rounded-xl border px-2 py-2 transition-colors text-center ${
                 isActive
                   ? "bg-gold-600 border-gold-600 text-white shadow-sm"
                   : "bg-cream-50 border-gold-200 text-gold-600 hover:bg-gold-50"
