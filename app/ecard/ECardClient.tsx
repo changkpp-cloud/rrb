@@ -35,9 +35,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const [saving, setSaving]       = useState(false);
-  const [sharing, setSharing]     = useState(false);
-  const [shared, setShared]       = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [downloading, setDownloading] = useState(false);
+  const [sharing, setSharing]       = useState(false);
+  const [shared, setShared]         = useState(false);
   const [cardWidth, setCardWidth] = useState(360);
   const [memorialPhotoSrc, setMemorialPhotoSrc] = useState(memorial.photo_url ?? "");
 
@@ -125,6 +126,36 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       link.click();
     } catch {}
     setSaving(false);
+  }
+
+  async function handleDownload() {
+    if (!cardRef.current) return;
+    setDownloading(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const filename = showAmount
+        ? `เอกสารมอบหรีด-${name || "document"}.png`
+        : `rrb-ecard-${name || "ecard"}.png`;
+
+      if (isSocialInAppBrowser()) {
+        // FB/LINE IAB: open blob URL as new page so user can long-press to save
+        openUrl(objectUrl);
+        setTimeout(() => URL.revokeObjectURL(objectUrl), 60_000);
+      } else {
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+      }
+    } catch {}
+    setDownloading(false);
   }
 
   useEffect(() => {
@@ -393,22 +424,32 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               </div>
             </div>
 
+            {/* Primary download button — works in all browsers incl. FB IAB */}
+            <button
+              onClick={handleDownload}
+              disabled={downloading || saving || sharing}
+              className="w-full gold-gradient text-white font-semibold py-3.5 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+            >
+              <Download className="w-4 h-4" />
+              {downloading ? "กำลังสร้างภาพ..." : "ดาวน์โหลด E-Card"}
+            </button>
+
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleSaveCard}
-                disabled={saving || sharing}
-                className="gold-gradient text-white font-semibold py-3 rounded-xl text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 disabled:opacity-60"
+                disabled={downloading || saving || sharing}
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border border-gold-200 bg-white text-gold-600 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-3.5 h-3.5" />
                 {saving ? "กำลังบันทึก..." : "บันทึกภาพ"}
               </button>
               <button
                 onClick={handleShare}
-                disabled={saving || sharing}
-                className="flex items-center justify-center gap-1.5 py-3 rounded-xl text-sm font-semibold border-2 border-gold-300 bg-white text-gold-700 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
+                disabled={downloading || saving || sharing}
+                className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-semibold border border-gold-200 bg-white text-gold-600 hover:bg-gold-50 active:scale-[0.98] transition-all disabled:opacity-50"
                 style={{ borderColor: shared ? "#00b900" : undefined, color: shared ? "#00b900" : undefined }}
               >
-                {shared ? <Check className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                {shared ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
                 แชร์
               </button>
             </div>
