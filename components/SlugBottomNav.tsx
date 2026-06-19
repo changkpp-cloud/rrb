@@ -48,7 +48,7 @@ const TABS: Tab[] = [
     getHref: (slug) => `/${slug}/payment`,
   },
   {
-    label: "กรอกชื่อ",
+    label: "ป้ายชื่อ",
     Icon: Tag,
     isActive: (p, slug) => p === `/${slug}/print-name`,
     getHref: (slug, paid) =>
