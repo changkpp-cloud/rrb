@@ -130,6 +130,23 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
   async function handleDownload() {
     if (!cardRef.current) return;
+
+    const ua = navigator.userAgent || navigator.vendor || "";
+    const isAndroid = /android/i.test(ua);
+    const isIOS = /iphone|ipad|ipod/i.test(ua);
+    const isIAB = isSocialInAppBrowser();
+
+    // Android + in-app browser → force open current page in default browser via Intent
+    if (isAndroid && isIAB) {
+      window.location.href =
+        "intent://" +
+        window.location.host +
+        window.location.pathname +
+        window.location.search +
+        "#Intent;scheme=https;end;";
+      return;
+    }
+
     setDownloading(true);
     try {
       const { toPng } = await import("html-to-image");
@@ -138,29 +155,24 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
         ? `เอกสารมอบหรีด-${name || "document"}.png`
         : `rrb-ecard-${name || "ecard"}.png`;
 
-      if (isSocialInAppBrowser()) {
-        // FB/LINE IAB: blob URLs are blocked — upload to storage and navigate to real HTTPS URL
-        const res = await fetch("/api/upload-ecard", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ imageDataUrl: dataUrl, memorialId: memorial.id }),
-        });
-        const json = await res.json() as { url?: string };
-        if (json.url) {
-          window.location.href = json.url;
-        }
-      } else {
-        const uploadRes = await fetch(dataUrl);
-        const blob = await uploadRes.blob();
-        const objectUrl = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = objectUrl;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(objectUrl);
+      // iOS + in-app browser → open generated image in new tab (long-press to save)
+      if (isIOS && isIAB) {
+        window.open(dataUrl, "_blank");
+        setDownloading(false);
+        return;
       }
+
+      // Standard browser → Blob + Object URL download
+      const res = await fetch(dataUrl);
+      const blob = await res.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
     } catch {}
     setDownloading(false);
   }
