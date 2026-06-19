@@ -20,7 +20,7 @@ const NAV_ITEMS = [
     isActive: (pathname: string) => pathname === "/evt-2026-rra8/payment",
   },
   {
-    label: "กรอกชื่อ",
+    label: "ป้ายชื่อ",
     href: "/evt-2026-rra8/print-name",
     icon: Tag,
     isActive: (pathname: string) => pathname === "/evt-2026-rra8/print-name",

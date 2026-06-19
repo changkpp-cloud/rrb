@@ -71,7 +71,7 @@ export default function OverviewClient({ memorial, slug }: Props) {
     },
     {
       step: 3,
-      label: "กรอกชื่อป้าย",
+      label: "ป้ายชื่อ",
       desc: "ระบุชื่อและข้อความบนป้ายอาลัย",
       href: printNameHref,
       unlocked: !!paid,
