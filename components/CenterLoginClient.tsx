@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, LogIn, Mail } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
-import { roleLabel } from "@/lib/iam";
+import { roleLabel } from "@/lib/iam-utils";
 
 type CenterOption = {
   centerId: string;
