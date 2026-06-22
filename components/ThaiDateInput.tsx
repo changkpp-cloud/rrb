@@ -39,6 +39,10 @@ function toISO(day: number, month: number, beYear: number): string {
 const sel =
   "px-2 py-2.5 rounded-xl border border-gold-200 bg-white text-gold-800 text-sm focus:outline-none focus:ring-2 focus:ring-gold-400 appearance-none";
 
+// ช่วงปี พ.ศ. ให้เลือก: ตั้งแต่ปีหน้า ย้อนหลัง 120 ปี (ครอบคลุมทั้งวันเกิดและวันฌาปนกิจ)
+const CURRENT_BE = new Date().getFullYear() + 543;
+const YEAR_OPTIONS = Array.from({ length: 122 }, (_, i) => CURRENT_BE + 1 - i);
+
 export default function ThaiDateInput({ value, onChange, required }: Props) {
   const init = fromISO(value);
   const [day, setDay]       = useState(init.day);
@@ -89,24 +93,18 @@ export default function ThaiDateInput({ value, onChange, required }: Props) {
         ))}
       </select>
 
-      {/* BE Year */}
-      <div className="relative">
-        <input
-          type="number"
-          value={beYear || ""}
-          onChange={e => {
-            const v = Number(e.target.value);
-            setBeYear(v);
-            emit(day, month, v);
-          }}
-          placeholder="พ.ศ."
-          min={2440}
-          max={2700}
-          className={`${sel} w-[90px] text-center pr-8`}
-          required={required}
-        />
-        <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[9px] text-gold-400 pointer-events-none">พ.ศ.</span>
-      </div>
+      {/* BE Year (dropdown เลือกอย่างเดียว ไม่ต้องพิมพ์) */}
+      <select
+        value={beYear || ""}
+        onChange={e => { const v = Number(e.target.value); setBeYear(v); emit(day, month, v); }}
+        className={`${sel} w-[92px] text-center`}
+        required={required}
+      >
+        <option value="">พ.ศ.</option>
+        {YEAR_OPTIONS.map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
     </div>
   );
 }
