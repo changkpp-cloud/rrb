@@ -2,31 +2,58 @@
 
 import { KeyRound, LogIn } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function HostLoginPage() {
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [autoLogin, setAutoLogin] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
 
-  useEffect(() => {
-    setCode("");
-  }, []);
-
-  async function handleLogin() {
-    if (!code.trim()) { setError("กรุณากรอกรหัสเจ้าภาพ"); return; }
+  const handleLogin = useCallback(async (rawCode?: string) => {
+    const loginCode = (rawCode ?? code).trim();
+    if (!loginCode) { setError("กรุณากรอกรหัสเจ้าภาพ"); return; }
     setLoading(true); setError("");
     try {
-      const res = await fetch(`/api/memorial/host?code=${encodeURIComponent(code.trim())}`);
+      const res = await fetch(`/api/memorial/host?code=${encodeURIComponent(loginCode)}`);
       const data = await res.json();
       if (!res.ok || !data.id) throw new Error(data.error ?? "ไม่พบรหัสนี้");
       router.push(`/dashboard/host/${data.id}`);
     } catch (e) {
       setError(e instanceof Error ? e.message : "ไม่พบรหัสนี้");
+      setLoading(false);
+      setAutoLogin(false);
     }
-    setLoading(false);
+  }, [code, router]);
+
+  // Auto-login จากลิงก์ที่ศูนย์ส่งให้เจ้าภาพ: /dashboard/host?code=XXXX
+  useEffect(() => {
+    const urlCode = new URLSearchParams(window.location.search).get("code");
+    if (urlCode && urlCode.trim()) {
+      setCode(urlCode.trim());
+      setAutoLogin(true);
+      handleLogin(urlCode);
+    } else {
+      setCode("");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // กำลัง auto-login จากลิงก์ — แสดงหน้ารอ ไม่ต้องโชว์ฟอร์มกรอกรหัส
+  if (autoLogin && !error) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <IosPageHeader title="Dashboard เจ้าภาพ" subtitle="Host Access" backHref="/" />
+        <main className="flex-1 flex flex-col items-center justify-center px-4 py-10">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="w-12 h-12 rounded-full border-3 border-gold-400 border-t-transparent animate-spin" />
+            <p className="text-sm font-semibold text-gold-700">กำลังเข้าสู่ระบบเจ้าภาพ...</p>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -67,7 +94,7 @@ export default function HostLoginPage() {
             </div>
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
             <button
-              onClick={handleLogin}
+              onClick={() => handleLogin()}
               disabled={loading || !code.trim()}
               className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
