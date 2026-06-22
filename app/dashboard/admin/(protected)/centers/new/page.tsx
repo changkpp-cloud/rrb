@@ -41,6 +41,7 @@ interface FormState {
 interface SuccessData {
   centerName: string;
   centerCode: string;
+  accessCode: string;
 }
 
 const INITIAL: FormState = {
@@ -77,6 +78,7 @@ export default function NewCenterPage() {
       setSuccessData({
         centerName: data.center.name,
         centerCode: data.center.center_code,
+        accessCode: data.center.access_code,
       });
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
@@ -87,7 +89,7 @@ export default function NewCenterPage() {
   async function copyCredentials(sd: SuccessData) {
     const text = [
       `ศูนย์: ${sd.centerName}`,
-      `รหัสศูนย์: ${sd.centerCode}`,
+      `รหัสเข้าระบบ: ${sd.accessCode}`,
       `URL เข้าระบบ: https://rrb.center/dashboard/center`,
     ].join("\n");
     await navigator.clipboard.writeText(text);
@@ -113,14 +115,16 @@ export default function NewCenterPage() {
           <div className="bg-white rounded-xl border border-emerald-200 px-4 py-3 space-y-3">
             <p className="text-xs font-bold text-gold-700">ส่งข้อมูลนี้ให้เจ้าหน้าที่ศูนย์</p>
             <InfoRow label="URL เข้าระบบ" value="rrb.center/dashboard/center" mono />
+            <InfoRow label="รหัสประจำศูนย์" value={successData.centerCode} mono />
             <div>
-              <p className="text-[10px] text-gold-500 mb-1.5">รหัสศูนย์ (ใช้ login)</p>
+              <p className="text-[10px] text-gold-500 mb-1.5">รหัสเข้าระบบ (ใช้ login ที่หน้าศูนย์)</p>
               <div className="flex items-center justify-between bg-gold-50 border border-gold-200 rounded-xl px-4 py-3">
                 <span className="text-2xl font-bold text-gold-800 font-mono tracking-[0.15em]">
-                  {successData.centerCode}
+                  {successData.accessCode}
                 </span>
                 <KeyRound className="w-5 h-5 text-gold-400 shrink-0" />
               </div>
+              <p className="text-[10px] text-gold-400 mt-1.5">เปลี่ยนได้ภายหลังที่หน้ารายละเอียดศูนย์</p>
             </div>
           </div>
 
@@ -158,7 +162,7 @@ export default function NewCenterPage() {
         </div>
         <FieldRow
           label="รหัสศูนย์ (รหัส อปท. 8 หลัก)"
-          hint="เช่น 05620601 — ใช้เป็นทั้งรหัสประจำศูนย์และรหัส login"
+          hint="เช่น 05620601 — รหัสประจำศูนย์สำหรับรายงาน (รหัส login จะสร้างแยกต่างหากอัตโนมัติ)"
         >
           <input
             type="text" inputMode="numeric" maxLength={8}

@@ -17,6 +17,15 @@ async function buildCenterCode(
   return `CEN-${seq}`;
 }
 
+function generateAccessCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "RRB-";
+  for (let i = 0; i < 6; i++) {
+    code += chars[Math.floor(Math.random() * chars.length)];
+  }
+  return code;
+}
+
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
   const session = cookieStore.get("admin_session");
@@ -37,6 +46,7 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
   const center_code = await buildCenterCode(rawCenterCode, supabase);
+  const access_code = generateAccessCode();
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center, error } = await (supabase.from("centers") as any)
@@ -44,6 +54,7 @@ export async function POST(req: NextRequest) {
       name: name.trim(),
       official_lgo_code: center_code.length === 8 && /^\d+$/.test(center_code) ? center_code : null,
       center_code,
+      access_code,
       province: province?.trim() || null,
       amphoe: amphoe?.trim() || null,
       tambon: tambon?.trim() || null,
