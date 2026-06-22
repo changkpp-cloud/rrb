@@ -349,7 +349,17 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     setSubmitting(false);
   }
 
-  const canSubmit = Boolean(consent && name && birthDate && deathDate && ceremonyDate && photoFile);
+  const missingFields = [
+    !photoFile && "รูปถ่ายผู้วายชนม์",
+    !name && "ชื่อผู้วายชนม์",
+    !birthDate && "วันเกิด",
+    !deathDate && "วันเสียชีวิต",
+    !ceremonyDate && "วันฌาปนกิจ",
+    !hostName && "ชื่อเจ้าภาพ",
+    !hostPhone && "เบอร์เจ้าภาพ",
+    !consent && "ยืนยันการยินยอมของเจ้าภาพ",
+  ].filter(Boolean) as string[];
+  const canSubmit = missingFields.length === 0;
 
   if (result) return <SuccessScreen embedded={embedded} result={result} centerId={centerId} />;
 
@@ -499,15 +509,22 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             </div>
           )}
 
-          {canSubmit && (
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full gold-gradient text-white font-bold py-4 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
-            >
-              {submitting ? "กำลังสร้างหน้างาน..." : "เปิดงานศพ · สร้างลิงก์และ QR Code"}
-            </button>
+          {!canSubmit && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-xs text-amber-700">
+              <p className="font-semibold mb-1">กรอกข้อมูลให้ครบเพื่อสร้างลิงก์และ QR Code:</p>
+              <ul className="list-disc list-inside space-y-0.5 text-amber-600">
+                {missingFields.map((f) => <li key={f}>{f}</li>)}
+              </ul>
+            </div>
           )}
+
+          <button
+            type="submit"
+            disabled={!canSubmit || submitting}
+            className="w-full gold-gradient text-white font-bold py-4 rounded-2xl text-base disabled:opacity-40 disabled:cursor-not-allowed shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+          >
+            {submitting ? "กำลังสร้างหน้างาน..." : "เปิดงานศพ · สร้างลิงก์และ QR Code"}
+          </button>
 
           <p className="text-center text-[10px] text-gold-400 pb-2">
             หลังเปิดงาน เจ้าภาพจะยืนยันตัวตนและบัญชีรับเงินผ่าน Dashboard เจ้าภาพ
