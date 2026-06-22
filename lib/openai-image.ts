@@ -15,9 +15,8 @@ const DEFAULT_OPENAI_IMAGE_QUALITY = "high";
 const DEFAULT_OPENAI_IMAGE_OUTPUT_FORMAT = "jpeg";
 const DEFAULT_OPENAI_IMAGE_OUTPUT_COMPRESSION = 72;
 const OPENAI_IMAGE_TIMEOUT_MS = 180_000; // bumped for high-quality edit
-const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1-mini";
+const DEFAULT_OPENAI_IMAGE_MODEL = "gpt-image-1.5";
 const SUPPORTED_OPENAI_IMAGE_MODELS = new Set([
-  "gpt-image-2",
   "gpt-image-1.5",
   "gpt-image-1",
   "gpt-image-1-mini",
@@ -43,6 +42,14 @@ function imageResultToUrl(item: OpenAIImageItem, outputFormat: string) {
   return item.url ?? "";
 }
 
+function unsupportedParameterFromMessage(message: string) {
+  return (
+    message.match(/does not support the '([^']+)' parameter/i)?.[1] ??
+    message.match(/unknown parameter: '?([^'.]+)'?/i)?.[1] ??
+    null
+  );
+}
+
 async function parseOpenAIResponse(res: Response) {
   const data = (await res.json().catch(() => null)) as OpenAIImageResponse | null;
   if (!res.ok) {
@@ -63,6 +70,15 @@ async function parseOpenAIResponse(res: Response) {
   }
 
   return images;
+}
+
+async function parseOpenAIError(res: Response) {
+  const data = (await res.json().catch(() => null)) as OpenAIImageResponse | null;
+  return (
+    data?.error?.message ??
+    data?.message ??
+    `OpenAI image request failed (${res.status})`
+  );
 }
 
 function getImageSignal() {
@@ -108,26 +124,69 @@ function getOpenAIImageOutputCompression() {
   return envNumber("OPENAI_IMAGE_OUTPUT_COMPRESSION", DEFAULT_OPENAI_IMAGE_OUTPUT_COMPRESSION, 0, 100);
 }
 
-export async function generateOpenAIImage(prompt: string, count = 1) {
-  const res = await fetch("https://api.openai.com/v1/images/generations", {
-    method: "POST",
-    signal: getImageSignal(),
-    headers: {
-      Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: getOpenAIImageModel(),
-      prompt,
-      n: count,
-      size: getOpenAIImageSize(),
-      quality: getOpenAIImageGenerateQuality(),
-      output_format: getOpenAIImageOutputFormat(),
-      output_compression: getOpenAIImageOutputCompression(),
-    }),
-  });
+async function postOpenAIJson(endpoint: string, payload: Record<string, unknown>) {
+  const body = { ...payload };
 
-  return parseOpenAIResponse(res);
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const res = await fetch(`https://api.openai.com/v1/images/${endpoint}`, {
+      method: "POST",
+      signal: getImageSignal(),
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+
+    if (res.ok) return parseOpenAIResponse(res);
+
+    const message = await parseOpenAIError(res);
+    const unsupported = unsupportedParameterFromMessage(message);
+    if (unsupported && unsupported in body) {
+      delete body[unsupported];
+      continue;
+    }
+
+    throw new Error(message);
+  }
+
+  throw new Error("OpenAI image request failed after removing unsupported parameters");
+}
+
+async function postOpenAIForm(endpoint: string, body: FormData) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const res = await fetch(`https://api.openai.com/v1/images/${endpoint}`, {
+      method: "POST",
+      signal: getImageSignal(),
+      headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
+      body,
+    });
+
+    if (res.ok) return parseOpenAIResponse(res);
+
+    const message = await parseOpenAIError(res);
+    const unsupported = unsupportedParameterFromMessage(message);
+    if (unsupported && body.has(unsupported)) {
+      body.delete(unsupported);
+      continue;
+    }
+
+    throw new Error(message);
+  }
+
+  throw new Error("OpenAI image request failed after removing unsupported parameters");
+}
+
+export async function generateOpenAIImage(prompt: string, count = 1) {
+  return postOpenAIJson("generations", {
+    model: getOpenAIImageModel(),
+    prompt,
+    n: count,
+    size: getOpenAIImageSize(),
+    quality: getOpenAIImageGenerateQuality(),
+    output_format: getOpenAIImageOutputFormat(),
+    output_compression: getOpenAIImageOutputCompression(),
+  });
 }
 
 export async function editOpenAIImage(prompt: string, imageInput: File | File[], count = 1) {
@@ -146,23 +205,15 @@ export async function editOpenAIImage(prompt: string, imageInput: File | File[],
   body.append("n", String(count));
   body.append("size", getOpenAIImageSize());
   body.append("quality", getOpenAIImageEditQuality());
-  body.append("input_fidelity", "high");
   body.append("output_format", getOpenAIImageOutputFormat());
   body.append("output_compression", String(getOpenAIImageOutputCompression()));
   if (images.length === 1) {
     body.append("image", image, image.name || "donor-photo.jpg");
   } else {
     images.forEach((referenceImage, index) => {
-      body.append("image[]", referenceImage, referenceImage.name || `reference-${index + 1}.jpg`);
+      body.append("image", referenceImage, referenceImage.name || `reference-${index + 1}.jpg`);
     });
   }
 
-  const res = await fetch("https://api.openai.com/v1/images/edits", {
-    method: "POST",
-    signal: getImageSignal(),
-    headers: { Authorization: `Bearer ${process.env.OPENAI_API_KEY}` },
-    body,
-  });
-
-  return parseOpenAIResponse(res);
+  return postOpenAIForm("edits", body);
 }
