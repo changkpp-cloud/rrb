@@ -13,6 +13,7 @@ interface Props {
   memorial: Memorial;
   donations: Donation[];
   id: string;
+  hostExpiresInDays?: number | null;
 }
 
 type TabId = "summary" | "donors" | "report" | "bank" | "persons";
@@ -35,7 +36,7 @@ function formatDateTime(iso: string) {
   return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" });
 }
 
-export default function HostDashboardClient({ memorial, donations, id }: Props) {
+export default function HostDashboardClient({ memorial, donations, id, hostExpiresInDays }: Props) {
   const [activeTab, setActiveTab] = useState<TabId>("summary");
 
   const confirmed    = donations.filter(d => d.status === "confirmed");
@@ -48,6 +49,19 @@ export default function HostDashboardClient({ memorial, donations, id }: Props) 
 
   return (
     <div className="min-h-screen">
+
+      {/* ── Expiry banner (closed funeral) ── */}
+      {memorial.funeral_status === "closed" && hostExpiresInDays !== null && hostExpiresInDays !== undefined && (
+        <div className={`w-full text-center text-[11px] font-semibold py-2 px-4 ${
+          hostExpiresInDays <= 7
+            ? "bg-red-50 text-red-700 border-b border-red-200"
+            : "bg-amber-50 text-amber-700 border-b border-amber-200"
+        }`}>
+          {hostExpiresInDays === 0
+            ? "⚠️ สิทธิ์เจ้าภาพหมดอายุวันนี้ — กรุณาบันทึกข้อมูลไว้ก่อน"
+            : `🔒 สิทธิ์เจ้าภาพหมดอายุใน ${hostExpiresInDays} วัน (หลังปิดงาน 30 วัน)`}
+        </div>
+      )}
 
       {/* ── Sticky header ── */}
       <div className="sticky top-0 z-40 print:hidden">

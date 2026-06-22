@@ -636,6 +636,7 @@ export type Database = {
           host_bank_account_number: string | null
           host_bank_name: string | null
           host_code: string | null
+          host_expires_at: string | null
           host_id_card_url: string | null
           host_name: string | null
           host_phone: string | null
@@ -669,6 +670,7 @@ export type Database = {
           host_bank_account_number?: string | null
           host_bank_name?: string | null
           host_code?: string | null
+          host_expires_at?: string | null
           host_id_card_url?: string | null
           host_name?: string | null
           host_phone?: string | null
@@ -702,6 +704,7 @@ export type Database = {
           host_bank_account_number?: string | null
           host_bank_name?: string | null
           host_code?: string | null
+          host_expires_at?: string | null
           host_id_card_url?: string | null
           host_name?: string | null
           host_phone?: string | null

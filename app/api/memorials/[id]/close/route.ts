@@ -24,11 +24,13 @@ export async function POST(
     return NextResponse.json({ error: "ปิดงานนี้ไปแล้ว" }, { status: 400 });
   }
 
+  const hostExpiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+
   const { error } = await supabase
     .from("memorials")
-    .update({ funeral_status: "closed" })
+    .update({ funeral_status: "closed", host_expires_at: hostExpiresAt })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, host_expires_at: hostExpiresAt });
 }
