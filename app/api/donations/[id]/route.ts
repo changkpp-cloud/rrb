@@ -67,17 +67,26 @@ export async function PATCH(
     return NextResponse.json({ error: "Failed to update" }, { status: 500 });
   }
 
-  // When status becomes "confirmed", trigger PrintNode auto-print
+  // When status becomes "confirmed", generate PDF and send to PrintNode
   if (update.status === "confirmed" && data) {
     const memorial = (data as any).memorials as { name?: string; printer_id?: string | null } | null;
     if (memorial?.printer_id) {
-      sendPrintJob({
+      const printResult = await sendPrintJob({
         printerId: memorial.printer_id,
         donorName: (data as any).donor_name ?? "",
         donorTitle: (data as any).donor_title ?? "",
         amount: (data as any).amount ?? 0,
         memorialName: memorial.name ?? "งานศพ",
-      }).catch(() => {});
+        donationId: id,
+      });
+      // Update nameplate_status based on print result
+      const nameplateStatus = printResult.ok ? "queued" : "error";
+      await (supabase.from("donations") as any)
+        .update({ nameplate_status: nameplateStatus })
+        .eq("id", id);
+      if (printResult.ok) {
+        (data as any).nameplate_status = nameplateStatus;
+      }
     }
   }
 
