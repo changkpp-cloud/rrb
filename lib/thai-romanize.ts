@@ -56,11 +56,41 @@ const FOLLOW_VOWEL: Record<string, string> = {
   "\u0e4e": "",
 };
 
+// คำนำหน้าชื่อ (title) ที่ต้องตัดออกก่อนหา "ชื่อจริง" สำหรับตั้ง slug
+// เรียงจากยาว→สั้น เพื่อให้ "นางสาว" ถูกตัดก่อน "นาง"/"นาย"
+const THAI_TITLES = [
+  "นางสาว", "เด็กชาย", "เด็กหญิง", "สามเณร", "แม่ชี",
+  "นาง", "นาย", "น.ส.", "ด.ช.", "ด.ญ.", "คุณ", "พระ",
+  "ดร.", "ศ.", "รศ.", "ผศ.",
+  "นพ.", "พญ.", "ทพ.", "ทพญ.", "ภก.", "ภญ.",
+  "พล.อ.", "พล.ท.", "พล.ต.", "พ.อ.", "พ.ท.", "พ.ต.", "ร.อ.", "ร.ท.", "ร.ต.",
+  "พล.ต.อ.", "พล.ต.ท.", "พล.ต.ต.", "พ.ต.อ.", "พ.ต.ท.", "พ.ต.ต.",
+  "จ.ส.อ.", "จ.ส.ท.", "จ.ส.ต.", "ส.อ.", "ส.ท.", "ส.ต.",
+].sort((a, b) => b.length - a.length);
+
+/** ตัดคำนำหน้าชื่อออกจากต้นชื่อ (วนตัดกรณีมีหลายคำนำหน้า เช่น "พล.อ. ดร.") */
+function stripThaiTitles(name: string): string {
+  let s = name.trim();
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const t of THAI_TITLES) {
+      if (s.startsWith(t)) {
+        s = s.slice(t.length).trim();
+        changed = true;
+        break;
+      }
+    }
+  }
+  return s || name.trim();
+}
+
 /**
  * Romanize the first word of a Thai name into a URL-safe ASCII string.
+ * ตัดคำนำหน้า (นางสาว/นาย/…) ออกก่อน เพื่อให้ slug เป็นชื่อจริงไม่ใช่คำนำหน้า
  */
 export function romanizeThaiFirstName(thaiName: string): string {
-  const firstName = thaiName.trim().split(/\s+/)[0] ?? "";
+  const firstName = stripThaiTitles(thaiName).split(/\s+/)[0] ?? "";
   const chars = [...firstName];
   let out = "";
   let i = 0;
