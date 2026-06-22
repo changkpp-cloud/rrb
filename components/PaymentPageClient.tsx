@@ -171,7 +171,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       amount: String(parsedAmount),
     });
     if (donationId) q.set("donation_id", donationId);
-    setTimeout(() => router.push(`${basePath}/ecard?${q.toString()}`), 900);
+    setTimeout(() => router.push(`${basePath}/success?${q.toString()}`), 900);
   }
 
   return (

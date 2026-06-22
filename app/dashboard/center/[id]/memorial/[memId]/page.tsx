@@ -22,6 +22,7 @@ import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
 import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import CopyLinkButton from "@/components/CopyLinkButton";
+import PendingDonationReview from "@/components/PendingDonationReview";
 import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
@@ -73,9 +74,9 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   if (memorial.center_id !== id) redirect(`/dashboard/center/${centerRouteKey}`);
 
   const donations = await getDonations(memorial.id);
+  const pending = donations.filter((d) => d.status === "pending");
   const confirmed = donations.filter((d) => d.status === "confirmed");
-  const legacyPending = donations.filter((d) => d.status === "pending");
-  const legacyRejected = donations.filter((d) => d.status === "rejected");
+  const rejected = donations.filter((d) => d.status === "rejected");
   const slipEvidence = donations.filter((d) => d.slip_url);
   const slipWarnings = donations.filter((d) => d.slip_duplicate_warning);
   const printQueue = confirmed.filter((d) => d.nameplate_status === "pending" || d.nameplate_status === "queued");
@@ -101,8 +102,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
         <div className="grid grid-cols-3 gap-3 text-center">
+          <Stat label="รอตรวจสอบ" value={pending.length.toLocaleString()} tone={pending.length > 0 ? "amber" : "gold"} />
           <Stat label="รับร่วมบุญแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
-          <Stat label="แจ้งเตือนสลิป" value={slipWarnings.length.toLocaleString()} tone="amber" />
           <Stat label="ยอดรวม" value={total.toLocaleString()} tone="gold" />
         </div>
 
@@ -139,16 +140,21 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
           </Link>
         </section>
 
+        <section id="verify" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={AlertTriangle} title="รอตรวจสอบสลิป" subtitle={`${pending.length} รายการรอยืนยัน · กด "ยืนยัน" เพื่อส่งพิมพ์ป้ายอัตโนมัติ`} />
+          <PendingDonationReview donations={pending} />
+        </section>
+
         <section id="slips" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={AlertTriangle} title="หลักฐานสลิปและแจ้งเตือน" subtitle={`${slipEvidence.length} หลักฐาน · ${slipWarnings.length} รายการแจ้งเตือนย้อนหลัง`} />
+          <SectionHeader icon={AlertTriangle} title="แจ้งเตือนสลิปซ้ำ" subtitle={`${slipWarnings.length} รายการย้อนหลัง`} />
           {slipWarnings.length === 0 ? (
             <Empty icon={CheckCircle2} text="ไม่มีสลิปซ้ำที่ต้องดูย้อนหลัง" />
           ) : (
             <DonationList donations={slipWarnings} mode="warning" />
           )}
-          {legacyPending.length > 0 || legacyRejected.length > 0 ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-[11px] leading-relaxed text-amber-800">
-              พบ donation สถานะเก่า pending {legacyPending.length} รายการ / rejected {legacyRejected.length} รายการ ระบบใหม่ไม่ใช้สถานะนี้เป็นคิวอนุมัติสลิปแล้ว
+          {rejected.length > 0 ? (
+            <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-[11px] leading-relaxed text-red-700">
+              ปฏิเสธ {rejected.length} รายการ
             </div>
           ) : null}
         </section>
@@ -250,8 +256,9 @@ function HeaderIcon({ external, href, icon: Icon, label }: { external?: boolean;
   );
 }
 
-function Stat({ label, tone, value }: { label: string; tone: "amber" | "emerald" | "gold"; value: string }) {
-  const color = { amber: "text-amber-600", emerald: "text-emerald-600", gold: "text-gold-800" }[tone];
+function Stat({ label, tone, value }: { label: string; tone: "amber" | "emerald" | "gold" | boolean; value: string }) {
+  const resolvedTone: "amber" | "emerald" | "gold" = typeof tone === "boolean" ? (tone ? "amber" : "gold") : tone;
+  const color = { amber: "text-amber-600", emerald: "text-emerald-600", gold: "text-gold-800" }[resolvedTone];
   return (
     <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-3 py-3">
       <p className={`text-lg font-bold ${color}`}>{value}</p>

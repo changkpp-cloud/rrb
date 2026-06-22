@@ -4,7 +4,6 @@ import { getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyHost, msgNewDonation } from "@/lib/notify";
 import { bangkokDateWindow, getCenterDailyDonationLimit, isCenterDailyLimitReached, toPublicDonation } from "@/lib/donation-policy";
-import { sendPrintJob } from "@/lib/printnode";
 import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
@@ -157,7 +156,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const acceptedAt = new Date().toISOString();
     const insertPayload = {
       memorial_id,
       center_id: memorialInfo.center_id ?? null,
@@ -168,8 +166,7 @@ export async function POST(request: NextRequest) {
       slip_url: slip_url ?? null,
       slip_hash: slip_hash ?? null,
       slip_duplicate_warning,
-      status: "confirmed" as const,
-      confirmed_at: acceptedAt,
+      status: "pending" as const,
     };
 
     const { data, error } = await supabase.from("donations")
@@ -212,17 +209,6 @@ export async function POST(request: NextRequest) {
         hostId: memorial_id,
       }),
     }).catch(() => {});
-
-    // Auto-print nameplate via PrintNode (fire-and-forget)
-    if (memorialInfo.printer_id) {
-      sendPrintJob({
-        printerId: memorialInfo.printer_id,
-        donorTitle: donor_title ?? "",
-        donorName: donor_name,
-        amount,
-        memorialName: memorialInfo.name ?? "งานศพ",
-      }).catch(() => {});
-    }
 
     return NextResponse.json({ success: true, donation: data });
   } catch (err) {
