@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
 import MemorialProfile from "@/components/MemorialProfile";
 import HideFloatingBack from "@/components/HideFloatingBack";
 import CeremonyInfo from "@/components/CeremonyInfo";
@@ -89,13 +90,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const memorial = await getMemorialBySlug(slug);
 
-  if (!memorial) {
-    return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: "#ffffff" }}>
-        <p className="text-gold-400 text-sm">ไม่พบข้อมูลงานศพ</p>
-      </div>
-    );
-  }
+  if (!memorial) notFound();
 
   const basePath = `/${slug}`;
 
