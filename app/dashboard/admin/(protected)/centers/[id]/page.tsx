@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
 import { Users, Leaf } from "lucide-react";
+import CenterAccessCodePanel from "./CenterAccessCodePanel";
 
 export const revalidate = 60;
 
@@ -71,6 +72,8 @@ export default async function AdminCenterDetailPage({ params }: { params: Promis
         {center.phone && <Row label="เบอร์โทร" value={center.phone} />}
         {center.municipality && <Row label="เทศบาล/อบต." value={center.municipality} />}
       </div>
+
+      <CenterAccessCodePanel centerId={id} initialCode={center.access_code ?? null} />
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3">
