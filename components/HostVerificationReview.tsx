@@ -14,10 +14,10 @@ export default function HostVerificationReview({ memorial }: Props) {
   const [done, setDone]       = useState<"approved" | "rejected" | null>(null);
   const router                = useRouter();
 
-  const isVerified    = Boolean(memorial.host_verified);
-  const hasDeathCert  = Boolean(memorial.death_certificate_url);
-  const hasIdCard     = Boolean(memorial.host_id_card_url);
-  const hasAnyDoc     = hasDeathCert || hasIdCard;
+  const isVerified   = Boolean(memorial.host_verified);
+  const hasDeathCert = Boolean(memorial.death_certificate_url);
+  const hasBankBook  = Boolean(memorial.host_id_card_url);
+  const hasAnyDoc    = hasDeathCert || hasBankBook;
 
   async function handleVerify(verified: boolean) {
     setLoading(verified ? "approve" : "reject");
@@ -36,19 +36,29 @@ export default function HostVerificationReview({ memorial }: Props) {
 
   if (isVerified) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-        <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
-        <div>
-          <p className="text-sm font-bold text-emerald-800">ยืนยันสิทธิ์เจ้าภาพแล้ว</p>
-          <p className="text-xs text-emerald-600">เจ้าภาพสามารถกรอกบัญชีรับเงินได้แล้ว</p>
+      <div className="space-y-3">
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+          <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-emerald-800">ยืนยันสิทธิ์เจ้าภาพแล้ว</p>
+            <p className="text-xs text-emerald-600">เจ้าภาพพร้อมรับโอนเงินหลังปิดงาน</p>
+          </div>
+          <button
+            onClick={() => handleVerify(false)}
+            disabled={loading !== null}
+            className="text-[11px] text-red-500 underline disabled:opacity-60"
+          >
+            เพิกถอน
+          </button>
         </div>
-        <button
-          onClick={() => handleVerify(false)}
-          disabled={loading !== null}
-          className="ml-auto text-[11px] text-red-500 underline disabled:opacity-60"
-        >
-          เพิกถอน
-        </button>
+        {memorial.host_bank_account_number && (
+          <div className="rounded-2xl border border-gold-200 bg-cream-50 px-4 py-3 space-y-1">
+            <p className="text-[10px] text-gold-400 font-semibold">บัญชีรับเงินเจ้าภาพ</p>
+            <p className="text-sm font-bold text-gold-800">{memorial.host_bank_name}</p>
+            <p className="text-sm text-gold-700 font-mono tracking-widest">{memorial.host_bank_account_number}</p>
+            <p className="text-xs text-gold-600">{memorial.host_bank_account_name}</p>
+          </div>
+        )}
       </div>
     );
   }
@@ -74,22 +84,22 @@ export default function HostVerificationReview({ memorial }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* เอกสารที่ส่งมา */}
+      {/* เอกสาร */}
       <div className="rounded-2xl gold-border bg-cream-50 px-4 py-3 space-y-2">
         <p className="text-xs font-semibold text-gold-600 mb-1">เอกสารจากเจ้าภาพ</p>
-        {hasDeathCert && (
-          <DocRow
-            label="ใบมรณะบัตร"
-            url={memorial.death_certificate_url!}
-          />
-        )}
-        {hasIdCard && (
-          <DocRow
-            label="บัตรประชาชนเจ้าภาพ"
-            url={memorial.host_id_card_url!}
-          />
-        )}
+        <DocRow label="ใบมรณะบัตร" url={memorial.death_certificate_url ?? null} />
+        <DocRow label="สมุดธนาคาร (หน้าแรก)" url={memorial.host_id_card_url ?? null} />
       </div>
+
+      {/* บัญชีที่แจ้งมา */}
+      {memorial.host_bank_account_number && (
+        <div className="rounded-2xl gold-border bg-cream-50 px-4 py-3 space-y-1">
+          <p className="text-xs font-semibold text-gold-600 mb-1">บัญชีรับเงินที่แจ้ง</p>
+          <p className="text-sm font-bold text-gold-800">{memorial.host_bank_name}</p>
+          <p className="text-sm text-gold-700 font-mono tracking-widest">{memorial.host_bank_account_number}</p>
+          <p className="text-xs text-gold-600">{memorial.host_bank_account_name}</p>
+        </div>
+      )}
 
       {/* ปุ่มยืนยัน / ปฏิเสธ */}
       <div className="flex gap-3">
@@ -114,13 +124,17 @@ export default function HostVerificationReview({ memorial }: Props) {
   );
 }
 
-function DocRow({ label, url }: { label: string; url: string }) {
+function DocRow({ label, url }: { label: string; url: string | null }) {
   return (
     <div className="flex items-center justify-between border-b border-gold-100 pb-2 last:border-0 last:pb-0">
       <span className="text-xs text-gold-700 font-medium">{label}</span>
-      <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[11px] text-blue-500 underline">
-        <Eye className="w-3 h-3" />ดูไฟล์
-      </a>
+      {url ? (
+        <a href={url} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-[11px] text-blue-500 underline">
+          <Eye className="w-3 h-3" />ดูไฟล์
+        </a>
+      ) : (
+        <span className="text-[11px] text-gold-300">ยังไม่ได้แนบ</span>
+      )}
     </div>
   );
 }

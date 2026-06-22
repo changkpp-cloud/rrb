@@ -1,11 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
-import {
-  Upload, Copy, Check, ExternalLink,
-  ChevronDown, ChevronUp, Shield,
-} from "lucide-react";
+import { Upload, Copy, Check, ExternalLink } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
@@ -29,18 +26,6 @@ interface Result {
   slug: string;
   memorialId: string;
 }
-
-type FormStep = "level-a" | "documents";
-
-const FORM_STEPS: Array<{
-  id: FormStep;
-  label: string;
-  title: string;
-  helper: string;
-}> = [
-  { id: "level-a", label: "A", title: "ข้อมูลงาน", helper: "บังคับ" },
-  { id: "documents", label: "B", title: "เอกสาร", helper: "เพิ่มทีหลังได้" },
-];
 
 // ── QR Code Component ──────────────────────────────────────────────────────
 function QRCodeDisplay({ url }: { url: string }) {
@@ -77,7 +62,7 @@ function QRCodeDisplay({ url }: { url: string }) {
 }
 
 // ── Success Screen ─────────────────────────────────────────────────────────
-function SuccessScreen({ embedded = false, result, centerId }: { embedded?: boolean; result: Result; centerId: string }) {
+function SuccessScreen({ embedded = false, result }: { embedded?: boolean; result: Result; centerId: string }) {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   const publicUrl = typeof window !== "undefined"
@@ -97,7 +82,6 @@ function SuccessScreen({ embedded = false, result, centerId }: { embedded?: bool
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
 
-          {/* Success icon */}
           <div className="flex flex-col items-center gap-3 py-2">
             <div className="w-20 h-20 rounded-full bg-emerald-50 border-2 border-emerald-300 flex items-center justify-center">
               <svg viewBox="0 0 24 24" fill="none" className="w-10 h-10 text-emerald-600">
@@ -162,9 +146,8 @@ function SuccessScreen({ embedded = false, result, centerId }: { embedded?: bool
               {copiedCode ? <Check className="w-3.5 h-3.5 text-green-500" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedCode ? "คัดลอกรหัสเจ้าภาพแล้ว" : "คัดลอกรหัสเจ้าภาพ"}
             </button>
-            <p className="text-[10px] text-gold-400 text-center">แจ้งรหัสเจ้าภาพแก่เจ้าภาพเพื่อเข้าดู Dashboard ของตัวเอง</p>
+            <p className="text-[10px] text-gold-400 text-center">แจ้งรหัสเจ้าภาพแก่เจ้าภาพเพื่อเข้าดู Dashboard และยืนยันบัญชีรับเงิน</p>
           </div>
-
 
           <div className="h-2" />
         </div>
@@ -204,34 +187,21 @@ function PhotoUpload({
 }
 
 // ── Section ────────────────────────────────────────────────────────────────
-function Section({
-  icon, title, badge, children, collapsible = false, defaultOpen = true,
-}: {
+function Section({ icon, title, badge, children }: {
   icon: React.ReactNode; title: string; badge?: string; children: React.ReactNode;
-  collapsible?: boolean; defaultOpen?: boolean;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
   return (
     <div className="bg-cream-50 rounded-2xl gold-border card-shadow overflow-hidden">
-      <button
-        type="button"
-        className="w-full px-4 py-3.5 flex items-center gap-2.5 text-left"
-        onClick={() => collapsible && setOpen(o => !o)}
-      >
+      <div className="w-full px-4 py-3.5 flex items-center gap-2.5">
         <span className="text-gold-500">{icon}</span>
         <span className="flex-1 text-sm font-bold text-gold-800">{title}</span>
         {badge && (
           <span className="text-[9px] px-2 py-0.5 rounded-full bg-gold-100 text-gold-600 font-medium">{badge}</span>
         )}
-        {collapsible && (
-          <span className="text-gold-400">{open ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}</span>
-        )}
-      </button>
-      {open && (
-        <div className="px-4 pb-4 space-y-3 border-t border-gold-100">
-          {children}
-        </div>
-      )}
+      </div>
+      <div className="px-4 pb-4 space-y-3 border-t border-gold-100">
+        {children}
+      </div>
     </div>
   );
 }
@@ -248,17 +218,15 @@ function Field({ label, required, children }: { label: string; required?: boolea
 }
 
 const inputClass = "w-full px-3 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm";
-const inputReadonly = `${inputClass} opacity-50 cursor-not-allowed`;
 
 // ── Main Form ──────────────────────────────────────────────────────────────
 export default function CreateMemorialClient({ centerId, embedded = false, centerBank }: Props) {
-  const [submitting, setSubmitting]   = useState(false);
-  const [result, setResult]           = useState<Result | null>(null);
-  const [error, setError]             = useState("");
-  const [consent, setConsent]         = useState(false);
-  const [activeStep, setActiveStep]   = useState<FormStep>("level-a");
+  const [submitting, setSubmitting] = useState(false);
+  const [result, setResult]         = useState<Result | null>(null);
+  const [error, setError]           = useState("");
+  const [consent, setConsent]       = useState(false);
 
-  // Level A - deceased
+  // Deceased
   const [name, setName]               = useState("");
   const [birthDate, setBirthDate]     = useState("");
   const [deathDate, setDeathDate]     = useState("");
@@ -266,34 +234,23 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   const [photoFile, setPhotoFile]     = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
 
-  // ceremony
+  // Ceremony
   const [ceremonyDate, setCeremonyDate]         = useState("");
   const [ceremonyTime, setCeremonyTime]         = useState("");
   const [ceremonyLocation, setCeremonyLocation] = useState("");
   const [ceremonyHall, setCeremonyHall]         = useState("");
 
-  // prayer
-  const [prayerSchedule, setPrayerSchedule] = useState("");   // สถานที่สวด → prayer_location
-  const [prayerText, setPrayerText]         = useState("");   // กำหนดการ/เวลา → prayer_date
+  // Prayer
+  const [prayerSchedule, setPrayerSchedule] = useState("");
+  const [prayerText, setPrayerText]         = useState("");
 
   // PrintNode
   const [printerId, setPrinterId] = useState("");
 
-  // Level A - host
-  const [hostName, setHostName]               = useState("");
-  const [hostPhone, setHostPhone]             = useState("");
+  // Host info
+  const [hostName, setHostName]                 = useState("");
+  const [hostPhone, setHostPhone]               = useState("");
   const [hostRelationship, setHostRelationship] = useState("");
-
-  // Level C - host payout
-  const [hostBankName, setHostBankName]           = useState("");
-  const [hostBankAccount, setHostBankAccount]     = useState("");
-  const [hostBankAccountName, setHostBankAccountName] = useState("");
-
-  // Level C - documents
-  const [certFile, setCertFile]         = useState<File | null>(null);
-  const [certPreview, setCertPreview]   = useState<string | null>(null);
-  const [idCardFile, setIdCardFile]     = useState<File | null>(null);
-  const [idCardPreview, setIdCardPreview] = useState<string | null>(null);
 
   // Auto-calculate age
   useEffect(() => {
@@ -322,24 +279,19 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     form.append("ceremony_date", ceremonyDate);
     form.append("ceremony_time", ceremonyTime);
     form.append("ceremony_location", ceremonyLocation);
-    if (ceremonyHall) form.append("ceremony_hall", ceremonyHall);
-    if (prayerText)     form.append("prayer_text", prayerText);
-    if (prayerSchedule) form.append("prayer_schedule", prayerSchedule);
-    if (hostName) form.append("host_name", hostName);
-    if (hostPhone) form.append("host_phone", hostPhone);
+    if (ceremonyHall)    form.append("ceremony_hall", ceremonyHall);
+    if (prayerText)      form.append("prayer_text", prayerText);
+    if (prayerSchedule)  form.append("prayer_schedule", prayerSchedule);
+    if (hostName)        form.append("host_name", hostName);
+    if (hostPhone)       form.append("host_phone", hostPhone);
     if (hostRelationship) form.append("host_relationship", hostRelationship);
     form.append("consent_confirmed", "true");
     form.append("bank_name", centerBank?.bank_name || "");
     form.append("bank_account_number", centerBank?.bank_account_number || "");
     form.append("bank_account_name", centerBank?.bank_account_name || "");
     if (centerBank?.bank_account_image_url) form.append("qr_image_url", centerBank.bank_account_image_url);
-    if (hostBankName) form.append("host_bank_name", hostBankName);
-    if (hostBankAccount) form.append("host_bank_account_number", hostBankAccount);
-    if (hostBankAccountName) form.append("host_bank_account_name", hostBankAccountName);
     if (printerId.trim()) form.append("printer_id", printerId.trim());
     form.append("photo", photoFile);
-    if (certFile) form.append("death_certificate", certFile);
-    if (idCardFile) form.append("host_id_card", idCardFile);
 
     try {
       const res = await fetch("/api/memorials/create", { method: "POST", body: form });
@@ -352,12 +304,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     setSubmitting(false);
   }
 
-  const levelAComplete = Boolean(consent && name && birthDate && deathDate && ceremonyDate && photoFile);
-  const stepIndex = FORM_STEPS.findIndex(step => step.id === activeStep);
-  const canGoBack = stepIndex > 0;
-  const canGoNext = stepIndex < FORM_STEPS.length - 1;
-  const goBack = () => setActiveStep(FORM_STEPS[Math.max(0, stepIndex - 1)].id);
-  const goNext = () => setActiveStep(FORM_STEPS[Math.min(FORM_STEPS.length - 1, stepIndex + 1)].id);
+  const canSubmit = Boolean(consent && name && birthDate && deathDate && ceremonyDate && photoFile);
 
   if (result) return <SuccessScreen embedded={embedded} result={result} centerId={centerId} />;
 
@@ -380,43 +327,13 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
       <main className={embedded ? "" : "flex-1 overflow-y-auto"}>
         <form onSubmit={handleSubmit} className={embedded ? "space-y-4" : "max-w-lg mx-auto px-4 py-5 space-y-4"}>
 
-          {/* Instruction banner */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs text-emerald-700 leading-relaxed">
-            <p className="font-semibold mb-0.5">กรอกข้อมูลขั้นต่ำ → เปิดงานได้ทันที</p>
-            <p className="text-emerald-600">ระดับ A: ข้อมูลบังคับ · ระดับ B: เอกสารยืนยัน (เพิ่มทีหลังได้)</p>
+            <p className="font-semibold mb-0.5">กรอกข้อมูลงานศพ → เปิดงานได้ทันที</p>
+            <p className="text-emerald-600">เจ้าภาพจะยืนยันตัวตนและบัญชีรับเงินเองผ่าน Dashboard เจ้าภาพ</p>
           </div>
 
-          <div className="grid grid-cols-2 gap-2 rounded-2xl bg-cream-50 p-2 gold-border card-shadow">
-            {FORM_STEPS.map(step => {
-              const active = activeStep === step.id;
-              const complete = step.id === "level-a" ? levelAComplete : false;
-              return (
-                <button
-                  key={step.id}
-                  type="button"
-                  onClick={() => setActiveStep(step.id)}
-                  className={`min-h-[76px] rounded-xl border px-2 py-2 text-center transition-all ${
-                    active
-                      ? "border-gold-400 bg-white text-gold-800 shadow-sm"
-                      : "border-transparent bg-transparent text-gold-500 hover:bg-white/70"
-                  }`}
-                >
-                  <span className={`mx-auto mb-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold ${
-                    active ? "bg-gold-600 text-white" : complete ? "bg-emerald-100 text-emerald-700" : "bg-gold-100 text-gold-600"
-                  }`}>
-                    {complete ? <Check className="h-3.5 w-3.5" /> : step.label}
-                  </span>
-                  <span className="block text-xs font-bold leading-tight">{step.title}</span>
-                  <span className="block text-[10px] leading-tight opacity-75">{step.helper}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ── LEVEL A: ผู้วายชนม์ ───────────────────────────────────────── */}
-          {activeStep === "level-a" && (
-            <>
-          <Section icon={<LotusIcon className="w-4 h-4" />} title="ข้อมูลผู้วายชนม์" badge="ระดับ A · บังคับ">
+          {/* ── ผู้วายชนม์ ─────────────────────────────────────────────── */}
+          <Section icon={<LotusIcon className="w-4 h-4" />} title="ข้อมูลผู้วายชนม์" badge="บังคับ">
             <div className="pt-1">
               <PhotoUpload
                 label="รูปถ่ายผู้วายชนม์"
@@ -444,26 +361,22 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             </Field>
           </Section>
 
-          {/* ── LEVEL A: กำหนดการ ────────────────────────────────────────── */}
-          <Section icon={<span className="text-sm">📅</span>} title="กำหนดการ" badge="ระดับ A · บังคับ">
+          {/* ── กำหนดการ ─────────────────────────────────────────────── */}
+          <Section icon={<span className="text-sm">📅</span>} title="กำหนดการ" badge="บังคับ">
             <div className="pt-1 space-y-3">
-
-              {/* สวดพระอภิธรรม */}
-              <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">กำหนดการ สวดพระอภิธรรม</p>
-              <Field label="กำหนดการสวดพระอภิธรรม (วัน/เวลา)">
+              <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">สวดพระอภิธรรม</p>
+              <Field label="วัน/เวลาสวดพระอภิธรรม">
                 <input type="text" value={prayerText} onChange={e => setPrayerText(e.target.value)}
-                  placeholder="เช่น 17–19 มีนาคม 2568 เวลา 19.00 น."
-                  className={inputClass} />
+                  placeholder="เช่น 17–19 มีนาคม 2568 เวลา 19.00 น." className={inputClass} />
               </Field>
               <Field label="สถานที่สวดพระอภิธรรม">
                 <input type="text" value={prayerSchedule} onChange={e => setPrayerSchedule(e.target.value)}
-                  placeholder="เช่น บ้านเลขที่ 123 หมู่ 5 ต.พรานกระต่าย / วัดวังเพชร"
-                  className={inputClass} />
+                  placeholder="เช่น วัดวังเพชร หรือ บ้านเลขที่ 123" className={inputClass} />
                 <p className="text-[10px] text-gold-400 mt-0.5">ถ้าว่างจะใช้สถานที่ฌาปนกิจแทน</p>
               </Field>
 
               <div className="border-t border-gold-100 pt-2">
-                <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide mb-2">กำหนดการ ฌาปนกิจ</p>
+                <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide mb-2">ฌาปนกิจ</p>
               </div>
 
               <Field label="วันฌาปนกิจ" required>
@@ -481,15 +394,13 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 </Field>
               </div>
 
-              <Field label="สถานที่ฌาปนกิจ (วัด / สถานที่)" required>
+              <Field label="สถานที่ฌาปนกิจ" required>
                 <input type="text" value={ceremonyLocation} onChange={e => setCeremonyLocation(e.target.value)} required
                   placeholder="เช่น วัดวังเพชร ต.นิคมทุ่งโพธิ์ทะเล อ.เมือง จ.กำแพงเพชร" className={inputClass} />
               </Field>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-3 space-y-2">
-                <p className="text-[11px] font-bold text-blue-800 flex items-center gap-1.5">
-                  🖨️ เครื่องพิมพ์ป้ายชื่ออัตโนมัติ (PrintNode)
-                </p>
+                <p className="text-[11px] font-bold text-blue-800">🖨️ เครื่องพิมพ์ป้ายชื่ออัตโนมัติ (PrintNode)</p>
                 <p className="text-[10px] text-blue-600 leading-relaxed">
                   ระบุ Printer ID จาก PrintNode เพื่อสั่งพิมพ์ป้ายชื่ออัตโนมัติเมื่อมีผู้ร่วมบุญ
                 </p>
@@ -504,8 +415,8 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             </div>
           </Section>
 
-          {/* ── LEVEL A: เจ้าภาพ ─────────────────────────────────────────── */}
-          <Section icon={<span className="text-sm">👤</span>} title="ข้อมูลเจ้าภาพ" badge="ระดับ A · บังคับ">
+          {/* ── เจ้าภาพ ─────────────────────────────────────────────── */}
+          <Section icon={<span className="text-sm">👤</span>} title="ข้อมูลเจ้าภาพ" badge="บังคับ">
             <div className="pt-1 space-y-3">
               <Field label="ชื่อเจ้าภาพ / ผู้ติดต่อหลัก" required>
                 <input type="text" value={hostName} onChange={e => setHostName(e.target.value)} required
@@ -523,7 +434,6 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 </Field>
               </div>
 
-              {/* Consent checkbox */}
               <label className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 cursor-pointer">
                 <input
                   type="checkbox"
@@ -537,73 +447,6 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
               </label>
             </div>
           </Section>
-            </>
-          )}
-
-          {/* ── LEVEL B: เอกสาร ─────────────────────────────────────────── */}
-          {activeStep === "documents" && (
-            <Section icon={<Shield className="w-4 h-4" />} title="เอกสารยืนยัน + บัญชีนำส่ง" badge="ระดับ B · หลังบ้านเท่านั้น">
-              <div className="pt-1 space-y-4">
-                <div className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-[10px] text-gray-500">
-                  ข้อมูลชุดนี้ไม่แสดงบนหน้า Public จัดเก็บไว้สำหรับศูนย์และแอดมินเท่านั้น และสามารถเพิ่มภายหลังได้
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <PhotoUpload
-                    label="ใบมรณะบัตร"
-                    preview={certPreview}
-                    compact
-                    onFile={f => { setCertFile(f); setCertPreview(URL.createObjectURL(f)); }}
-                  />
-                  <PhotoUpload
-                    label="สำเนาบัตรประชาชนเจ้าภาพ"
-                    preview={idCardPreview}
-                    compact
-                    onFile={f => { setIdCardFile(f); setIdCardPreview(URL.createObjectURL(f)); }}
-                  />
-                </div>
-
-                <p className="text-xs font-semibold text-gold-700">บัญชีรับเงินนำส่งเจ้าภาพ</p>
-
-                <Field label="ธนาคารเจ้าภาพ">
-                  <input type="text" value={hostBankName} onChange={e => setHostBankName(e.target.value)}
-                    placeholder="เช่น ธนาคารกรุงไทย" className={inputClass} />
-                </Field>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <Field label="เลขบัญชีเจ้าภาพ">
-                    <input type="text" value={hostBankAccount} onChange={e => setHostBankAccount(e.target.value)}
-                      placeholder="123-4-56789-0" className={inputClass} />
-                  </Field>
-                  <Field label="ชื่อบัญชีเจ้าภาพ">
-                    <input type="text" value={hostBankAccountName} onChange={e => setHostBankAccountName(e.target.value)}
-                      placeholder="ชื่อ-นามสกุล" className={inputClass} />
-                  </Field>
-                </div>
-              </div>
-            </Section>
-          )}
-
-          <div className="grid grid-cols-2 gap-2">
-            {canGoBack && (
-              <button
-                type="button"
-                onClick={goBack}
-                className="rounded-xl gold-border bg-white px-4 py-3 text-sm font-semibold text-gold-700 hover:bg-cream-50"
-              >
-                ย้อนกลับ
-              </button>
-            )}
-            {canGoNext && (
-              <button
-                type="button"
-                onClick={goNext}
-                className={`${canGoBack ? "" : "col-span-2"} rounded-xl bg-gold-100 px-4 py-3 text-sm font-semibold text-gold-800 hover:bg-gold-200`}
-              >
-                ถัดไป
-              </button>
-            )}
-          </div>
 
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-xs text-red-600 text-center">
@@ -611,18 +454,18 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             </div>
           )}
 
-          {(activeStep !== "level-a" || levelAComplete) && (
-          <button
-            type="submit"
-            disabled={submitting || !consent || !name || !birthDate || !deathDate || !ceremonyDate || !photoFile}
-            className="w-full gold-gradient text-white font-bold py-4 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
-          >
-            {submitting ? "กำลังสร้างหน้างาน..." : "เปิดงานศพ · สร้างลิงก์และ QR Code"}
-          </button>
+          {canSubmit && (
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full gold-gradient text-white font-bold py-4 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              {submitting ? "กำลังสร้างหน้างาน..." : "เปิดงานศพ · สร้างลิงก์และ QR Code"}
+            </button>
           )}
 
           <p className="text-center text-[10px] text-gold-400 pb-2">
-            หลังเปิดงาน ระบบจะสร้างลิงก์ QR Code และรหัสเจ้าภาพให้ทันที
+            หลังเปิดงาน เจ้าภาพจะยืนยันตัวตนและบัญชีรับเงินผ่าน Dashboard เจ้าภาพ
           </p>
         </form>
       </main>
