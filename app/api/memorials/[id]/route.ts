@@ -33,6 +33,7 @@ export async function PATCH(
     const host_bank_name           = formData.get("host_bank_name") as string | null;
     const host_bank_account_number = formData.get("host_bank_account_number") as string | null;
     const host_bank_account_name   = formData.get("host_bank_account_name") as string | null;
+    const host_verified_str        = formData.get("host_verified") as string | null;
 
     const passkookFile  = formData.get("passbook")   as File | null;
     const deathCertFile = formData.get("death_cert") as File | null;
@@ -50,6 +51,7 @@ export async function PATCH(
     if (host_bank_name           !== null) update.host_bank_name           = host_bank_name;
     if (host_bank_account_number !== null) update.host_bank_account_number = host_bank_account_number;
     if (host_bank_account_name   !== null) update.host_bank_account_name   = host_bank_account_name;
+    if (host_verified_str !== null) update.host_verified = host_verified_str === "true";
     if (death_cert_url) update.death_certificate_url = death_cert_url;
     if (id_card_url)    update.host_id_card_url      = id_card_url;
 

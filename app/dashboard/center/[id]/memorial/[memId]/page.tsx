@@ -23,6 +23,7 @@ import CloseMemorialButton from "./CloseMemorialButton";
 import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import PendingDonationReview from "@/components/PendingDonationReview";
+import HostVerificationReview from "@/components/HostVerificationReview";
 import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
@@ -192,6 +193,11 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         <section id="persons" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Camera} title="บุคคลสำหรับภาพจำลอง" subtitle="จัดการบุคคลที่จะปรากฏในภาพจำลอง AI สำหรับผู้ร่วมบุญ" />
           <MemorialPersonManager memorialId={memorial.id} />
+        </section>
+
+        <section id="host-verify" className="scroll-mt-36 space-y-3">
+          <SectionHeader icon={CheckCircle2} title="ยืนยันตัวตนเจ้าภาพ" subtitle="ตรวจสอบใบมรณะบัตรและบัตรประชาชนก่อนให้เจ้าภาพกรอกบัญชีรับเงิน" />
+          <HostVerificationReview memorial={memorial} />
         </section>
 
         <section id="finance" className="scroll-mt-36 space-y-3">

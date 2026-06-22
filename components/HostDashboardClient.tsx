@@ -5,7 +5,7 @@ import Link from "next/link";
 import { AlertTriangle, Users, Download, ExternalLink, Pencil, Banknote, FileText, Camera } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
-import HostBankForm from "./HostBankForm";
+import HostVerificationGate from "./HostVerificationGate";
 import MemorialPersonManager from "./host/MemorialPersonManager";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 
@@ -313,14 +313,9 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
           </div>
         )}
 
-        {/* ════ บัญชีรับเงิน ════ */}
+        {/* ════ ยืนยันตัวตน + บัญชีรับเงิน ════ */}
         {activeTab === "bank" && (
-          <div className="space-y-3">
-            <p className="text-sm font-bold text-gold-700 px-1">ข้อมูลบัญชีเจ้าภาพสำหรับรับเงิน</p>
-            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4">
-              <HostBankForm memorial={memorial} />
-            </div>
-          </div>
+          <HostVerificationGate memorial={memorial} />
         )}
 
         {/* ════ ภาพจำลอง ════ */}
