@@ -103,7 +103,9 @@ ALTER TABLE public.memorials
   ADD COLUMN IF NOT EXISTS host_id_card_url         TEXT,
   ADD COLUMN IF NOT EXISTS host_expires_at          TIMESTAMPTZ,
   ADD COLUMN IF NOT EXISTS host_verified            BOOLEAN DEFAULT FALSE,
-  ADD COLUMN IF NOT EXISTS printer_id               TEXT;
+  ADD COLUMN IF NOT EXISTS printer_id               TEXT,
+  ADD COLUMN IF NOT EXISTS transfer_confirmed_at    TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS transfer_confirmed_by    TEXT;
 
 ALTER TABLE public.centers
   ADD COLUMN IF NOT EXISTS center_code       TEXT,

@@ -24,6 +24,7 @@ import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import CopyLinkButton from "@/components/CopyLinkButton";
 import PendingDonationReview from "@/components/PendingDonationReview";
 import HostVerificationReview from "@/components/HostVerificationReview";
+import TransferConfirmButton from "@/components/TransferConfirmButton";
 import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
@@ -210,6 +211,13 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />
             <InfoRow label="ชื่อบัญชี" value={memorial.host_bank_account_name || "-"} />
           </div>
+          <TransferConfirmButton
+            memorialId={memorial.id}
+            transferConfirmedAt={memorial.transfer_confirmed_at ?? null}
+            transferConfirmedBy={memorial.transfer_confirmed_by ?? null}
+            hostBankAccount={memorial.host_bank_account_number ?? null}
+            isClosed={memorial.funeral_status === "closed"}
+          />
         </section>
 
         <section id="close" className="scroll-mt-36 space-y-3">

@@ -639,6 +639,8 @@ export type Database = {
           host_expires_at: string | null
           host_verified: boolean | null
           printer_id: string | null
+          transfer_confirmed_at: string | null
+          transfer_confirmed_by: string | null
           host_id_card_url: string | null
           host_name: string | null
           host_phone: string | null
@@ -675,6 +677,8 @@ export type Database = {
           host_expires_at?: string | null
           host_verified?: boolean | null
           printer_id?: string | null
+          transfer_confirmed_at?: string | null
+          transfer_confirmed_by?: string | null
           host_id_card_url?: string | null
           host_name?: string | null
           host_phone?: string | null
@@ -711,6 +715,8 @@ export type Database = {
           host_expires_at?: string | null
           host_verified?: boolean | null
           printer_id?: string | null
+          transfer_confirmed_at?: string | null
+          transfer_confirmed_by?: string | null
           host_id_card_url?: string | null
           host_name?: string | null
           host_phone?: string | null
