@@ -100,7 +100,8 @@ ALTER TABLE public.memorials
   ADD COLUMN IF NOT EXISTS host_bank_account_number TEXT,
   ADD COLUMN IF NOT EXISTS host_bank_account_name   TEXT,
   ADD COLUMN IF NOT EXISTS death_certificate_url    TEXT,
-  ADD COLUMN IF NOT EXISTS host_id_card_url         TEXT;
+  ADD COLUMN IF NOT EXISTS host_id_card_url         TEXT,
+  ADD COLUMN IF NOT EXISTS host_expires_at          TIMESTAMPTZ;
 
 ALTER TABLE public.centers
   ADD COLUMN IF NOT EXISTS center_code       TEXT,
