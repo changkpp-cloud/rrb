@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
 import { Users, Leaf } from "lucide-react";
 import CenterAccessCodePanel from "./CenterAccessCodePanel";
+import DeleteCenterButton from "./DeleteCenterButton";
 
 export const revalidate = 60;
 
@@ -57,11 +58,12 @@ export default async function AdminCenterDetailPage({ params }: { params: Promis
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3">
         <div>
           <h2 className="text-base font-bold text-gold-800">{center.name}</h2>
           <p className="text-[11px] text-gold-500">{[center.tambon, center.amphoe, center.province].filter(Boolean).join(" · ")}</p>
         </div>
+        <DeleteCenterButton centerId={id} centerName={center.name} />
       </div>
 
       {/* Center info */}
@@ -131,7 +133,7 @@ export default async function AdminCenterDetailPage({ params }: { params: Promis
         )}
       </div>
 
-      <div className="h-2" />
+      <div className="h-8" />
     </div>
   );
 }
