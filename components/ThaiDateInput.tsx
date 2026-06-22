@@ -97,12 +97,12 @@ export default function ThaiDateInput({ value, onChange, required }: Props) {
       <select
         value={beYear || ""}
         onChange={e => { const v = Number(e.target.value); setBeYear(v); emit(day, month, v); }}
-        className={`${sel} w-[92px] text-center`}
+        className={`${sel} w-[112px] text-center`}
         required={required}
       >
         <option value="">พ.ศ.</option>
         {YEAR_OPTIONS.map(y => (
-          <option key={y} value={y}>{y}</option>
+          <option key={y} value={y}>พ.ศ. {y}</option>
         ))}
       </select>
     </div>
