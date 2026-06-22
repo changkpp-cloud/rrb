@@ -21,7 +21,7 @@ import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
 import MemorialPersonManager from "@/components/host/MemorialPersonManager";
-import CopyLinkButton from "@/components/CopyLinkButton";
+import MemorialShareCard from "@/components/MemorialShareCard";
 import PendingDonationReview from "@/components/PendingDonationReview";
 import HostVerificationReview from "@/components/HostVerificationReview";
 import TransferConfirmButton from "@/components/TransferConfirmButton";
@@ -118,21 +118,13 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <InfoRow label="เจ้าภาพ" value={memorial.host_name || "-"} />
             <InfoRow label="สถานที่" value={memorial.ceremony_location || "-"} />
             <InfoRow label="วันฌาปนกิจ" value={formatThaiDate(memorial.ceremony_date)} />
-            <div className="flex items-center justify-between gap-2">
-              <span className="text-gold-400 shrink-0">ลิงก์หน้างาน</span>
-              <div className="flex items-center gap-2 min-w-0">
-                <a
-                  href={`/${memorial.slug}?openExternalBrowser=1`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-500 underline truncate text-right"
-                >
-                  {memorial.slug}
-                </a>
-                <CopyLinkButton url={`${getSiteUrl()}/${memorial.slug}?openExternalBrowser=1`} />
-              </div>
-            </div>
           </div>
+
+          <MemorialShareCard
+            publicUrl={`${getSiteUrl()}/${memorial.slug}?openExternalBrowser=1`}
+            hostUrl={`${getSiteUrl()}/dashboard/host?code=${encodeURIComponent(memorial.host_code || "")}`}
+            slug={memorial.slug}
+          />
           <Link
             href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`}
             className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
