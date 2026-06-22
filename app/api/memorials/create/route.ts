@@ -171,36 +171,25 @@ export async function POST(req: NextRequest) {
       is_active: true,
     };
 
-    let { data: memorial, error } = await supabase
-      .from("memorials")
-      .insert(fullPayload)
-      .select()
-      .single();
-
-    // If extra columns don't exist yet, fall back to base-only insert
-    if (error && error.message.includes("Could not find")) {
-      const basePayload = {
-        slug,
-        name,
-        birth_date: birthDate,
-        death_date: deathDate,
-        age,
-        photo_url: photoUrl,
-        ceremony_date: ceremonyDate,
-        ceremony_time: ceremonyTime,
-        ceremony_location: ceremonyLocation,
-        ceremony_hall: ceremonyHall,
-        bank_name: bankName,
-        bank_account_number: bankAccountNumber,
-        bank_account_name: bankAccountName,
-        bank_account_image_url: qrUrl,
-        is_active: true,
-      };
+    // Insert resiliently: if a column doesn't exist in the DB yet (e.g. printer_id
+    // before its migration), drop only that column and retry — never silently lose
+    // critical fields like host_code / host_name (which broke host login before).
+    const payload: Record<string, unknown> = { ...fullPayload };
+    let memorial = null;
+    let error = null;
+    for (let attempt = 0; attempt < 10; attempt++) {
       ({ data: memorial, error } = await supabase
         .from("memorials")
-        .insert(basePayload)
+        .insert(payload as typeof fullPayload)
         .select()
         .single());
+      if (!error) break;
+      const missing = error.message.match(/Could not find the '(\w+)' column/);
+      if (missing && missing[1] in payload) {
+        delete payload[missing[1]];
+        continue;
+      }
+      break;
     }
 
     if (error) throw new Error(error.message);
