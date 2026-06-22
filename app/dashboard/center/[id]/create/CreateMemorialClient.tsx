@@ -611,7 +611,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             </div>
           )}
 
-          {activeStep !== "level-a" && (
+          {(activeStep !== "level-a" || levelAComplete) && (
           <button
             type="submit"
             disabled={submitting || !consent || !name || !birthDate || !deathDate || !ceremonyDate || !photoFile}
