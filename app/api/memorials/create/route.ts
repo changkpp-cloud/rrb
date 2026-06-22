@@ -122,6 +122,7 @@ export async function POST(req: NextRequest) {
     const hostBankName          = (form.get("host_bank_name") as string) || null;
     const hostBankAccountNumber = (form.get("host_bank_account_number") as string) || null;
     const hostBankAccountName   = (form.get("host_bank_account_name") as string) || null;
+    const printerId             = (form.get("printer_id") as string) || null;
 
     if (!name || !birthDate || !deathDate || !ceremonyDate) {
       return NextResponse.json({ error: "กรุณากรอกข้อมูลที่จำเป็น: ชื่อ วันเกิด วันเสียชีวิต วันฌาปนกิจ" }, { status: 400 });
@@ -166,6 +167,7 @@ export async function POST(req: NextRequest) {
       host_bank_name: hostBankName,
       host_bank_account_number: hostBankAccountNumber,
       host_bank_account_name: hostBankAccountName,
+      printer_id: printerId,
       is_active: true,
     };
 

@@ -276,6 +276,9 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   const [prayerSchedule, setPrayerSchedule] = useState("");   // สถานที่สวด → prayer_location
   const [prayerText, setPrayerText]         = useState("");   // กำหนดการ/เวลา → prayer_date
 
+  // PrintNode
+  const [printerId, setPrinterId] = useState("");
+
   // Level A - host
   const [hostName, setHostName]               = useState("");
   const [hostPhone, setHostPhone]             = useState("");
@@ -333,6 +336,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     if (hostBankName) form.append("host_bank_name", hostBankName);
     if (hostBankAccount) form.append("host_bank_account_number", hostBankAccount);
     if (hostBankAccountName) form.append("host_bank_account_name", hostBankAccountName);
+    if (printerId.trim()) form.append("printer_id", printerId.trim());
     form.append("photo", photoFile);
     if (certFile) form.append("death_certificate", certFile);
     if (idCardFile) form.append("host_id_card", idCardFile);
@@ -481,6 +485,22 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 <input type="text" value={ceremonyLocation} onChange={e => setCeremonyLocation(e.target.value)} required
                   placeholder="เช่น วัดวังเพชร ต.นิคมทุ่งโพธิ์ทะเล อ.เมือง จ.กำแพงเพชร" className={inputClass} />
               </Field>
+
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-3 space-y-2">
+                <p className="text-[11px] font-bold text-blue-800 flex items-center gap-1.5">
+                  🖨️ เครื่องพิมพ์ป้ายชื่ออัตโนมัติ (PrintNode)
+                </p>
+                <p className="text-[10px] text-blue-600 leading-relaxed">
+                  ระบุ Printer ID จาก PrintNode เพื่อสั่งพิมพ์ป้ายชื่ออัตโนมัติเมื่อมีผู้ร่วมบุญ
+                </p>
+                <input
+                  type="number"
+                  value={printerId}
+                  onChange={e => setPrinterId(e.target.value)}
+                  placeholder="เช่น 78945 (ดูได้จาก printnode.com)"
+                  className="w-full px-3 py-2.5 rounded-xl border border-blue-300 bg-white text-blue-900 placeholder-blue-300 focus:outline-none text-sm font-mono"
+                />
+              </div>
             </div>
           </Section>
 
