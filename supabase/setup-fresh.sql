@@ -85,6 +85,28 @@ CREATE TABLE IF NOT EXISTS public.memorials (
   created_at               TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Ensure columns exist for older schemas
+ALTER TABLE public.memorials
+  ADD COLUMN IF NOT EXISTS event_code               TEXT,
+  ADD COLUMN IF NOT EXISTS center_id                UUID REFERENCES public.centers(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS host_name                TEXT,
+  ADD COLUMN IF NOT EXISTS host_phone               TEXT,
+  ADD COLUMN IF NOT EXISTS host_code                TEXT,
+  ADD COLUMN IF NOT EXISTS host_relationship        TEXT,
+  ADD COLUMN IF NOT EXISTS funeral_status           TEXT NOT NULL DEFAULT 'active',
+  ADD COLUMN IF NOT EXISTS prayer_date              DATE,
+  ADD COLUMN IF NOT EXISTS prayer_location          TEXT,
+  ADD COLUMN IF NOT EXISTS host_bank_name           TEXT,
+  ADD COLUMN IF NOT EXISTS host_bank_account_number TEXT,
+  ADD COLUMN IF NOT EXISTS host_bank_account_name   TEXT,
+  ADD COLUMN IF NOT EXISTS death_certificate_url    TEXT,
+  ADD COLUMN IF NOT EXISTS host_id_card_url         TEXT;
+
+ALTER TABLE public.centers
+  ADD COLUMN IF NOT EXISTS center_code       TEXT,
+  ADD COLUMN IF NOT EXISTS official_lgo_code TEXT,
+  ADD COLUMN IF NOT EXISTS access_code       TEXT;
+
 CREATE INDEX IF NOT EXISTS idx_memorials_center_id      ON public.memorials(center_id);
 CREATE INDEX IF NOT EXISTS idx_memorials_funeral_status ON public.memorials(funeral_status);
 CREATE INDEX IF NOT EXISTS idx_memorials_is_active      ON public.memorials(is_active);
@@ -113,6 +135,19 @@ CREATE TABLE IF NOT EXISTS public.donations (
   reviewed_by            TEXT,
   created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+-- Ensure columns exist for older schemas that may lack them
+ALTER TABLE public.donations
+  ADD COLUMN IF NOT EXISTS donor_title            TEXT,
+  ADD COLUMN IF NOT EXISTS slip_hash              TEXT,
+  ADD COLUMN IF NOT EXISTS slip_duplicate_warning BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS nameplate_status       TEXT NOT NULL DEFAULT 'pending',
+  ADD COLUMN IF NOT EXISTS center_id              UUID REFERENCES public.centers(id) ON DELETE SET NULL,
+  ADD COLUMN IF NOT EXISTS confirmed_at           TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS reviewed_at            TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS reviewed_by            TEXT;
+
+ALTER TABLE public.donations ALTER COLUMN status SET DEFAULT 'confirmed';
 
 CREATE INDEX IF NOT EXISTS idx_donations_memorial_id          ON public.donations(memorial_id);
 CREATE INDEX IF NOT EXISTS idx_donations_memorial_slip_hash   ON public.donations(memorial_id, slip_hash) WHERE slip_hash IS NOT NULL;
