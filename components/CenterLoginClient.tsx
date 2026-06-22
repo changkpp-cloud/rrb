@@ -222,7 +222,10 @@ export default function CenterLoginClient() {
                   </button>
 
                   <p className="text-center text-[11px] text-gold-400 leading-relaxed">
-                    บัญชีผู้ใช้สร้างโดยผู้ดูแลระบบ
+                    ยังไม่มีบัญชี?{" "}
+                    <a href="/dashboard/center/register" className="text-gold-600 underline underline-offset-2 font-semibold">
+                      สมัครใช้งาน
+                    </a>
                   </p>
                 </>
               )}
