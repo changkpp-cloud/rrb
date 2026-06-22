@@ -20,6 +20,7 @@ type MemorialRow = {
   host_bank_name: string | null;
   host_bank_account_number: string | null;
   host_bank_account_name: string | null;
+  transfer_confirmed_at: string | null;
 };
 
 type DonationRow = {
@@ -33,7 +34,7 @@ async function getTransfers(centerId: string) {
   const supabase = createAdminClient();
   const { data: memorialsData } = await supabase
     .from("memorials")
-    .select("id, name, ceremony_date, funeral_status, host_name, host_bank_name, host_bank_account_number, host_bank_account_name")
+    .select("id, name, ceremony_date, funeral_status, host_name, host_bank_name, host_bank_account_number, host_bank_account_name, transfer_confirmed_at")
     .eq("center_id", centerId)
     .in("funeral_status", ["active", "closed"])
     .order("ceremony_date", { ascending: false });
@@ -67,8 +68,9 @@ async function getTransfers(centerId: string) {
       const netAmount = Math.max(amount - SYSTEM_FEE, 0);
       const hasHostBank = Boolean(m.host_bank_account_number);
       const ready = m.funeral_status === "active" && ceremonyReached && unposted === 0 && confirmed.length > 0 && hasHostBank;
+      const transferred = Boolean(m.transfer_confirmed_at);
 
-      return { memorial: m, amount, netAmount, confirmed: confirmed.length, unposted, ceremonyReached, hasHostBank, ready };
+      return { memorial: m, amount, netAmount, confirmed: confirmed.length, unposted, ceremonyReached, hasHostBank, ready, transferred };
     })
     .filter((row) => row.memorial.funeral_status === "active" || row.amount > 0)
     .sort((a, b) => Number(b.ready) - Number(a.ready) || Number(b.ceremonyReached) - Number(a.ceremonyReached));
@@ -86,6 +88,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
   const centerName = center.name ?? "ศูนย์บริหาร";
   const rows = await getTransfers(id);
   const readyCount = rows.filter((r) => r.ready).length;
+  const transferredCount = rows.filter((r) => r.transferred).length;
   const totalNet = rows.filter((r) => r.memorial.funeral_status === "active").reduce((sum, r) => sum + r.netAmount, 0);
 
   return (
@@ -97,9 +100,10 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-          <Kpi icon={CheckCircle2} label="พร้อมโอน/ปิด" value={`${readyCount} งาน`} tone="emerald" />
-          <Kpi icon={Banknote} label="ยอดสุทธิ active" value={`${totalNet.toLocaleString()} บาท`} tone="amber" />
+        <div className="grid grid-cols-3 gap-3">
+          <Kpi icon={CheckCircle2} label="พร้อมโอน" value={`${readyCount}`} tone="emerald" />
+          <Kpi icon={Banknote} label="โอนแล้ว" value={`${transferredCount}`} tone="emerald" />
+          <Kpi icon={Banknote} label="ยอด active" value={`${totalNet.toLocaleString()}`} tone="amber" />
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
@@ -117,13 +121,14 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
               <Link
                 key={row.memorial.id}
                 href={`/dashboard/center/${centerRouteKey}/memorial/${row.memorial.id}`}
-                className={`block rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors ${row.ready ? "bg-emerald-50" : "bg-cream-50"}`}
+                className={`block rounded-2xl gold-border px-4 py-3 hover:bg-cream-100 transition-colors ${row.transferred ? "bg-blue-50" : row.ready ? "bg-emerald-50" : "bg-cream-50"}`}
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-gold-800 truncate">{row.memorial.name}</p>
-                      {row.ready && <span className="text-[9px] font-bold text-emerald-700 bg-white/70 rounded-full px-2 py-0.5">พร้อม</span>}
+                      {row.transferred && <span className="text-[9px] font-bold text-blue-700 bg-white/70 rounded-full px-2 py-0.5">โอนแล้ว ✓</span>}
+                      {!row.transferred && row.ready && <span className="text-[9px] font-bold text-emerald-700 bg-white/70 rounded-full px-2 py-0.5">พร้อม</span>}
                     </div>
                     <p className="text-[10px] text-gold-500">ฌาปนกิจ {formatThaiDate(row.memorial.ceremony_date)}</p>
                     <p className="text-[10px] text-gold-400 truncate">เจ้าภาพ: {row.memorial.host_name || "-"}</p>
