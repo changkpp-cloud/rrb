@@ -24,6 +24,7 @@ import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import MemorialShareCard from "@/components/MemorialShareCard";
 import PendingDonationReview from "@/components/PendingDonationReview";
 import HostVerificationReview from "@/components/HostVerificationReview";
+import CenterMemorialDocsForm from "@/components/CenterMemorialDocsForm";
 import TransferConfirmButton from "@/components/TransferConfirmButton";
 import { getSiteUrl } from "@/lib/site-url";
 
@@ -188,7 +189,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="host-verify" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={CheckCircle2} title="ยืนยันตัวตนเจ้าภาพ" subtitle="ตรวจสอบใบมรณะบัตรและบัตรประชาชนก่อนให้เจ้าภาพกรอกบัญชีรับเงิน" />
+          <SectionHeader icon={CheckCircle2} title="เอกสารและบัญชีเจ้าภาพ" subtitle="ศูนย์เพิ่ม/แก้ใบมรณะบัตร บัตรประชาชน และบัญชีรับเงินได้ แล้วยืนยันสิทธิ์เจ้าภาพ" />
+          <CenterMemorialDocsForm memorial={memorial} />
           <HostVerificationReview memorial={memorial} />
         </section>
 
