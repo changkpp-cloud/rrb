@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Upload, Copy, Check, ExternalLink } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
@@ -224,6 +225,7 @@ const inputClass = "w-full px-3 py-2.5 rounded-xl gold-border bg-white text-gold
 
 // ── Main Form ──────────────────────────────────────────────────────────────
 export default function CreateMemorialClient({ centerId, embedded = false, centerBank, slugPrefix = "" }: Props) {
+  const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult]         = useState<Result | null>(null);
   const [error, setError]           = useState("");
@@ -317,6 +319,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "เกิดข้อผิดพลาด");
       setResult({ eventCode: data.eventCode, hostCode: data.hostCode, slug: data.slug, memorialId: data.memorial.id });
+      router.refresh(); // ให้รายการ "งานเปิดอยู่" ในแดชบอร์ดอัปเดตทันที
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด กรุณาลองใหม่");
     }

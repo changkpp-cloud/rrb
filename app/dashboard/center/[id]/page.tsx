@@ -24,7 +24,8 @@ import { canManageCenterSettings, getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
 
-export const revalidate = 30;
+// ดึงข้อมูลสดทุกครั้ง — งานที่เพิ่งเปิดต้องโผล่ในรายการทันที (ไม่ติด cache)
+export const dynamic = "force-dynamic";
 
 type DonationStats = {
   amount: number;
