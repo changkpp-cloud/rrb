@@ -1,3 +1,4 @@
+import Image from "next/image";
 import LotusIcon from "./LotusIcon";
 
 const DEFAULT_BOARD_IMAGE = "/img/บอร์ด2.png";
@@ -37,10 +38,12 @@ export default function WreathBoard({ imageUrl, caption }: Props = {}) {
             WebkitBackdropFilter: "blur(12px)",
           }}
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src={src}
             alt="หรีดร่วมบุญ"
+            width={1448}
+            height={1086}
+            sizes="(max-width: 640px) 100vw, 512px"
             style={{ width: "100%", height: "auto", display: "block" }}
           />
         </div>
