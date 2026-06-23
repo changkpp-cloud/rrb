@@ -130,10 +130,11 @@ export default async function Home() {
         <div className="relative">
           <div className="overflow-hidden rounded-[32px] border border-gold-300/40 bg-white/65 p-3 shadow-2xl shadow-gold-900/10">
             <Image
-              src="/img/บอร์ด2.png"
+              src="/img/board-default.webp"
               alt="บอร์ดหรีดร่วมบุญสำหรับติดป้ายแสดงความอาลัย"
-              width={960}
-              height={960}
+              width={1024}
+              height={768}
+              sizes="(max-width: 768px) 100vw, 480px"
               priority
               className="aspect-[4/5] w-full rounded-[24px] object-cover"
             />

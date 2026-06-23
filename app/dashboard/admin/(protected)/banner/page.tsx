@@ -8,7 +8,7 @@ export default async function AdminBannerPage() {
   return (
     <BoardBannerAdmin
       currentImageUrl={settings[HOME_BOARD_IMAGE_KEY] ?? null}
-      defaultImageUrl="/img/บอร์ด2.png"
+      defaultImageUrl="/img/board-default.webp"
       currentCaption={settings[HOME_BOARD_CAPTION_KEY] ?? ""}
     />
   );

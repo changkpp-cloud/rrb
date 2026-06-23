@@ -36,6 +36,7 @@ export default function MemorialProfile({ memorial }: Props) {
                 alt={memorial.name}
                 width={440}
                 height={640}
+                sizes="(max-width: 423px) 52vw, 220px"
                 className="h-auto w-full object-contain"
                 priority
               />

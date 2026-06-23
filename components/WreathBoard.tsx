@@ -1,7 +1,7 @@
 import Image from "next/image";
 import LotusIcon from "./LotusIcon";
 
-const DEFAULT_BOARD_IMAGE = "/img/บอร์ด2.png";
+const DEFAULT_BOARD_IMAGE = "/img/board-default.webp";
 
 interface Props {
   /** ภาพบอร์ดจากแอดมินกลาง (ถ้าไม่ตั้งใช้ภาพเริ่มต้น) */
@@ -41,8 +41,8 @@ export default function WreathBoard({ imageUrl, caption }: Props = {}) {
           <Image
             src={src}
             alt="หรีดร่วมบุญ"
-            width={1448}
-            height={1086}
+            width={1024}
+            height={768}
             sizes="(max-width: 640px) 100vw, 512px"
             style={{ width: "100%", height: "auto", display: "block" }}
           />

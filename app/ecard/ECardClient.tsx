@@ -248,7 +248,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 border: `${Math.round(2*s)}px solid #c9a050`,
                 position: "relative",
                 overflow: "hidden",
-                fontFamily: "'Sarabun', sans-serif",
+                fontFamily: "var(--font-sarabun), sans-serif",
                 boxShadow: "0 8px 32px rgba(184,134,11,0.12)",
                 display: "flex",
                 flexDirection: "column",
@@ -266,7 +266,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
               <div style={{ display: "flex", justifyContent: "center", paddingTop: Math.round(12*s), paddingBottom: Math.round(2*s), flexShrink: 0, position: "relative", zIndex: 6 }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: Math.round(7*s), background: "linear-gradient(90deg,#c4a052,#d8b860,#e4ca70,#d8b860,#c4a052)", border: `${Math.round(1.5*s)}px solid rgba(180,140,40,0.5)`, borderRadius: 999, padding: `${Math.round(5*s)}px ${Math.round(16*s)}px`, boxShadow: `0 ${Math.round(2*s)}px ${Math.round(8*s)}px rgba(180,140,40,0.20)` }}>
                   <span style={{ display: "inline-flex", width: Math.round(15*s), height: Math.round(15*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full" /></span>
-                  <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(12*s), letterSpacing: "0.16em", fontFamily: "'Sarabun',sans-serif" }}>ด้วยความอาลัย</span>
+                  <span style={{ color: "white", fontWeight: 700, fontSize: Math.round(12*s), letterSpacing: "0.16em", fontFamily: "var(--font-sarabun),sans-serif" }}>ด้วยความอาลัย</span>
                   <span style={{ display: "inline-flex", width: Math.round(15*s), height: Math.round(15*s), color: "rgba(255,255,255,0.92)" }}><LotusIcon className="w-full h-full scale-x-[-1]" /></span>
                 </div>
               </div>
@@ -276,7 +276,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 {/* Section label */}
                 <div style={{ display: "flex", alignItems: "center", gap: Math.round(5*s), marginBottom: Math.round(4*s) }}>
                   <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(20*s), background: "rgba(201,160,80,0.35)" }} />
-                  <span style={{ fontSize: Math.round(11*s), color: "#92400e", letterSpacing: "0.08em", fontFamily: "'Sarabun',sans-serif", whiteSpace: "nowrap" }}>❖ เจ้าภาพขอขอบคุณ ❖</span>
+                  <span style={{ fontSize: Math.round(11*s), color: "#92400e", letterSpacing: "0.08em", fontFamily: "var(--font-sarabun),sans-serif", whiteSpace: "nowrap" }}>❖ เจ้าภาพขอขอบคุณ ❖</span>
                   <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(20*s), background: "rgba(201,160,80,0.35)" }} />
                 </div>
                 {/* Donor name — large */}
@@ -305,7 +305,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
 
               {/* ── Deceased section ── */}
               <div style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", padding: `0 ${Math.round(16*s)}px`, position: "relative", zIndex: 6, overflow: "hidden" }}>
-                <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.10em", margin: `0 0 ${Math.round(5*s)}px`, fontFamily: "'Sarabun',sans-serif" }}>❖ แด่ผู้วายชนม์ ❖</p>
+                <p style={{ fontSize: Math.round(11*s), color: "#a16207", letterSpacing: "0.10em", margin: `0 0 ${Math.round(5*s)}px`, fontFamily: "var(--font-sarabun),sans-serif" }}>❖ แด่ผู้วายชนม์ ❖</p>
 
                 {/* Photo with floral frame */}
                 <div style={{ position: "relative", marginBottom: Math.round(6*s) }}>
