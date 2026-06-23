@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
+import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { Copy, Check, CloudUpload, Download, User, Briefcase } from "lucide-react";
+import { Copy, Check, CloudUpload, Download } from "lucide-react";
 import PromptPayQR from "./PromptPayQR";
 import Button from "@/components/ui/Button";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
+import { savePaidData } from "@/components/SlugBottomNav";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface Props {
@@ -28,25 +29,15 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
-  const [donorName, setDonorName] = useState("");
-  const [donorTitle, setDonorTitle] = useState("");
   const [copied, setCopied] = useState(false);
   const [savedQR, setSavedQR] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [error, setError] = useState("");
 
   const fileRef = useRef<HTMLInputElement>(null);
   const qrRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
-  // Auto-scroll to name input when slip is attached
-  useEffect(() => {
-    if (slipFile && nameRef.current) {
-      setTimeout(() => nameRef.current?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
-    }
-  }, [slipFile]);
+  const { slug } = useParams<{ slug: string }>();
 
   function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -100,7 +91,8 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   }
 
   const parsedAmount = parseFloat(amount) || 0;
-  const canSubmit = slipFile && parsedAmount > 0 && donorName.trim().length > 0;
+  const canSubmit = slipFile && parsedAmount > 0;
+  const base = basePath || (slug ? `/${slug}` : "");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -108,7 +100,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     setSubmitting(true);
     setError("");
 
-    // 1. Upload slip
+    // Upload slip — donation จะถูกสร้างทีหลังในหน้ากรอกชื่อ (สร้างครั้งเดียวตอนมีชื่อจริง)
     let slipUrl = "";
     let slipHash = "";
     let duplicate = false;
@@ -134,44 +126,18 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       return;
     }
 
-    // 2. Create donation
-    let donationId = "";
-    try {
-      const body: Record<string, unknown> = {
-        memorial_id: memorial.id,
-        donor_name: donorName.trim(),
-        amount: parsedAmount,
-        slip_url: slipUrl,
-        slip_hash: slipHash,
-        slip_duplicate_warning: duplicate,
-      };
-      if (donorTitle.trim()) body.donor_title = donorTitle.trim();
-      const res = await fetch("/api/donations", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data?.error ?? "บันทึกไม่สำเร็จ กรุณาลองอีกครั้ง");
-        setSubmitting(false);
-        return;
-      }
-      donationId = data?.donation?.id ?? "";
-    } catch {
-      setError("เกิดข้อผิดพลาด กรุณาลองอีกครั้ง");
-      setSubmitting(false);
-      return;
-    }
+    // ปลดล็อก tab ป้ายชื่อ/ขอบคุณ ใน bottom nav
+    if (slug) savePaidData(slug, { memorial_id: memorial.id, slip_url: slipUrl, amount: String(parsedAmount) });
 
-    setSuccess(true);
+    // ไปหน้ากรอกชื่อบนป้าย (หน้า 3)
     const q = new URLSearchParams({
-      name: donorName.trim(),
-      title: donorTitle.trim(),
+      memorial_id: memorial.id,
+      slip_url: slipUrl,
       amount: String(parsedAmount),
     });
-    if (donationId) q.set("donation_id", donationId);
-    setTimeout(() => router.push(`${basePath}/success?${q.toString()}`), 900);
+    if (slipHash) q.set("slip_hash", slipHash);
+    if (duplicate) q.set("duplicate", "true");
+    router.push(`${base}/print-name?${q.toString()}`);
   }
 
   return (
@@ -302,46 +268,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               )}
             </Card>
 
-            {/* ─── 3: ชื่อผู้ร่วมบุญ (แสดงเมื่อแนบสลิปแล้ว) ─── */}
-            {slipFile && (
-              <Card>
-                <OrnamentTitle>ชื่อบนป้ายหรีด</OrnamentTitle>
-                <div className="mt-3 space-y-3">
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-gold-700">
-                      <User className="w-4 h-4" />
-                      <span className="text-sm font-semibold">ชื่อ / หน่วยงาน <span className="text-red-400">*</span></span>
-                    </div>
-                    <input
-                      ref={nameRef}
-                      type="text" value={donorName} onChange={e => setDonorName(e.target.value)}
-                      placeholder="เช่น ครอบครัวสมชาย / บจก.เอบีซี"
-                      className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex items-center gap-2 text-gold-700">
-                      <Briefcase className="w-4 h-4" />
-                      <span className="text-sm font-semibold">ตำแหน่ง / ข้อความแสดงอาลัย</span>
-                    </div>
-                    <input
-                      type="text" value={donorTitle} onChange={e => setDonorTitle(e.target.value)}
-                      placeholder="เช่น ผู้อำนวยการ / ขอแสดงความเสียใจอย่างสุดซึ้ง"
-                      className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm"
-                    />
-                  </div>
-
-                  {/* Nameplate preview */}
-                  {donorName.trim() && (
-                    <div className="pt-1">
-                      <p className="text-[10px] text-gold-400 text-center mb-2">ตัวอย่างป้ายหรีด</p>
-                      <SignPreview name={donorName} title={donorTitle} />
-                    </div>
-                  )}
-                </div>
-              </Card>
-            )}
-
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 text-center">{error}</div>
             )}
@@ -352,7 +278,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               loading={submitting}
               disabled={!canSubmit}
             >
-              {submitting ? "กำลังส่งข้อมูล..." : "ส่งข้อมูลและสร้างป้ายชื่อ"}
+              {submitting ? "กำลังอัปโหลดสลิป..." : "ถัดไป — ระบุชื่อบนป้าย"}
             </Button>
 
             <div className="h-20" />
@@ -360,19 +286,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
         </form>
       </main>
 
-      <LoadingOverlay show={submitting && !success} message="กำลังบันทึกและส่งพิมพ์..." />
-
-      {success && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center px-6 bg-gold-900/25 backdrop-blur-sm">
-          <div className="w-full max-w-xs rounded-3xl bg-cream-50 gold-border card-shadow px-7 py-8 text-center">
-            <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
-              <Check className="h-8 w-8 text-emerald-500" />
-            </div>
-            <p className="text-lg font-bold text-gold-800">ส่งพิมพ์สำเร็จแล้ว!</p>
-            <p className="text-xs text-gold-500 mt-1">กำลังไปหน้า E-Card...</p>
-          </div>
-        </div>
-      )}
+      <LoadingOverlay show={submitting} message="กำลังอัปโหลดสลิป..." />
     </div>
   );
 }
@@ -408,67 +322,5 @@ function QRPlaceholder() {
       <rect x="4" y="38" width="6" height="6" /><rect x="14" y="38" width="6" height="6" /><rect x="24" y="38" width="6" height="6" />
       <rect x="38" y="38" width="6" height="6" /><rect x="48" y="38" width="6" height="6" /><rect x="58" y="38" width="6" height="6" /><rect x="68" y="38" width="8" height="6" />
     </svg>
-  );
-}
-
-const BASE_W = 288;
-const BASE_H = 80;
-
-function SignPreview({ name, title }: { name: string; title: string }) {
-  const displayName = name.trim() || "ชื่อ หรือ องค์กร";
-  const displayTitle = title.trim() || "ตำแหน่ง หรือ ข้อความแสดงอาลัย";
-  const isNamePlaceholder = !name.trim();
-  const isTitlePlaceholder = !title.trim();
-  const cardRef = useRef<HTMLDivElement>(null);
-  const nameRef = useRef<HTMLParagraphElement>(null);
-  const titleRef = useRef<HTMLParagraphElement>(null);
-  const [cardWidth, setCardWidth] = useState(BASE_W);
-
-  useEffect(() => {
-    const el = cardRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver(([entry]) => setCardWidth(entry.contentRect.width));
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
-
-  const scale = cardWidth / BASE_W;
-
-  useEffect(() => {
-    const el = nameRef.current;
-    if (!el) return;
-    const MAX = 26 * scale;
-    const avail = cardWidth - 24;
-    el.style.fontSize = MAX + "px";
-    el.style.width = "max-content";
-    const tw = el.getBoundingClientRect().width;
-    el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(6 * scale, Math.min(MAX, (avail / tw) * MAX)) + "px";
-  }, [displayName, cardWidth, scale]);
-
-  useEffect(() => {
-    const el = titleRef.current;
-    if (!el) return;
-    const MAX = 16 * scale;
-    const avail = cardWidth - 68;
-    el.style.fontSize = MAX + "px";
-    el.style.width = "max-content";
-    const tw = el.getBoundingClientRect().width;
-    el.style.width = "";
-    if (tw > 0) el.style.fontSize = Math.max(5 * scale, Math.min(MAX, (avail / tw) * MAX)) + "px";
-  }, [displayTitle, cardWidth, scale]);
-
-  const titleMargin = Math.round(34 * scale);
-  const titleBottom = Math.round(5 * scale);
-
-  return (
-    <div ref={cardRef} className="relative w-full rounded-xl overflow-hidden" style={{ aspectRatio: `${BASE_W} / ${BASE_H}`, background: "linear-gradient(135deg,#fdf8ee 0%,#f9f0d8 100%)", border: "1.5px solid #c9a84c", boxShadow: "0 4px 20px rgba(184,134,11,0.18), inset 0 0 0 3px #fdf8ee, inset 0 0 0 4px #c9a84c44" }}>
-      <div className="absolute left-3 right-3 flex justify-center" style={{ top: "40%", transform: "translateY(-50%)" }}>
-        <p ref={nameRef} className={`font-bold whitespace-nowrap leading-tight text-center ${isNamePlaceholder ? "text-gold-300" : "text-gold-800"}`}>{displayName}</p>
-      </div>
-      <div className="absolute flex justify-center" style={{ bottom: titleBottom + "px", left: titleMargin + "px", right: titleMargin + "px" }}>
-        <p ref={titleRef} className={`whitespace-nowrap leading-tight text-center ${isTitlePlaceholder ? "text-gold-300" : "text-gold-600"}`}>{displayTitle}</p>
-      </div>
-    </div>
   );
 }

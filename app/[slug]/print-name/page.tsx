@@ -1,71 +1,8 @@
 "use client";
 
 import { Suspense, useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
 import { Check, User, Briefcase, Lock } from "lucide-react";
-
-/**
- * สร้างภาพป้ายชื่อความละเอียดสูง (1440×400 px) โดยใช้ Canvas API
- * ใช้สัดส่วนเดียวกับ SignPreview (BASE_W 288 : BASE_H 80 = 3.6 : 1)
- * ฟอนต์ Sarabun ถูกโหลดแล้วจาก layout.tsx
- */
-async function generateNameplatePng(donorName: string, donorTitle: string): Promise<string> {
-  await document.fonts.ready;
-
-  const W = 1440;
-  const H = 400;
-  const canvas = document.createElement("canvas");
-  canvas.width = W;
-  canvas.height = H;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
-
-  // Background gradient
-  const bg = ctx.createLinearGradient(0, 0, W, H);
-  bg.addColorStop(0, "#fdf8ee");
-  bg.addColorStop(1, "#f9f0d8");
-  ctx.fillStyle = bg;
-  ctx.fillRect(0, 0, W, H);
-
-  // Outer gold border
-  ctx.strokeStyle = "#c9a84c";
-  ctx.lineWidth = 6;
-  ctx.strokeRect(3, 3, W - 6, H - 6);
-
-  // Inner gold border
-  ctx.strokeStyle = "rgba(201,168,76,0.45)";
-  ctx.lineWidth = 2;
-  ctx.strokeRect(18, 18, W - 36, H - 36);
-
-  const hasTitle = Boolean(donorTitle.trim());
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-
-  // Auto-fit donor name
-  let namePx = 168;
-  ctx.font = `800 ${namePx}px Sarabun, "Noto Sans Thai", sans-serif`;
-  while (ctx.measureText(donorName).width > W - 80 && namePx > 40) {
-    namePx -= 4;
-    ctx.font = `800 ${namePx}px Sarabun, "Noto Sans Thai", sans-serif`;
-  }
-  ctx.fillStyle = "#4d3318";
-  ctx.fillText(donorName, W / 2, hasTitle ? H * 0.36 : H * 0.50);
-
-  // Auto-fit title / condolence
-  if (hasTitle) {
-    let titlePx = Math.round(namePx * 0.54);
-    ctx.font = `500 ${titlePx}px Sarabun, "Noto Sans Thai", sans-serif`;
-    while (ctx.measureText(donorTitle).width > W - 120 && titlePx > 24) {
-      titlePx -= 2;
-      ctx.font = `500 ${titlePx}px Sarabun, "Noto Sans Thai", sans-serif`;
-    }
-    ctx.fillStyle = "#78350f";
-    ctx.fillText(donorTitle, W / 2, H * 0.71);
-  }
-
-  return canvas.toDataURL("image/png");
-}
 
 export default function SlugPrintNamePage() {
   return (
@@ -97,6 +34,7 @@ function PrintNameInner() {
     setSending(true);
 
     // Create donation now with the real name (single INSERT, no PATCH needed)
+    // status = "pending" — ป้ายจะพิมพ์อัตโนมัติเมื่อศูนย์กดยืนยันสลิป (ไม่ยิงพิมพ์จาก donor flow)
     let donationId = "";
     if (memorial_id) {
       try {
@@ -124,30 +62,11 @@ function PrintNameInner() {
       } catch {}
     }
 
-    // ── Fire-and-forget: generate nameplate image → send to print API ──
-    if (donationId) {
-      generateNameplatePng(trimmedName, trimmedTitle)
-        .then((imageDataUrl) =>
-          fetch("/api/print-nameplate", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              donationId,
-              donorName: trimmedName,
-              donorTitle: trimmedTitle,
-              imageDataUrl,
-            }),
-          })
-        )
-        .catch(() => {});
-    }
-
     const q = new URLSearchParams({ name: trimmedName, title: trimmedTitle, amount });
     if (donationId) q.set("donation_id", donationId);
-    q.set("view", "ecard");
     setPrintSuccess(true);
     setTimeout(() => {
-      router.push(`/${slug}/ecard?${q.toString()}`);
+      router.push(`/${slug}/success?${q.toString()}`);
     }, 1000);
   }
 
@@ -180,7 +99,7 @@ function PrintNameInner() {
             </div>
           </div>
           <button onClick={() => setShowModal(true)} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
-            แสดงก่อนส่งพิมพ์
+            ตรวจดูป้ายก่อนยืนยัน
           </button>
           <div className="h-20" />
         </div>
@@ -194,7 +113,7 @@ function PrintNameInner() {
             <div className="flex gap-3">
               <button onClick={() => setShowModal(false)} disabled={sending} className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-40">แก้ไขข้อความ</button>
               <button onClick={handleSend} disabled={sending} className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-60">
-                {sending ? "กำลังส่งพิมพ์" : "ส่งพิมพ์"}
+                {sending ? "กำลังส่งข้อมูล" : "ยืนยันส่งข้อมูล"}
               </button>
             </div>
           </div>
@@ -206,7 +125,7 @@ function PrintNameInner() {
             <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50">
               <Check className="h-8 w-8 text-emerald-500" />
             </div>
-            <p className="text-lg font-bold text-gold-800">ส่งพิมพ์สำเร็จแล้ว</p>
+            <p className="text-lg font-bold text-gold-800">ส่งข้อมูลเรียบร้อย</p>
           </div>
         </div>
       )}
