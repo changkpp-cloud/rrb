@@ -1,7 +1,17 @@
-import Image from "next/image";
 import LotusIcon from "./LotusIcon";
 
-export default function WreathBoard() {
+const DEFAULT_BOARD_IMAGE = "/img/บอร์ด2.png";
+
+interface Props {
+  /** ภาพบอร์ดจากแอดมินกลาง (ถ้าไม่ตั้งใช้ภาพเริ่มต้น) */
+  imageUrl?: string | null;
+  /** ข้อความใต้ภาพ เช่น ผู้สนับสนุน (ถ้าไม่ตั้งใช้ ESG ZERO WASTE) */
+  caption?: string | null;
+}
+
+export default function WreathBoard({ imageUrl, caption }: Props = {}) {
+  const src = imageUrl || DEFAULT_BOARD_IMAGE;
+  const captionText = caption || "ESG ZERO WASTE";
   return (
     <section className="px-4 pt-1 pb-2">
       <div className="max-w-lg mx-auto">
@@ -27,13 +37,11 @@ export default function WreathBoard() {
             WebkitBackdropFilter: "blur(12px)",
           }}
         >
-          <Image
-            src="/img/บอร์ด2.png"
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
             alt="หรีดร่วมบุญ"
-            width={1448}
-            height={1086}
             style={{ width: "100%", height: "auto", display: "block" }}
-            priority
           />
         </div>
 
@@ -41,7 +49,7 @@ export default function WreathBoard() {
         <div className="flex items-center justify-center gap-1.5 mt-2 opacity-60">
           <LotusIcon className="w-2.5 h-2.5 text-gold-400" />
           <p className="text-[10px] text-gold-400 tracking-widest font-medium" style={{ letterSpacing: "0.2em" }}>
-            ESG ZERO WASTE
+            {captionText}
           </p>
           <LotusIcon className="w-2.5 h-2.5 text-gold-400 scale-x-[-1]" />
         </div>

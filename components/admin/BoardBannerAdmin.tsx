@@ -6,10 +6,11 @@ import { Upload, Save, Loader2, CheckCircle2, XCircle, Trash2, ImageIcon } from 
 
 interface Props {
   currentImageUrl: string | null;
+  defaultImageUrl: string;
   currentCaption: string;
 }
 
-export default function BoardBannerAdmin({ currentImageUrl, currentCaption }: Props) {
+export default function BoardBannerAdmin({ currentImageUrl, defaultImageUrl, currentCaption }: Props) {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -58,7 +59,8 @@ export default function BoardBannerAdmin({ currentImageUrl, currentCaption }: Pr
     }
   }
 
-  const shown = preview ?? currentImageUrl;
+  const shown = preview ?? currentImageUrl ?? defaultImageUrl;
+  const usingDefault = !preview && !currentImageUrl;
 
   return (
     <div className="space-y-5">
@@ -72,16 +74,17 @@ export default function BoardBannerAdmin({ currentImageUrl, currentCaption }: Pr
 
       <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-5 space-y-4">
         {/* preview */}
-        <div className="rounded-xl border border-gold-200 bg-white overflow-hidden">
-          {shown ? (
-            // eslint-disable-next-line @next/next/no-img-element
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <ImageIcon className="w-3.5 h-3.5 text-gold-400" />
+            <p className="text-[11px] font-semibold text-gold-500">
+              {preview ? "ภาพใหม่ (ยังไม่บันทึก)" : usingDefault ? "กำลังใช้ภาพเริ่มต้น" : "ภาพที่ตั้งไว้ (แสดงบนทุกหน้างาน)"}
+            </p>
+          </div>
+          <div className="rounded-xl border border-gold-200 bg-white overflow-hidden">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={shown} alt="ตัวอย่างบอร์ดหรีดร่วมบุญ" className="w-full object-contain max-h-72" />
-          ) : (
-            <div className="flex flex-col items-center justify-center py-12 text-gold-300">
-              <ImageIcon className="w-10 h-10 mb-2" />
-              <p className="text-xs">ยังไม่มีภาพแบนเนอร์</p>
-            </div>
-          )}
+          </div>
         </div>
 
         {/* file picker */}

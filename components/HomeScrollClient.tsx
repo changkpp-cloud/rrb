@@ -4,7 +4,15 @@ import { useRef, useEffect, useState } from "react";
 import WreathBoard from "./WreathBoard";
 import PaymentSection from "./PaymentSection";
 
-export default function HomeScrollClient({ basePath = "" }: { basePath?: string }) {
+export default function HomeScrollClient({
+  basePath = "",
+  boardImageUrl,
+  boardCaption,
+}: {
+  basePath?: string;
+  boardImageUrl?: string | null;
+  boardCaption?: string | null;
+}) {
   const wreathRef = useRef<HTMLDivElement>(null);
   const [paymentVisible, setPaymentVisible] = useState(false);
 
@@ -24,7 +32,7 @@ export default function HomeScrollClient({ basePath = "" }: { basePath?: string 
   return (
     <>
       <div ref={wreathRef}>
-        <WreathBoard />
+        <WreathBoard imageUrl={boardImageUrl} caption={boardCaption} />
       </div>
       <div
         style={{
