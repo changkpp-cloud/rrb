@@ -22,7 +22,6 @@ import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
 import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import MemorialShareCard from "@/components/MemorialShareCard";
-import PendingDonationReview from "@/components/PendingDonationReview";
 import HostVerificationReview from "@/components/HostVerificationReview";
 import CenterMemorialDocsForm from "@/components/CenterMemorialDocsForm";
 import TransferConfirmButton from "@/components/TransferConfirmButton";
@@ -77,7 +76,6 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   if (memorial.center_id !== id) redirect(`/dashboard/center/${centerRouteKey}`);
 
   const donations = await getDonations(memorial.id);
-  const pending = donations.filter((d) => d.status === "pending");
   const confirmed = donations.filter((d) => d.status === "confirmed");
   const rejected = donations.filter((d) => d.status === "rejected");
   const slipEvidence = donations.filter((d) => d.slip_url);
@@ -106,8 +104,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
         <div className="grid grid-cols-3 gap-3 text-center">
-          <Stat label="รอตรวจสอบ" value={pending.length.toLocaleString()} tone={pending.length > 0 ? "amber" : "gold"} />
           <Stat label="รับร่วมบุญแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
+          <Stat label="คิวพิมพ์ป้าย" value={printQueue.length.toLocaleString()} tone={printQueue.length > 0 ? "amber" : "gold"} />
           <Stat label="ยอดรวม" value={total.toLocaleString()} tone="gold" />
         </div>
 
@@ -133,11 +131,6 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <Pencil className="h-4 w-4" />
             แก้ไขวัด / วันเวลา / กำหนดการสวด
           </Link>
-        </section>
-
-        <section id="verify" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={AlertTriangle} title="รอตรวจสอบสลิป" subtitle={`${pending.length} รายการรอยืนยัน · กด "ยืนยัน" เพื่อส่งพิมพ์ป้ายอัตโนมัติ`} />
-          <PendingDonationReview donations={pending} />
         </section>
 
         <section id="slips" className="scroll-mt-36 space-y-3">
