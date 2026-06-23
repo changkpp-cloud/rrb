@@ -7,6 +7,7 @@ import {
   AlertTriangle,
   Building2,
   FileBarChart2,
+  ImageIcon,
   LayoutDashboard,
   LogOut,
   Users,
@@ -19,6 +20,7 @@ const NAV = [
   { href: "/dashboard/admin/centers", label: "ศูนย์", icon: Building2 },
   { href: "/dashboard/admin/users", label: "ผู้ใช้", icon: Users },
   { href: "/dashboard/admin/ai-prompts", label: "พรอมต์ AI", icon: WandSparkles },
+  { href: "/dashboard/admin/banner", label: "แบนเนอร์", icon: ImageIcon },
   { href: "/dashboard/admin/system", label: "ระบบ", icon: AlertTriangle, alert: true },
   { href: "/dashboard/admin/report", label: "รายงาน", icon: FileBarChart2 },
 ];

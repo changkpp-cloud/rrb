@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import MemorialProfile from "@/components/MemorialProfile";
 import HideFloatingBack from "@/components/HideFloatingBack";
 import CeremonyInfo from "@/components/CeremonyInfo";
+import HomeBoardBanner from "@/components/HomeBoardBanner";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
 import { getMemorialBySlug } from "@/lib/memorial";
@@ -123,6 +124,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
         <main className="flex-1">
           <MemorialProfile memorial={memorial} />
           <CeremonyInfo memorial={memorial} />
+          <HomeBoardBanner />
           <div className="mt-1">
             <HomeScrollClient basePath={basePath} />
           </div>
