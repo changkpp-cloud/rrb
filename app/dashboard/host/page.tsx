@@ -62,7 +62,7 @@ export default function HostLoginPage() {
                 autoCapitalize="none"
                 spellCheck={false}
                 className="w-full px-4 py-3 rounded-xl gold-border bg-white text-gold-800 focus:outline-none focus:ring-2 focus:ring-gold-400 text-base font-bold text-center tracking-[0.25em]"
-                maxLength={10}
+                maxLength={32}
               />
             </div>
             {error && <p className="text-xs text-red-500 text-center">{error}</p>}
