@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { canEditCenterWork, getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey } from "@/lib/center-route";
+import { centerSlugPrefix } from "@/lib/center-slug";
 
 export default async function CreateMemorialPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: routeKey } = await params;
@@ -15,13 +16,14 @@ export default async function CreateMemorialPage({ params }: { params: Promise<{
   const supabase = createAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: center } = await (supabase.from("centers") as any)
-    .select("bank_name, bank_account_number, bank_account_name, bank_account_image_url, phone")
+    .select("bank_name, bank_account_number, bank_account_name, bank_account_image_url, phone, official_lgo_code, center_code")
     .eq("id", id)
     .maybeSingle();
 
   return (
     <CreateMemorialClient
       centerId={id}
+      slugPrefix={centerSlugPrefix(center)}
       centerBank={{
         bank_name: center?.bank_name ?? null,
         bank_account_number: center?.bank_account_number ?? null,

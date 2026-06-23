@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
+import { centerSlugPrefix, sanitizeSlugPart } from "@/lib/center-slug";
 import { serializePrayerDetails } from "@/lib/prayer-details";
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
@@ -15,45 +16,44 @@ function generateHostCode(): string {
   return `H${rand(5)}`;
 }
 
+/** prefix ของ slug = รหัสประจำศูนย์ (อปท.) */
+async function resolveCenterPrefix(
+  supabase: ReturnType<typeof createAdminClient>,
+  centerId: string | null,
+): Promise<string> {
+  if (!centerId) return "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: center } = await (supabase.from("centers") as any)
+    .select("official_lgo_code, center_code")
+    .eq("id", centerId)
+    .single();
+  return centerSlugPrefix(center);
+}
+
+async function slugExists(
+  supabase: ReturnType<typeof createAdminClient>,
+  slug: string,
+): Promise<boolean> {
+  const { data } = await supabase.from("memorials").select("id").eq("slug", slug).maybeSingle();
+  return Boolean(data);
+}
+
+/** auto: prefix-ชื่อจริง แล้วเติมเลขถ้าซ้ำ */
 async function buildMemorialSlug(
   supabase: ReturnType<typeof createAdminClient>,
   centerId: string | null,
   deceasedName: string,
 ): Promise<string> {
-  // Resolve center prefix from official_lgo_code (8-digit อปท code)
-  let prefix = "";
-  if (centerId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: center } = await (supabase.from("centers") as any)
-      .select("official_lgo_code, center_code")
-      .eq("id", centerId)
-      .single();
-    if (center?.official_lgo_code) {
-      prefix = String(center.official_lgo_code).replace(/\D/g, "").slice(0, 8);
-    } else if (center?.center_code) {
-      prefix = String(center.center_code)
-        .replace(/^RRB-/, "")
-        .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
-    }
-  }
-
+  const prefix = await resolveCenterPrefix(supabase, centerId);
   const namePart = romanizeThaiFirstName(deceasedName);
   const base = [prefix, namePart].filter(Boolean).join("-") ||
     `evt-${new Date().getFullYear()}-${rand(4).toLowerCase()}`;
 
-  // Find a unique slug
   let slug = base;
   for (let counter = 2; counter <= 99; counter++) {
-    const { data: existing } = await supabase
-      .from("memorials")
-      .select("id")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (!existing) break;
+    if (!(await slugExists(supabase, slug))) break;
     slug = `${base}-${counter}`;
   }
-
   return slug;
 }
 
@@ -136,7 +136,27 @@ export async function POST(req: NextRequest) {
     const qrUrl = qrImageUrl ?? (qrFile ? await uploadFile(supabase, qrFile, "qrcodes") : null);
 
     const hostCode = generateHostCode();
-    const slug     = await buildMemorialSlug(supabase, centerId, name);
+
+    // slug: ถ้าผู้เปิดงานแก้/กรอกเอง ใช้ prefix ศูนย์ + ส่วนที่กรอก แล้วกันซ้ำ (แจ้งให้แก้)
+    // ถ้าไม่กรอก → ระบบสร้างอัตโนมัติจากชื่อจริง
+    const slugPartRaw = ((form.get("slug_part") as string) || "").trim();
+    let slug: string;
+    if (slugPartRaw) {
+      const prefix = await resolveCenterPrefix(supabase, centerId);
+      const part = sanitizeSlugPart(slugPartRaw);
+      if (!part) {
+        return NextResponse.json({ error: "URL ไม่ถูกต้อง กรุณาใช้ตัวอักษรอังกฤษหรือตัวเลข" }, { status: 400 });
+      }
+      slug = [prefix, part].filter(Boolean).join("-");
+      if (await slugExists(supabase, slug)) {
+        return NextResponse.json(
+          { error: `URL "${slug}" ถูกใช้แล้วในระบบ กรุณาเพิ่มเลขหรือตัวอักษรให้ไม่ซ้ำ`, code: "slug_taken" },
+          { status: 409 },
+        );
+      }
+    } else {
+      slug = await buildMemorialSlug(supabase, centerId, name);
+    }
     const eventCode = slug.toUpperCase();
 
     // Try with all columns first (migration applied), fall back to base columns only

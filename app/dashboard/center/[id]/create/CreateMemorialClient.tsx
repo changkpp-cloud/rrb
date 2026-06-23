@@ -6,6 +6,7 @@ import { Upload, Copy, Check, ExternalLink } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
+import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 
 interface CenterBank {
   bank_name?: string | null;
@@ -18,6 +19,8 @@ interface Props {
   centerId: string;
   embedded?: boolean;
   centerBank?: CenterBank;
+  /** รหัสประจำศูนย์ (อปท.) นำหน้า slug — ใช้แสดง preview URL */
+  slugPrefix?: string;
 }
 
 interface Result {
@@ -219,7 +222,7 @@ function Field({ label, required, children }: { label: string; required?: boolea
 const inputClass = "w-full px-3 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm";
 
 // ── Main Form ──────────────────────────────────────────────────────────────
-export default function CreateMemorialClient({ centerId, embedded = false, centerBank }: Props) {
+export default function CreateMemorialClient({ centerId, embedded = false, centerBank, slugPrefix = "" }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult]         = useState<Result | null>(null);
   const [error, setError]           = useState("");
@@ -227,6 +230,8 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
 
   // Deceased
   const [name, setName]               = useState("");
+  const [slugPart, setSlugPart]       = useState("");
+  const [slugEdited, setSlugEdited]   = useState(false);
   const [birthDate, setBirthDate]     = useState("");
   const [deathDate, setDeathDate]     = useState("");
   const [age, setAge]                 = useState("");
@@ -251,6 +256,11 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   const [hostPhone, setHostPhone]               = useState("");
   const [hostRelationship, setHostRelationship] = useState("");
 
+  // Auto-fill slug จากชื่อจริง (จนกว่าผู้ใช้จะแก้เอง)
+  useEffect(() => {
+    if (!slugEdited) setSlugPart(romanizeThaiFirstName(name));
+  }, [name, slugEdited]);
+
   // Auto-calculate age
   useEffect(() => {
     if (!birthDate || !deathDate) return;
@@ -272,6 +282,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     const form = new FormData();
     form.append("center_id", centerId);
     form.append("name", name.trim());
+    form.append("slug_part", slugPart.trim());
     form.append("birth_date", birthDate);
     form.append("death_date", deathDate);
     form.append("age", age || "0");
@@ -355,6 +366,29 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
             <Field label="ชื่อ-นามสกุลผู้วายชนม์" required>
               <input type="text" value={name} onChange={e => setName(e.target.value)} required
                 placeholder="เช่น นางสาว สุภาพร ปทุมานนท์" className={inputClass} />
+            </Field>
+
+            <Field label="URL หน้างาน (แก้ไขได้ — เติมเลข/ตัวอักษรเมื่อชื่อซ้ำ)">
+              <div className="flex items-stretch gold-border rounded-xl bg-white overflow-hidden focus-within:ring-2 focus-within:ring-gold-400">
+                {slugPrefix && (
+                  <span className="flex items-center px-2.5 bg-cream-100 text-gold-500 text-sm font-mono border-r border-gold-200 whitespace-nowrap">
+                    {slugPrefix}-
+                  </span>
+                )}
+                <input
+                  type="text"
+                  value={slugPart}
+                  onChange={e => {
+                    setSlugPart(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""));
+                    setSlugEdited(true);
+                  }}
+                  placeholder="suphaphon"
+                  className="flex-1 min-w-0 px-3 py-2.5 bg-white text-gold-800 placeholder-gold-300 focus:outline-none text-sm font-mono"
+                />
+              </div>
+              <p className="text-[10px] text-gold-400 mt-1 break-all">
+                ตัวอย่าง: rrb.center/{[slugPrefix, slugPart].filter(Boolean).join("-") || "…"}
+              </p>
             </Field>
 
             <Field label="วันเกิด (ชาตะ)" required>

@@ -51,10 +51,13 @@ const FOLLOW_VOWEL: Record<string, string> = {
   "\u0e49": "",
   "\u0e4a": "",
   "\u0e4b": "",
-  "\u0e4c": "",
+  // \u0e4c (\u0e01\u0e32\u0e23\u0e31\u0e19\u0e15\u0e4c/\u0e17\u0e31\u0e13\u0e11\u0e06\u0e32\u0e15) \u0e08\u0e31\u0e14\u0e01\u0e32\u0e23\u0e41\u0e22\u0e01\u0e43\u0e19 loop \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e25\u0e1a\u0e1e\u0e22\u0e31\u0e0d\u0e0a\u0e19\u0e30\u0e17\u0e35\u0e48\u0e16\u0e39\u0e01\u0e17\u0e33\u0e43\u0e2b\u0e49\u0e40\u0e07\u0e35\u0e22\u0e1a
   "\u0e4d": "",
   "\u0e4e": "",
 };
+
+// \u0e01\u0e32\u0e23\u0e31\u0e19\u0e15\u0e4c \u2014 \u0e17\u0e33\u0e43\u0e2b\u0e49\u0e1e\u0e22\u0e31\u0e0d\u0e0a\u0e19\u0e30\u0e15\u0e31\u0e27\u0e2b\u0e19\u0e49\u0e32\u0e40\u0e07\u0e35\u0e22\u0e1a
+const THANTHAKHAT = "\u0e4c";
 
 // คำนำหน้าชื่อ (title) ที่ต้องตัดออกก่อนหา "ชื่อจริง" สำหรับตั้ง slug
 // เรียงจากยาว→สั้น เพื่อให้ "นางสาว" ถูกตัดก่อน "นาง"/"นาย"
@@ -92,11 +95,23 @@ function stripThaiTitles(name: string): string {
 export function romanizeThaiFirstName(thaiName: string): string {
   const firstName = stripThaiTitles(thaiName).split(/\s+/)[0] ?? "";
   const chars = [...firstName];
-  let out = "";
+  // \u0e40\u0e01\u0e47\u0e1a\u0e40\u0e1b\u0e47\u0e19\u0e0a\u0e34\u0e49\u0e19\u0e46 \u0e40\u0e1e\u0e37\u0e48\u0e2d\u0e43\u0e2b\u0e49\u0e01\u0e32\u0e23\u0e31\u0e19\u0e15\u0e4c\u0e25\u0e1a\u0e40\u0e2a\u0e35\u0e22\u0e07\u0e1e\u0e22\u0e31\u0e0d\u0e0a\u0e19\u0e30\u0e15\u0e31\u0e27\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14\u0e44\u0e14\u0e49
+  const pieces: string[] = [];
+  let lastConsonant = -1;
   let i = 0;
 
   while (i < chars.length) {
     const ch = chars[i];
+
+    // \u0e01\u0e32\u0e23\u0e31\u0e19\u0e15\u0e4c (\u0e4c) \u2192 \u0e17\u0e33\u0e43\u0e2b\u0e49\u0e1e\u0e22\u0e31\u0e0d\u0e0a\u0e19\u0e30\u0e15\u0e31\u0e27\u0e25\u0e48\u0e32\u0e2a\u0e38\u0e14\u0e40\u0e07\u0e35\u0e22\u0e1a \u0e40\u0e0a\u0e48\u0e19 \u0e1b\u0e23\u0e30\u0e22\u0e38\u0e17\u0e18\u0e4c \u2192 prayut
+    if (ch === THANTHAKHAT) {
+      if (lastConsonant >= 0) {
+        pieces.splice(lastConsonant, 1);
+        lastConsonant = -1;
+      }
+      i++;
+      continue;
+    }
 
     if (ch === "\u0e2b" && i + 1 < chars.length && H_CLUSTER.has(chars[i + 1])) {
       i++;
@@ -107,39 +122,43 @@ export function romanizeThaiFirstName(thaiName: string): string {
       const vowelSound = LEAD_VOWEL[ch];
       i++;
       if (i < chars.length && chars[i] in CONSONANT) {
-        out += (CONSONANT[chars[i]] ?? "") + vowelSound;
+        pieces.push(CONSONANT[chars[i]] ?? "");
+        lastConsonant = pieces.length - 1;
+        pieces.push(vowelSound);
         i++;
         while (i < chars.length && chars[i] in FOLLOW_VOWEL) {
-          out += FOLLOW_VOWEL[chars[i]] ?? "";
+          pieces.push(FOLLOW_VOWEL[chars[i]] ?? "");
           i++;
         }
       } else {
-        out += vowelSound;
+        pieces.push(vowelSound);
       }
       continue;
     }
 
     if (ch in CONSONANT) {
-      out += CONSONANT[ch] ?? "";
+      pieces.push(CONSONANT[ch] ?? "");
+      lastConsonant = pieces.length - 1;
       i++;
       while (i < chars.length && chars[i] in FOLLOW_VOWEL) {
-        out += FOLLOW_VOWEL[chars[i]] ?? "";
+        pieces.push(FOLLOW_VOWEL[chars[i]] ?? "");
         i++;
       }
       continue;
     }
 
     if (ch in FOLLOW_VOWEL) {
-      out += FOLLOW_VOWEL[ch] ?? "";
+      pieces.push(FOLLOW_VOWEL[ch] ?? "");
       i++;
       continue;
     }
 
-    if (/[a-z0-9]/i.test(ch)) out += ch.toLowerCase();
+    if (/[a-z0-9]/i.test(ch)) pieces.push(ch.toLowerCase());
     i++;
   }
 
-  return out
+  return pieces
+    .join("")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "")
     .slice(0, 32);
