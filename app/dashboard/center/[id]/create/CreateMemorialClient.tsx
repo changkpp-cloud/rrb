@@ -9,6 +9,7 @@ import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
 import ThaiAddressSelect, { type ThaiAddressValue } from "@/components/ThaiAddressSelect";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
+import { getSiteUrl } from "@/lib/site-url";
 
 interface CenterBank {
   bank_name?: string | null;
@@ -70,8 +71,8 @@ function QRCodeDisplay({ url }: { url: string }) {
 function SuccessScreen({ embedded = false, result }: { embedded?: boolean; result: Result; centerId: string }) {
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
-  const origin = typeof window !== "undefined" ? window.location.origin : "";
-  const publicUrl = origin ? `${origin}/${result.slug}` : `/${result.slug}`;
+  // ใช้โดเมนที่ตั้งไว้ (rrb.center) เสมอ ไม่ใช่โดเมนที่กำลังเปิด (อาจเป็น vercel.app)
+  const publicUrl = `${getSiteUrl()}/${result.slug}`;
 
   function copy(text: string, setter: (v: boolean) => void) {
     navigator.clipboard.writeText(text);
