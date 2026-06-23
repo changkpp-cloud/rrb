@@ -72,7 +72,8 @@ function SuccessScreen({ embedded = false, result }: { embedded?: boolean; resul
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [copiedCode, setCopiedCode] = useState(false);
   // ใช้โดเมนที่ตั้งไว้ (rrb.center) เสมอ ไม่ใช่โดเมนที่กำลังเปิด (อาจเป็น vercel.app)
-  const publicUrl = `${getSiteUrl()}/${result.slug}`;
+  // openExternalBrowser=1 ให้ลิงก์เปิดในเบราว์เซอร์จริง ไม่เปิดในแอป LINE
+  const publicUrl = `${getSiteUrl()}/${result.slug}?openExternalBrowser=1`;
 
   function copy(text: string, setter: (v: boolean) => void) {
     navigator.clipboard.writeText(text);

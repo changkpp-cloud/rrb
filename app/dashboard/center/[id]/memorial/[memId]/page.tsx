@@ -123,7 +123,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
           </div>
 
           <MemorialShareCard
-            publicUrl={`${getSiteUrl()}/${memorial.slug}`}
+            publicUrl={`${getSiteUrl()}/${memorial.slug}?openExternalBrowser=1`}
             slug={memorial.slug}
           />
           <Link
