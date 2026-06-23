@@ -110,6 +110,16 @@ export async function POST(req: NextRequest) {
     const prayerSchedule   = (form.get("prayer_schedule") as string) || null;
     const prayerText       = (form.get("prayer_text") as string) || null;
 
+    // ที่ตั้งงาน — รหัสมาตรฐานกรมการปกครอง (ผูก อปท. ได้) + ชื่อสำหรับแสดงผล
+    const toNum = (v: FormDataEntryValue | null) => { const n = parseInt(v as string); return Number.isFinite(n) ? n : null; };
+    const ceremonyProvinceCode    = toNum(form.get("ceremony_province_code"));
+    const ceremonyProvinceName    = (form.get("ceremony_province_name") as string) || null;
+    const ceremonyDistrictCode    = toNum(form.get("ceremony_district_code"));
+    const ceremonyDistrictName    = (form.get("ceremony_district_name") as string) || null;
+    const ceremonySubdistrictCode = toNum(form.get("ceremony_subdistrict_code"));
+    const ceremonySubdistrictName = (form.get("ceremony_subdistrict_name") as string) || null;
+    const ceremonyPostalCode      = toNum(form.get("ceremony_postal_code"));
+
     const hostName         = (form.get("host_name") as string) || null;
     const hostPhone        = (form.get("host_phone") as string) || null;
     const hostRelationship = (form.get("host_relationship") as string) || null;
@@ -173,6 +183,13 @@ export async function POST(req: NextRequest) {
       ceremony_time: ceremonyTime,
       ceremony_location: ceremonyLocation,
       ceremony_hall: ceremonyHall,
+      ceremony_province_code: ceremonyProvinceCode,
+      ceremony_province_name: ceremonyProvinceName,
+      ceremony_district_code: ceremonyDistrictCode,
+      ceremony_district_name: ceremonyDistrictName,
+      ceremony_subdistrict_code: ceremonySubdistrictCode,
+      ceremony_subdistrict_name: ceremonySubdistrictName,
+      ceremony_postal_code: ceremonyPostalCode,
       prayer_date: null,
       prayer_location: serializePrayerDetails(prayerText, prayerSchedule),
       host_name: hostName,
@@ -195,12 +212,15 @@ export async function POST(req: NextRequest) {
     // before its migration), drop only that column and retry — never silently lose
     // critical fields like host_code / host_name (which broke host login before).
     const payload: Record<string, unknown> = { ...fullPayload };
-    let memorial = null;
-    let error = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let memorial: any = null;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let error: any = null;
     for (let attempt = 0; attempt < 10; attempt++) {
-      ({ data: memorial, error } = await supabase
-        .from("memorials")
-        .insert(payload as typeof fullPayload)
+      // ceremony_* / printer_id อาจยังไม่อยู่ใน generated types — ใช้ as any ตามแพทเทิร์น repo
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ({ data: memorial, error } = await (supabase.from("memorials") as any)
+        .insert(payload)
         .select()
         .single());
       if (!error) break;

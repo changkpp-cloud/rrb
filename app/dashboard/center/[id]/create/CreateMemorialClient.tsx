@@ -6,6 +6,7 @@ import { Upload, Copy, Check, ExternalLink } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
+import ThaiAddressSelect, { type ThaiAddressValue } from "@/components/ThaiAddressSelect";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 
 interface CenterBank {
@@ -243,6 +244,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   const [ceremonyTime, setCeremonyTime]         = useState("");
   const [ceremonyLocation, setCeremonyLocation] = useState("");
   const [ceremonyHall, setCeremonyHall]         = useState("");
+  const [ceremonyAddr, setCeremonyAddr]         = useState<ThaiAddressValue>({});
 
   // Prayer
   const [prayerSchedule, setPrayerSchedule] = useState("");
@@ -290,6 +292,13 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     form.append("ceremony_time", ceremonyTime);
     form.append("ceremony_location", ceremonyLocation);
     if (ceremonyHall)    form.append("ceremony_hall", ceremonyHall);
+    if (ceremonyAddr.provinceCode)    form.append("ceremony_province_code", String(ceremonyAddr.provinceCode));
+    if (ceremonyAddr.provinceName)    form.append("ceremony_province_name", ceremonyAddr.provinceName);
+    if (ceremonyAddr.districtCode)    form.append("ceremony_district_code", String(ceremonyAddr.districtCode));
+    if (ceremonyAddr.districtName)    form.append("ceremony_district_name", ceremonyAddr.districtName);
+    if (ceremonyAddr.subdistrictCode) form.append("ceremony_subdistrict_code", String(ceremonyAddr.subdistrictCode));
+    if (ceremonyAddr.subdistrictName) form.append("ceremony_subdistrict_name", ceremonyAddr.subdistrictName);
+    if (ceremonyAddr.postalCode)      form.append("ceremony_postal_code", String(ceremonyAddr.postalCode));
     if (prayerText)      form.append("prayer_text", prayerText);
     if (prayerSchedule)  form.append("prayer_schedule", prayerSchedule);
     if (hostName)        form.append("host_name", hostName);
@@ -320,6 +329,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     !birthDate && "วันเกิด",
     !deathDate && "วันเสียชีวิต",
     !ceremonyDate && "วันฌาปนกิจ",
+    !ceremonyAddr.subdistrictCode && "ที่ตั้งงาน (จังหวัด/อำเภอ/ตำบล)",
     !hostName && "ชื่อเจ้าภาพ",
     !hostPhone && "เบอร์เจ้าภาพ",
     !consent && "ยืนยันการยินยอมของเจ้าภาพ",
@@ -437,10 +447,15 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 </Field>
               </div>
 
-              <Field label="สถานที่ฌาปนกิจ" required>
+              <Field label="ชื่อวัด / สถานที่ฌาปนกิจ" required>
                 <input type="text" value={ceremonyLocation} onChange={e => setCeremonyLocation(e.target.value)} required
-                  placeholder="เช่น วัดวังเพชร ต.นิคมทุ่งโพธิ์ทะเล อ.เมือง จ.กำแพงเพชร" className={inputClass} />
+                  placeholder="เช่น วัดวังเพชร" className={inputClass} />
               </Field>
+
+              <div className="pt-1">
+                <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide mb-2">ที่ตั้ง (จังหวัด / อำเภอ / ตำบล)</p>
+                <ThaiAddressSelect value={ceremonyAddr} onChange={setCeremonyAddr} required />
+              </div>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-3 py-3 space-y-2">
                 <p className="text-[11px] font-bold text-blue-800">🖨️ เครื่องพิมพ์ป้ายชื่ออัตโนมัติ (PrintNode)</p>
