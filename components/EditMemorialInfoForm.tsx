@@ -115,7 +115,7 @@ export default function EditMemorialInfoForm({ memorial, backHref, actorType, ho
 
   return (
     <div className="min-h-screen">
-      <IosPageHeader title="แก้ไขข้อมูลงาน" backHref={backHref} />
+      <IosPageHeader title="แก้ไขข้อมูลงาน" backHref={backHref} backLabel="กลับ" />
 
       <main className="max-w-lg mx-auto px-4 py-5">
         <form onSubmit={handleSave} className="space-y-4">

@@ -95,6 +95,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         title={memorial.name}
         subtitle={`ฌาปนกิจ ${formatThaiDate(memorial.ceremony_date)}`}
         backHref={`/dashboard/center/${centerRouteKey}`}
+        backLabel="หน้าศูนย์"
         rightSlot={
           <div className="flex items-center gap-1.5">
             <HeaderIcon href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`} label="แก้ไขข้อมูลงาน" icon={Pencil} />
