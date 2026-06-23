@@ -1,18 +1,18 @@
 "use client";
 
-import { Clock } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 
 export default function PendingStatusBanner() {
   return (
     <div className="max-w-lg mx-auto px-4 pt-4">
-      <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3.5">
-        <div className="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center">
-          <Clock className="w-3.5 h-3.5 text-amber-600" />
+      <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3.5">
+        <div className="shrink-0 mt-0.5 w-7 h-7 rounded-full bg-emerald-100 border border-emerald-300 flex items-center justify-center">
+          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
         </div>
         <div>
-          <p className="text-sm font-bold text-amber-800">รับสลิปแล้ว รอตรวจสอบ</p>
-          <p className="text-xs text-amber-600 leading-relaxed mt-0.5">
-            เจ้าหน้าที่ศูนย์กำลังตรวจสอบสลิปของคุณ ป้ายชื่อจะพิมพ์โดยอัตโนมัติเมื่อยืนยันแล้ว
+          <p className="text-sm font-bold text-emerald-800">รับการร่วมบุญเรียบร้อย</p>
+          <p className="text-xs text-emerald-600 leading-relaxed mt-0.5">
+            ระบบบันทึกข้อมูลและส่งพิมพ์ป้ายชื่อให้อัตโนมัติแล้ว ขอบคุณที่ร่วมบุญ
           </p>
         </div>
       </div>

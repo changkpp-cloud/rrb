@@ -4,6 +4,7 @@ import { getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyHost, msgNewDonation } from "@/lib/notify";
 import { bangkokDateWindow, getCenterDailyDonationLimit, isCenterDailyLimitReached, toPublicDonation } from "@/lib/donation-policy";
+import { sendPrintJob } from "@/lib/printnode";
 import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
@@ -156,6 +157,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Auto-confirm ทุกรายการ — ไม่มี approval gate (สลิปซ้ำ = แค่ flag ให้ตรวจย้อนหลัง)
     const insertPayload = {
       memorial_id,
       center_id: memorialInfo.center_id ?? null,
@@ -166,7 +168,8 @@ export async function POST(request: NextRequest) {
       slip_url: slip_url ?? null,
       slip_hash: slip_hash ?? null,
       slip_duplicate_warning,
-      status: "pending" as const,
+      status: "confirmed" as const,
+      confirmed_at: new Date().toISOString(),
     };
 
     const { data, error } = await supabase.from("donations")
@@ -197,6 +200,23 @@ export async function POST(request: NextRequest) {
       }
 
       return NextResponse.json({ error: "Failed to save donation" }, { status: 500 });
+    }
+
+    // Auto-print ป้ายชื่อทันที — ไม่ต้องรอศูนย์อนุมัติ
+    if (memorialInfo.printer_id && data?.id) {
+      const printResult = await sendPrintJob({
+        printerId: memorialInfo.printer_id,
+        donorName: donor_name,
+        donorTitle: donor_title ?? "",
+        amount,
+        memorialName: memorialInfo.name ?? "งานศพ",
+        donationId: data.id,
+      });
+      const nameplateStatus = printResult.ok ? "queued" : "error";
+      await (supabase.from("donations") as any)
+        .update({ nameplate_status: nameplateStatus })
+        .eq("id", data.id);
+      if (printResult.ok) (data as any).nameplate_status = nameplateStatus;
     }
 
     notifyHost({

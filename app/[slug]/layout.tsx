@@ -10,7 +10,7 @@ export default async function SlugLayout({
   const { slug } = await params;
   return (
     <>
-      <SmartAppHeader />
+      <SmartAppHeader slug={slug} />
       <div className="pb-[76px] pt-[64px] sm:pb-[80px] sm:pt-[72px]">
         {children}
       </div>

@@ -6,35 +6,39 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { CreditCard, Heart, Home, Plus, Tag } from "lucide-react";
 
-const NAV_ITEMS = [
-  {
-    label: "หน้าแรก",
-    href: "/evt-2026-rra8",
-    icon: Home,
-    isActive: (pathname: string) => pathname === "/evt-2026-rra8",
-  },
-  {
-    label: "ชำระเงิน",
-    href: "/evt-2026-rra8/payment",
-    icon: CreditCard,
-    isActive: (pathname: string) => pathname === "/evt-2026-rra8/payment",
-  },
-  {
-    label: "ป้ายชื่อ",
-    href: "/evt-2026-rra8/print-name",
-    icon: Tag,
-    isActive: (pathname: string) => pathname === "/evt-2026-rra8/print-name",
-  },
-  {
-    label: "ขอบคุณ",
-    href: "/evt-2026-rra8/ecard",
-    icon: Heart,
-    isActive: (pathname: string) => pathname === "/evt-2026-rra8/ecard",
-  },
-];
+function buildNavItems(slug: string) {
+  const base = `/${slug}`;
+  return [
+    {
+      label: "หน้าแรก",
+      href: base,
+      icon: Home,
+      isActive: (pathname: string) => pathname === base,
+    },
+    {
+      label: "ชำระเงิน",
+      href: `${base}/payment`,
+      icon: CreditCard,
+      isActive: (pathname: string) => pathname === `${base}/payment` || pathname === `${base}/donate`,
+    },
+    {
+      label: "ป้ายชื่อ",
+      href: `${base}/print-name`,
+      icon: Tag,
+      isActive: (pathname: string) => pathname === `${base}/print-name`,
+    },
+    {
+      label: "ขอบคุณ",
+      href: `${base}/success`,
+      icon: Heart,
+      isActive: (pathname: string) => pathname === `${base}/success` || pathname === `${base}/ecard`,
+    },
+  ];
+}
 
-export default function SmartAppHeader() {
+export default function SmartAppHeader({ slug }: { slug?: string }) {
   const pathname = usePathname();
+  const navItems = slug ? buildNavItems(slug) : [];
   const [hidden, setHidden] = useState(false);
   const hiddenRef = useRef(false);
   const tickingRef = useRef(false);
@@ -105,6 +109,7 @@ export default function SmartAppHeader() {
         </div>
       </header>
 
+      {navItems.length > 0 && (
       <nav
         className={`fixed inset-x-0 bottom-0 z-50 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md transition-transform duration-500 ease-out will-change-transform ${
           hidden ? "translate-y-full" : "translate-y-0"
@@ -113,7 +118,7 @@ export default function SmartAppHeader() {
       >
         <div className="mx-auto w-full max-w-6xl px-1.5 py-1.5 sm:px-6 sm:py-2">
           <div className="grid w-full grid-cols-4 gap-1 sm:gap-2">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const active = item.isActive(pathname);
               const Icon = item.icon;
 
@@ -136,6 +141,7 @@ export default function SmartAppHeader() {
           </div>
         </div>
       </nav>
+      )}
     </>
   );
 }
