@@ -1,10 +1,32 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createHostToken, HOST_SESSION_COOKIE } from "@/lib/host-session";
 import { getMemorialByHostCode } from "@/lib/memorial";
+import { isMasterCode } from "@/lib/master-access";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export async function GET(request: NextRequest) {
   const code = new URL(request.url).searchParams.get("code");
   if (!code) return NextResponse.json({ error: "code required" }, { status: 400 });
+
+  // รหัสมาสเตอร์ → ตั้ง admin_session (เปิดหน้าเจ้าภาพได้ทุกงาน) แล้วพาไปงานล่าสุด
+  if (isMasterCode(code)) {
+    const supabase = createAdminClient();
+    const { data: latest } = await supabase
+      .from("memorials")
+      .select("id, name")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const res = NextResponse.json({ id: latest?.id ?? "", name: latest?.name ?? "ผู้ดูแลระบบ (มาสเตอร์)" });
+    res.cookies.set("admin_session", "ok", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 8 * 60 * 60,
+    });
+    return res;
+  }
 
   const memorial = await getMemorialByHostCode(code);
   if (!memorial) {

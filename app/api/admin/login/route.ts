@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { isMasterCode } from "@/lib/master-access";
 
 export async function POST(req: NextRequest) {
   const { password } = await req.json();
   const adminPassword = process.env.ADMIN_PASSWORD ?? "ESG2025";
   const inputPassword = String(password ?? "").trim().toLowerCase();
   const expectedPassword = String(adminPassword).trim().toLowerCase();
-  if (inputPassword !== expectedPassword) {
+  // รหัส admin ปกติ หรือ รหัสมาสเตอร์ (เข้าได้ทุกแดชบอร์ด)
+  if (inputPassword !== expectedPassword && !isMasterCode(password)) {
     return NextResponse.json({ error: "รหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
   const res = NextResponse.json({ success: true });

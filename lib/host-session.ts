@@ -38,5 +38,7 @@ export function verifyHostToken(token: string | undefined | null, memorialId: st
 
 export async function hasHostSession(memorialId: string): Promise<boolean> {
   const cookieStore = await cookies();
+  // super admin / รหัสมาสเตอร์ (admin_session) เข้าหน้าเจ้าภาพได้ทุกงาน
+  if (cookieStore.get("admin_session")?.value === "ok") return true;
   return verifyHostToken(cookieStore.get(HOST_SESSION_COOKIE)?.value, memorialId);
 }

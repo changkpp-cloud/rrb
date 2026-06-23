@@ -1,6 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { isMasterCode } from "@/lib/master-access";
+
+function setSessionCookie(store: Awaited<ReturnType<typeof cookies>>, name: string, value: string) {
+  store.set(name, value, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    path: "/",
+    maxAge: 8 * 60 * 60,
+  });
+}
 
 export async function POST(req: NextRequest) {
   let body: { access_code?: unknown };
@@ -16,6 +27,24 @@ export async function POST(req: NextRequest) {
   }
 
   const supabase = createAdminClient();
+
+  // รหัสมาสเตอร์ → ตั้ง admin_session (เปิดทุกศูนย์) แล้วพาไปศูนย์แรก
+  if (isMasterCode(code)) {
+    const cookieStore = await cookies();
+    setSessionCookie(cookieStore, "admin_session", "ok");
+    const { data: first } = await supabase
+      .from("centers")
+      .select("id, center_code")
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    return NextResponse.json({
+      centerId: first?.id ?? "",
+      name: "ผู้ดูแลระบบ (มาสเตอร์)",
+      routeKey: first?.center_code ?? first?.id ?? "",
+      master: true,
+    });
+  }
   const { data: center } = await supabase
     .from("centers")
     .select("id, name, center_code, status")
