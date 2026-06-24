@@ -1,4 +1,5 @@
 import SmartAppHeader from "@/components/SmartAppHeader";
+import ForceExternalBrowser from "@/components/ForceExternalBrowser";
 
 export default async function SlugLayout({
   children,
@@ -10,6 +11,7 @@ export default async function SlugLayout({
   const { slug } = await params;
   return (
     <>
+      <ForceExternalBrowser />
       <SmartAppHeader slug={slug} />
       <div className="pb-[76px] pt-[64px] sm:pb-[80px] sm:pt-[72px]">
         {children}
