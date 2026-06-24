@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 import { centerSlugPrefix, sanitizeSlugPart } from "@/lib/center-slug";
 import { serializePrayerDetails } from "@/lib/prayer-details";
@@ -98,6 +99,16 @@ export async function POST(req: NextRequest) {
     const supabase = createAdminClient();
 
     const centerId    = form.get("center_id") as string | null;
+
+    // ตรวจสิทธิ์: ต้องเป็นศูนย์ที่ล็อกอินและมีสิทธิ์แก้งานของศูนย์นี้ (กันยิง API ตรงจากคนนอก)
+    if (!centerId) {
+      return NextResponse.json({ error: "ไม่พบศูนย์ที่เปิดงาน" }, { status: 400 });
+    }
+    const access = await getCenterAccess(centerId);
+    if (!access.allowed || !canEditCenterWork(access.role)) {
+      return NextResponse.json({ error: "ไม่มีสิทธิ์เปิดงานในศูนย์นี้" }, { status: 403 });
+    }
+
     const name        = (form.get("name") as string)?.trim();
     const birthDate   = form.get("birth_date") as string;
     const deathDate   = form.get("death_date") as string;
