@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
 import { sendPrintJob } from "@/lib/printnode";
 import type { Database } from "@/lib/supabase/types";
 
@@ -27,6 +28,19 @@ export async function PATCH(
 
   if (Object.keys(update).length === 0) {
     return NextResponse.json({ error: "No valid fields to update" }, { status: 400 });
+  }
+
+  // ตรวจสิทธิ์: ต้องเป็นศูนย์เจ้าของงานของ donation นี้
+  const authClient = createAdminClient();
+  const { data: pre } = await authClient
+    .from("donations")
+    .select("memorials(center_id)")
+    .eq("id", id)
+    .single();
+  const centerId = (pre as { memorials?: { center_id?: string | null } } | null)?.memorials?.center_id ?? "";
+  const access = await getCenterAccess(centerId);
+  if (!access.allowed || !canEditCenterWork(access.role)) {
+    return NextResponse.json({ error: "ไม่มีสิทธิ์แก้ไขรายการนี้" }, { status: 403 });
   }
 
   // Validate status values

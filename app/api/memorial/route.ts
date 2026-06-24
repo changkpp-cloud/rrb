@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getMemorial } from "@/lib/memorial";
 import type { Database } from "@/lib/supabase/types";
@@ -11,6 +12,12 @@ export async function GET() {
 }
 
 export async function PATCH(req: NextRequest) {
+  // legacy endpoint (แก้งาน active ล่าสุด) — จำกัดเฉพาะแอดมิน
+  const adminOk = (await cookies()).get("admin_session")?.value === "ok";
+  if (!adminOk) {
+    return NextResponse.json({ error: "ไม่มีสิทธิ์" }, { status: 403 });
+  }
+
   const body = await req.json();
 
   const allowed = [

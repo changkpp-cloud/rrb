@@ -9,7 +9,11 @@
 ## 2026-06-24
 
 ### ปิดช่องโหว่: เพิ่ม auth ที่ API จัดการงาน (เดิมเปิดโล่ง)
-- `POST /api/memorials/create` ไม่มี auth — ยิงตรงสร้างงานให้ center_id ไหนก็ได้ → เพิ่ม `getCenterAccess` + `canEditCenterWork` (คนนอก 403, ศูนย์ล็อกอินเปิดงานได้ปกติ) ทดสอบ 2 ทางผ่าน
+- `POST /api/memorials/create` ไม่มี auth — ยิงตรงสร้างงานให้ center_id ไหนก็ได้ → เพิ่ม `getCenterAccess` + `canEditCenterWork` (คนนอก 403, ศูนย์ล็อกอินเปิดงานได้ปกติ)
+- `POST /api/memorials/[id]/close` (ใครก็ปิดงานใครได้) → เพิ่ม center auth ของงานนั้น
+- `PATCH /api/donations/[id]` (แก้สถานะ/ชื่อ donation, ไม่มี UI เรียกแล้ว) → เพิ่ม center auth ของงานนั้น
+- `PATCH /api/memorial` (legacy แก้งาน active ล่าสุด) → จำกัดเฉพาะแอดมิน
+- ทดสอบทุกตัว: คนนอก → 403, ศูนย์/แอดมิน → ผ่าน (flow จริงไม่พัง) · endpoint donor/auth (donations, upload-slip, ai-photo, ฯลฯ) ยังเปิดตามเดิมโดยตั้งใจ
 
 ### ย้าย auto-print + แจ้งเตือนเจ้าภาพ ไปทำเบื้องหลัง (after) — ผู้ร่วมบุญไม่ต้องรอ
 - เดิม `POST /api/donations` await `sendPrintJob` (สร้าง PDF + โหลดฟอนต์ + อัปโหลด storage + PrintNode) ในคำขอ → ผู้ร่วมบุญรอ 2-3 วิหลังกด "ยืนยันส่งพิมพ์" ก่อนเด้งไปขอบคุณ

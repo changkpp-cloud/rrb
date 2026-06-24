@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
 
 export async function POST(
   _req: NextRequest,
@@ -13,12 +14,18 @@ export async function POST(
   // Verify memorial exists and is active
   const { data: memorial, error: fetchErr } = await supabase
     .from("memorials")
-    .select("id, funeral_status")
+    .select("id, funeral_status, center_id")
     .eq("id", id)
     .single();
 
   if (fetchErr || !memorial) {
     return NextResponse.json({ error: "ไม่พบงานศพ" }, { status: 404 });
+  }
+
+  // ตรวจสิทธิ์: ต้องเป็นศูนย์เจ้าของงาน (หรือแอดมิน)
+  const access = await getCenterAccess((memorial as { center_id?: string | null }).center_id ?? "");
+  if (!access.allowed || !canEditCenterWork(access.role)) {
+    return NextResponse.json({ error: "ไม่มีสิทธิ์ปิดงานนี้" }, { status: 403 });
   }
   if (memorial.funeral_status === "closed") {
     return NextResponse.json({ error: "ปิดงานนี้ไปแล้ว" }, { status: 400 });
