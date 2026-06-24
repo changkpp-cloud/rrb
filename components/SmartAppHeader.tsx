@@ -85,7 +85,7 @@ export default function SmartAppHeader({ slug }: { slug?: string }) {
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-center px-4 sm:h-16 sm:px-6">
-          <Link href="/evt-2026-rra8" className="flex items-center gap-3" aria-label="หรีดร่วมบุญ Zero Waste">
+          <Link href={slug ? `/${slug}` : "/"} className="flex items-center gap-3" aria-label="หรีดร่วมบุญ Zero Waste">
             <Image src="/rrb-logo-removebg-preview.png" alt="RRB" width={120} height={40} className="h-10 w-auto object-contain" unoptimized />
             <div className="text-center leading-none">
               <p className="text-[17px] font-bold text-gold-900 sm:text-xl">หรีดร่วมบุญ</p>
