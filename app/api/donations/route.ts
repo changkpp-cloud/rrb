@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { hasHostSession } from "@/lib/host-session";
 import { getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -202,33 +202,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save donation" }, { status: 500 });
     }
 
-    // Auto-print ป้ายชื่อทันที — ไม่ต้องรอศูนย์อนุมัติ
-    if (memorialInfo.printer_id && data?.id) {
-      const printResult = await sendPrintJob({
-        printerId: memorialInfo.printer_id,
-        donorName: donor_name,
-        donorTitle: donor_title ?? "",
-        amount,
-        memorialName: memorialInfo.name ?? "งานศพ",
-        donationId: data.id,
-      });
-      const nameplateStatus = printResult.ok ? "queued" : "error";
-      await (supabase.from("donations") as any)
-        .update({ nameplate_status: nameplateStatus })
-        .eq("id", data.id);
-      if (printResult.ok) (data as any).nameplate_status = nameplateStatus;
-    }
+    // ส่งพิมพ์ป้าย + แจ้งเตือนเจ้าภาพ แบบเบื้องหลัง (after) — ตอบกลับผู้ร่วมบุญทันที ไม่ต้องรอ PrintNode
+    const donationId = data?.id as string | undefined;
+    const printerId = memorialInfo.printer_id ?? null;
+    const memName = memorialInfo.name ?? "งานศพ";
+    const hostPhone = memorialInfo.host_phone ?? null;
 
-    notifyHost({
-      hostPhone: memorialInfo.host_phone ?? null,
-      message: msgNewDonation({
-        memorialName: memorialInfo.name ?? "งานศพ",
-        donorName: donor_name,
-        donorTitle: donor_title,
-        amount,
-        hostId: memorial_id,
-      }),
-    }).catch(() => {});
+    after(async () => {
+      if (printerId && donationId) {
+        try {
+          const printResult = await sendPrintJob({
+            printerId,
+            donorName: donor_name,
+            donorTitle: donor_title ?? "",
+            amount,
+            memorialName: memName,
+            donationId,
+          });
+          await (supabase.from("donations") as any)
+            .update({ nameplate_status: printResult.ok ? "queued" : "error" })
+            .eq("id", donationId);
+        } catch {
+          /* best-effort — ป้าย error จะกด "พิมพ์ซ้ำ" ได้ */
+        }
+      }
+      try {
+        await notifyHost({
+          hostPhone,
+          message: msgNewDonation({ memorialName: memName, donorName: donor_name, donorTitle: donor_title, amount, hostId: memorial_id }),
+        });
+      } catch {
+        /* best-effort */
+      }
+    });
 
     return NextResponse.json({ success: true, donation: data });
   } catch (err) {
