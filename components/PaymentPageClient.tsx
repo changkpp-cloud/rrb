@@ -16,14 +16,27 @@ interface Props {
   promptpayPhone?: string | null;
 }
 
+// scheme = custom URL scheme ของแอป (ใช้บน iOS), pkg = Android package (ใช้ทำ intent:// ให้เปิดได้ใน in-app browser ของ LINE/FB)
 const BANK_LINKS = [
-  { label: "K PLUS", scheme: "kplus://", bg: "#1ba345", text: "#fff" },
-  { label: "SCB", scheme: "scbeasy://", bg: "#4b2d7f", text: "#fff" },
-  { label: "KTB", scheme: "krungthainext://", bg: "#009fe3", text: "#fff" },
-  { label: "BBL", scheme: "bmapp://", bg: "#1e3a8a", text: "#fff" },
-  { label: "BAY", scheme: "mobilebanking.krungsri://", bg: "#f4a91e", text: "#fff" },
-  { label: "TTB", scheme: "ttbtouch://", bg: "#009ade", text: "#fff" },
+  { label: "K PLUS", scheme: "kplus", pkg: "com.kasikorn.retail.mbanking.wap", bg: "#1ba345", text: "#fff" },
+  { label: "SCB", scheme: "scbeasy", pkg: "com.scb.phone", bg: "#4b2d7f", text: "#fff" },
+  { label: "KTB", scheme: "ktbnext", pkg: "ktbcs.netbank", bg: "#009fe3", text: "#fff" },
+  { label: "BBL", scheme: "bualuangmbanking", pkg: "com.bbl.mobilebanking", bg: "#1e3a8a", text: "#fff" },
+  { label: "BAY", scheme: "kma", pkg: "com.krungsri.kma", bg: "#f4a91e", text: "#fff" },
+  { label: "TTB", scheme: "ttbtouch", pkg: "com.TMBTOUCH.PRODUCTION", bg: "#009ade", text: "#fff" },
 ];
+
+// เปิดแอปธนาคาร — Android ใช้ intent:// (เปิดได้แม้อยู่ใน in-app browser ของ LINE/Facebook; ไม่ติดตั้งเด้ง Play Store)
+function openBankApp(b: (typeof BANK_LINKS)[number]) {
+  const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
+  if (/android/i.test(ua)) {
+    const fallback = `https://play.google.com/store/apps/details?id=${b.pkg}`;
+    window.location.href = `intent://#Intent;scheme=${b.scheme};package=${b.pkg};S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+  } else {
+    // iOS / เบราว์เซอร์ทั่วไป
+    window.location.href = `${b.scheme}://`;
+  }
+}
 
 export default function PaymentPageClient({ memorial, basePath = "", promptpayPhone }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
@@ -216,7 +229,8 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                   {BANK_LINKS.map(b => (
                     <a
                       key={b.label}
-                      href={b.scheme}
+                      href={`${b.scheme}://`}
+                      onClick={(e) => { e.preventDefault(); openBankApp(b); }}
                       className="flex flex-col items-center justify-center py-2.5 rounded-xl text-[11px] font-bold transition-opacity active:opacity-70"
                       style={{ background: b.bg, color: b.text }}
                     >
