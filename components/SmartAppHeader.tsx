@@ -134,7 +134,7 @@ export default function SmartAppHeader({ slug }: { slug?: string }) {
                   }`}
                 >
                   <Icon className={`h-4 w-4 shrink-0 sm:h-4 sm:w-4 ${active ? "text-gold-700" : "text-gold-500"}`} />
-                  <span className="block max-w-full truncate">{item.label}</span>
+                  <span className="block max-w-full truncate leading-[1.5] py-0.5">{item.label}</span>
                 </Link>
               );
             })}
