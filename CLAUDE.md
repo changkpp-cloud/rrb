@@ -94,52 +94,69 @@ NEXT_PUBLIC_SITE_URL=https://rrb.center
 
 ### Public (ผู้ร่วมบุญ / Donor flow)
 
+**Donor flow = 4 หน้า** (มี `ForceExternalBrowser` ใน `[slug]/layout` คอยเด้งออกจาก in-app browser ของ LINE/FB ไปเบราว์เซอร์จริง)
 ```
-/                          → redirect ไป /{slug} ของงานที่ active ล่าสุด
-/{slug}                    → หน้าหลักงาน (ข้อมูลผู้วายชนม์)
-/{slug}/payment            → ชำระเงิน (QR + เลขบัญชี + อัปโหลดสลิป)
-/{slug}/verifying          → กำลังตรวจสลิป (placeholder)
-/{slug}/print-name         → กรอกชื่อ → POST /api/donations (สร้าง donation)
-/{slug}/printing           → ป้ายชื่อ (e-nameplate)
-/{slug}/ecard              → E-Card อวยพร
-/mock-wreath               → จำลองภาพมอบหรีด (AI + รูปหน้า)
+/                          → Landing page (อธิบายโครงการ + ลิสต์งานที่เปิดอยู่) — ไม่ใช่ redirect
+/{slug}                    → [1] หน้างาน: ข้อมูลผู้วายชนม์ + กำหนดพิธี
+/{slug}/payment            → [2] ชำระเงิน: QR + เลขบัญชี + อัปโหลดสลิป + ปุ่มแอปธนาคาร
+/{slug}/print-name         → [3] ป้ายชื่อ: กรอกชื่อ/ข้อความ → POST /api/donations (สร้าง donation)
+/{slug}/success            → [4] ขอบคุณ: e-card + AI จำลองมอบหรีด (AiPhotoSectionV2) + ดาวน์โหลดภาพ
+/{slug}/donate             → redirect → /{slug}/payment
+/{slug}/overview           → สรุปภาพรวมงาน
+/{slug}/ecard              → E-Card อวยพร (standalone)
+/mock-wreath               → จำลองภาพมอบหรีด (AI + รูปหน้า) standalone
 /print-done                → หน้าสำเร็จ
 ```
+**หมายเหตุ:** หน้า `verifying`/`printing` เดิม **ลบทิ้งแล้ว** (เปลี่ยนเป็น auto-confirm + auto-print)
 
 ### Host Dashboard (เจ้าภาพ)
 
 ```
 /dashboard/host            → login ด้วย host_code
-/dashboard/host/[id]       → แดชบอร์ด scroll 4 sections (สรุป/รายชื่อ/รายงาน/บัญชี)
-/dashboard/host/[id]/donors   → รายชื่อ (newest first)
+/dashboard/host/[id]       → แดชบอร์ด 5 แท็บ: สรุปยอด/รายชื่อ/รายงาน/บัญชีรับเงิน/ภาพจำลอง(AI)
+/dashboard/host/[id]/edit     → แก้ไขข้อมูลงาน
+/dashboard/host/[id]/donors   → รายชื่อ (newest first, print)
 /dashboard/host/[id]/summary  → รายงาน (oldest first, print)
 ```
+มีระบบวันหมดอายุสิทธิ์ host (`hostExpiresInDays`)
 
 ### Center Dashboard (ศูนย์)
 
 ```
-/dashboard/center          → login ศูนย์
+/dashboard/center          → login ศูนย์ (มี /register, /change-password)
 /dashboard/center/[id]     → รายการงานศพ + ปุ่มเปิดงานใหม่
 /dashboard/center/[id]/create → ฟอร์มเปิดงานศพ
-/dashboard/center/[id]/memorial/[memId] → จัดการงาน (ตรวจสลิป + ปิดงาน)
+/dashboard/center/[id]/memorial/[memId] → จัดการงาน (+ /edit) + ปิดงาน
+/dashboard/center/[id]/operations → งานวันนี้: KPI + คิวป้ายรอพิมพ์/ติดบอร์ด + แจ้งเตือนสลิปซ้ำย้อนหลัง
+/dashboard/center/[id]/active|closed|close-reports → รายการงานตามสถานะ
+/dashboard/center/[id]/transfers → โอนเงินเจ้าภาพ (+ confirm-transfer)
 ```
+**ศูนย์ไม่ตรวจ/อนุมัติสลิปแล้ว** — donation auto-confirm; operations เห็นแค่ "สลิปซ้ำย้อนหลัง" เป็นหลักฐาน ไม่ใช่คิวอนุมัติ
 
 ### Admin Dashboard (Super Admin)
 
+หน้า admin ทั้งหมดอยู่ใต้ `(protected)` (guard ด้วย `admin_session` cookie)
 ```
 /dashboard/admin           → login (ADMIN_PASSWORD)
-/dashboard/admin/overview  → ภาพรวมทั้งระบบ
-/dashboard/admin/centers   → รายการศูนย์ + เปิดศูนย์ใหม่
-/dashboard/admin/centers/new      → ฟอร์มสร้างศูนย์
-/dashboard/admin/centers/[id]     → รายละเอียดศูนย์
-/dashboard/admin/users     → ผู้จัดการศูนย์ + สิทธิ์
+/dashboard/admin/overview  → ภาพรวมเชิงวิเคราะห์แอดมินกลาง
+/dashboard/admin/analytics → วิเคราะห์พื้นที่/เวลา
+/dashboard/admin/esg       → รายงาน ESG
+/dashboard/admin/report    → รายงานภูมิศาสตร์ (ภาค/จังหวัด/อำเภอ/ศูนย์)
+/dashboard/admin/system    → รายงานระบบ / system health
 /dashboard/admin/audit     → ตรวจสอบความผิดปกติ (สลิป/บัญชี/งาน)
-/dashboard/admin/report    → รายงาน ภาค/จังหวัด/อำเภอ/ศูนย์
+/dashboard/admin/centers   → รายการศูนย์ (+ /new, /[id])
+/dashboard/admin/hosts     → เจ้าภาพทั้งระบบ
+/dashboard/admin/memorials → งานศพทั้งระบบ (+ /[id])
+/dashboard/admin/users     → ผู้ใช้และสิทธิ์
+/dashboard/admin/banner    → จัดการบอร์ดหน้างาน
+/dashboard/admin/ai-prompts → จัดการ prompt ภาพ AI
 ```
 
 ---
 
 ## API Routes
+
+> ตารางนี้เป็น route หลักที่ใช้บ่อย (ทั้งหมดมี ~44 routes ใน `app/api/` เช่น ai-photo/*, transfers, persons, worker, webhooks/payment, cron/*)
 
 | Method | Path | หน้าที่ |
 |---|---|---|
@@ -162,20 +179,23 @@ NEXT_PUBLIC_SITE_URL=https://rrb.center
 ## Donation Flow (สำคัญมาก)
 
 ```
-/{slug}/payment
+[2] /{slug}/payment
   → อัปโหลดสลิป → POST /api/upload-slip → ได้ slip_url
-  → navigate: /verifying?memorial_id=&amount=&slip_url=
+  → navigate: /{slug}/print-name?memorial_id=&amount=&slip_url=
 
-/verifying  →  /print-name?amount=&memorial_id=&slip_url=
-
-/print-name
-  → กรอกชื่อจริง
+[3] /{slug}/print-name
+  → กรอกชื่อจริง + ข้อความ
   → POST /api/donations (JSON) { memorial_id, donor_name, donor_title, amount, slip_url }
-  → สร้าง donation ครั้งเดียว — ไม่มี PATCH ชื่อทีหลัง
-  → navigate: /printing?name=&title=&amount=&donation_id=
+  → donation สร้าง status="confirmed" ทันที (auto-confirm) + ยิงพิมพ์ป้ายอัตโนมัติถ้ามี printer_id
+  → navigate: /{slug}/success?name=&title=&amount=&donation_id=
+
+[4] /{slug}/success  →  e-card + AI จำลองมอบหรีด
 ```
 
-**ห้ามใช้ PATCH ชื่อทีหลัง** — เคยมีบัค donor_name ไม่อัปเดต แก้โดยสร้าง 1 ครั้งตอนมีชื่อจริงแล้ว
+**กฎสำคัญ:**
+- **auto-confirm + auto-print** — ไม่มีขั้นตอน "ตรวจสลิป/อนุมัติ" ของศูนย์อีกแล้ว (ตาม business model)
+- **สร้าง donation ครั้งเดียวตอนมีชื่อจริง — ห้าม PATCH ชื่อทีหลัง** (เคยมีบัค donor_name ไม่อัปเดต)
+- สลิปซ้ำ = เก็บเป็น `slip_duplicate_warning` (เตือนย้อนหลัง ไม่บล็อก)
 
 ---
 

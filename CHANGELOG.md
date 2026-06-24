@@ -23,6 +23,7 @@
 ### กระบวนการทำงาน
 - เพิ่มกฎเหล็ก: แก้ flow/โครงสร้างต้องอัปเดต `CLAUDE.md` + memory ก่อน commit
 - สร้างไฟล์ `CHANGELOG.md` นี้ (ประวัติสะสม)
+- **ลบทับ `CLAUDE.md` ให้ตรงโค้ดจริง** (อ่านโค้ดทั้งระบบแล้วซิงค์): Route Map (donor 4 หน้า/success=e-card+AI, ลบ verifying/printing), Host 5 แท็บ+edit, Center operations/transfers ไม่ตรวจสลิป, Admin (protected) ครบทุกหน้า, Donation Flow = auto-confirm+auto-print
 
 ## 2026-06-23
 
