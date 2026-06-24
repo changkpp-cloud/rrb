@@ -26,12 +26,12 @@ const BANK_LINKS = [
   { label: "TTB", scheme: "ttbtouch", pkg: "com.TMBTOUCH.PRODUCTION", bg: "#009ade", text: "#fff" },
 ];
 
-// เปิดแอปธนาคาร — Android ใช้ intent:// (เปิดได้แม้อยู่ใน in-app browser ของ LINE/Facebook; ไม่ติดตั้งเด้ง Play Store)
+// เปิดแอปธนาคาร — Android ใช้ intent:// (ไม่ใส่ Play Store fallback เพราะ in-app browser ของ LINE/FB
+// มองไม่เห็นแอปธนาคาร [Android 11+ package visibility] เลยเด้งไปสโตร์ทุกครั้งแม้แอปติดตั้งอยู่)
 function openBankApp(b: (typeof BANK_LINKS)[number]) {
   const ua = typeof navigator !== "undefined" ? navigator.userAgent : "";
   if (/android/i.test(ua)) {
-    const fallback = `https://play.google.com/store/apps/details?id=${b.pkg}`;
-    window.location.href = `intent://#Intent;scheme=${b.scheme};package=${b.pkg};S.browser_fallback_url=${encodeURIComponent(fallback)};end`;
+    window.location.href = `intent://#Intent;scheme=${b.scheme};package=${b.pkg};end`;
   } else {
     // iOS / เบราว์เซอร์ทั่วไป
     window.location.href = `${b.scheme}://`;
