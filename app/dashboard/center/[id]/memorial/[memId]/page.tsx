@@ -48,9 +48,9 @@ async function getDonations(memorialId: string): Promise<Donation[]> {
 
 const NAMEPLATE_LABEL: Record<string, string> = {
   pending: "รอจัดคิว",
-  queued: "รอพิมพ์",
-  printed: "พิมพ์แล้ว",
-  posted: "ติดบอร์ดแล้ว",
+  queued: "ส่งพิมพ์แล้ว",
+  printed: "ส่งพิมพ์แล้ว",
+  posted: "ส่งพิมพ์แล้ว",
   error: "พิมพ์ไม่สำเร็จ",
 };
 
@@ -107,7 +107,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
       <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
         <div className="grid grid-cols-3 gap-3 text-center">
           <Stat label="รับร่วมบุญแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
-          <Stat label="คิวพิมพ์ป้าย" value={printQueue.length.toLocaleString()} tone={printQueue.length > 0 ? "amber" : "gold"} />
+          <Stat label="พิมพ์ไม่สำเร็จ" value={printError.length.toLocaleString()} tone={printError.length > 0 ? "amber" : "gold"} />
           <Stat label="ยอดรวม" value={total.toLocaleString()} tone="gold" />
         </div>
 
@@ -150,7 +150,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="print" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Printer} title="คิวพิมพ์ป้าย" subtitle={`${printQueue.length} รอพิมพ์ · ${printed.length} พิมพ์แล้ว · ${posted.length} ติดบอร์ดแล้ว`} />
+          <SectionHeader icon={Printer} title="ป้ายชื่อ" subtitle={`${printQueue.length + printed.length + posted.length} ส่งพิมพ์แล้ว · ${printError.length} พิมพ์ไม่สำเร็จ`} />
           {printError.length > 0 && (
             <div className="bg-red-50 border border-red-200 rounded-2xl px-4 py-3 space-y-1">
               <div className="flex items-center gap-2">
@@ -167,10 +167,10 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
               </div>
             </div>
           )}
-          {printQueue.length === 0 && printed.length === 0 && printError.length === 0 ? (
-            <Empty icon={Printer} text="ไม่มีคิวพิมพ์ป้ายค้าง" />
+          {confirmed.length === 0 ? (
+            <Empty icon={Printer} text="ยังไม่มีป้ายชื่อ" />
           ) : (
-            <DonationList donations={[...printQueue, ...printed]} mode="nameplate" />
+            <DonationList donations={[...printError, ...printQueue, ...printed, ...posted]} mode="nameplate" />
           )}
         </section>
 
@@ -211,10 +211,10 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
         <section id="close" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={ScrollText} title="ปิดงาน" subtitle="ตรวจยอดรวม ป้ายค้าง และข้อมูลโอนเงินก่อนปิดงาน" />
-          {printQueue.length > 0 ? (
+          {printError.length > 0 ? (
             <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
-              <p className="text-xs font-semibold text-amber-800">ยังมีป้ายที่ควรจัดการก่อนปิดงาน</p>
-              <p className="text-[10px] text-amber-700 mt-0.5">ยังมี {printQueue.length} ป้ายรอพิมพ์หรือรอเข้าคิว</p>
+              <p className="text-xs font-semibold text-amber-800">ยังมีป้ายพิมพ์ไม่สำเร็จ</p>
+              <p className="text-[10px] text-amber-700 mt-0.5">{printError.length} ป้ายพิมพ์ไม่สำเร็จ — ควรกด "พิมพ์ซ้ำ" ในส่วนป้ายชื่อก่อนปิดงาน</p>
             </div>
           ) : null}
           <CloseMemorialButton
@@ -337,9 +337,7 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
               </a>
             </div>
           )}
-          {mode === "nameplate" && (
-            <NameplateActions donationId={d.id} status={d.nameplate_status} />
-          )}
+          {mode === "nameplate" && <NameplateActions donationId={d.id} />}
           {mode === "warning" && d.slip_duplicate_warning && (
             <div className="mt-2 ml-10 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-medium text-amber-700">
               สลิปนี้ซ้ำกับรายการก่อนหน้า ระบบปล่อยผ่านให้พิมพ์ป้ายแล้ว เก็บไว้ตรวจย้อนหลังเท่านั้น

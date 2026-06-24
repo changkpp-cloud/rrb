@@ -6,8 +6,7 @@ import { sendPrintJob } from "@/lib/printnode";
 export const runtime = "nodejs";
 export const maxDuration = 30;
 
-// ศูนย์จัดการป้ายชื่อ: สั่งพิมพ์ซ้ำ / mark ติดบอร์ดแล้ว
-// body: { action: "reprint" | "posted" | "printed" }
+// ศูนย์สั่งพิมพ์ป้ายซ้ำ — body: { action: "reprint" }
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
-  if (!["reprint", "posted", "printed"].includes(action)) {
+  if (action !== "reprint") {
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
@@ -40,12 +39,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   if (!centerId) return NextResponse.json({ error: "ไม่พบศูนย์เจ้าของงาน" }, { status: 403 });
   const access = await getCenterAccess(centerId);
   if (!access.allowed) return NextResponse.json({ error: "ไม่มีสิทธิ์" }, { status: 403 });
-
-  // mark สถานะ (ติดบอร์ดแล้ว / พิมพ์แล้ว) — ไม่ต้องยิงเครื่องพิมพ์
-  if (action === "posted" || action === "printed") {
-    await (supabase.from("donations") as any).update({ nameplate_status: action }).eq("id", id);
-    return NextResponse.json({ success: true, nameplate_status: action });
-  }
 
   // reprint — ยิงพิมพ์ใหม่ผ่าน PrintNode
   if (!memorial?.printer_id) {

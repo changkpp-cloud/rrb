@@ -63,14 +63,15 @@ async function getTransfers(centerId: string) {
       const rows = donationMap.get(m.id) ?? [];
       const confirmed = rows.filter((d) => d.status === "confirmed");
       const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
-      const unposted = confirmed.filter((d) => d.nameplate_status !== "posted").length;
+      const failedPrints = confirmed.filter((d) => d.nameplate_status === "error").length;
       const ceremonyReached = new Date(m.ceremony_date) <= today;
       const netAmount = Math.max(amount - confirmed.length * SYSTEM_FEE, 0);
       const hasHostBank = Boolean(m.host_bank_account_number);
-      const ready = m.funeral_status === "active" && ceremonyReached && unposted === 0 && confirmed.length > 0 && hasHostBank;
+      // พร้อมโอน = งาน active, ถึงวันฌาปนกิจ, มีผู้ร่วมบุญ, มีบัญชีเจ้าภาพ (ไม่ผูกกับการติดบอร์ด — พิมพ์แล้วถือว่าจบ)
+      const ready = m.funeral_status === "active" && ceremonyReached && confirmed.length > 0 && hasHostBank;
       const transferred = Boolean(m.transfer_confirmed_at);
 
-      return { memorial: m, amount, netAmount, confirmed: confirmed.length, unposted, ceremonyReached, hasHostBank, ready, transferred };
+      return { memorial: m, amount, netAmount, confirmed: confirmed.length, failedPrints, ceremonyReached, hasHostBank, ready, transferred };
     })
     .filter((row) => row.memorial.funeral_status === "active" || row.amount > 0)
     .sort((a, b) => Number(b.ready) - Number(a.ready) || Number(b.ceremonyReached) - Number(a.ceremonyReached));
@@ -139,7 +140,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <Mini icon={Users} label="ราย" value={row.confirmed.toLocaleString()} />
                   <Mini icon={Banknote} label="สุทธิ" value={row.netAmount.toLocaleString()} />
-                  <Mini icon={AlertTriangle} label="ค้าง" value={`${row.unposted} ป้าย`} warning={row.unposted > 0} />
+                  <Mini icon={AlertTriangle} label="พิมพ์พลาด" value={`${row.failedPrints} ป้าย`} warning={row.failedPrints > 0} />
                   <Mini icon={Clock} label="บัญชี" value={row.hasHostBank ? "มี" : "ไม่มี"} warning={!row.hasHostBank} />
                 </div>
               </Link>
