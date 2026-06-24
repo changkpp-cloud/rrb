@@ -42,13 +42,13 @@ const TABS: Tab[] = [
     getHref: (slug) => `/${slug}`,
   },
   {
-    label: "ชำระเงิน",
+    label: "ร่วมบุญ",
     Icon: Banknote,
     isActive: (p, slug) => p === `/${slug}/payment`,
     getHref: (slug) => `/${slug}/payment`,
   },
   {
-    label: "ป้ายชื่อ",
+    label: "พิมพ์ป้าย",
     Icon: Tag,
     isActive: (p, slug) => p === `/${slug}/print-name`,
     getHref: (slug, paid) =>

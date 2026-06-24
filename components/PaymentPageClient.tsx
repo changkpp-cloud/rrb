@@ -278,7 +278,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               loading={submitting}
               disabled={!canSubmit}
             >
-              {submitting ? "กำลังอัปโหลดสลิป..." : "ถัดไป — ระบุชื่อบนป้าย"}
+              {submitting ? "กำลังอัปโหลดสลิป..." : "ส่งตรวจสอบสลิป"}
             </Button>
 
             <div className="h-20" />

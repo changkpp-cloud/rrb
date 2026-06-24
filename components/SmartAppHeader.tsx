@@ -16,13 +16,13 @@ function buildNavItems(slug: string) {
       isActive: (pathname: string) => pathname === base,
     },
     {
-      label: "ชำระเงิน",
+      label: "ร่วมบุญ",
       href: `${base}/payment`,
       icon: CreditCard,
       isActive: (pathname: string) => pathname === `${base}/payment` || pathname === `${base}/donate`,
     },
     {
-      label: "ป้ายชื่อ",
+      label: "พิมพ์ป้าย",
       href: `${base}/print-name`,
       icon: Tag,
       isActive: (pathname: string) => pathname === `${base}/print-name`,
