@@ -194,6 +194,13 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             <Metric icon={CheckCircle2} label="งานปิดแล้ว" value={closedRows.length.toLocaleString()} tone="emerald" />
             <Metric icon={Leaf} label="ลดขยะประมาณ" value={`${(totalDonors * 2).toLocaleString()} กก.`} tone="gold" />
           </div>
+          <Link
+            href={`/dashboard/center/${centerRouteKey}/report`}
+            className="flex items-center justify-center gap-2 rounded-xl gold-gradient px-4 py-3 text-sm font-bold text-white shadow-md active:scale-[0.98] transition-all"
+          >
+            <BarChart3 className="h-4 w-4" />
+            รายงานสรุปส่ง อปท. (รายเดือน/รายปี)
+          </Link>
           <Link href={`/dashboard/center/${centerRouteKey}/closed`} className="block text-center text-xs font-semibold text-gold-700 underline underline-offset-4">
             ดูงานศพที่ปิดแล้วทั้งหมด
           </Link>

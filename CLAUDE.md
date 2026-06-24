@@ -130,6 +130,7 @@ NEXT_PUBLIC_SITE_URL=https://rrb.center
 /dashboard/center/[id]/operations → งานวันนี้: KPI + คิวป้ายรอพิมพ์/ติดบอร์ด + แจ้งเตือนสลิปซ้ำย้อนหลัง
 /dashboard/center/[id]/active|closed|close-reports → รายการงานตามสถานะ
 /dashboard/center/[id]/transfers → โอนเงินเจ้าภาพ (+ confirm-transfer)
+/dashboard/center/[id]/report → รายงานสรุปศูนย์ รายเดือน/รายปี ส่ง อปท. (พิมพ์ PDF + CSV) — อิงวันฌาปนกิจ
 ```
 **ศูนย์ไม่ตรวจ/อนุมัติสลิปแล้ว** — donation auto-confirm; operations เห็นแค่ "สลิปซ้ำย้อนหลัง" เป็นหลักฐาน ไม่ใช่คิวอนุมัติ
 
