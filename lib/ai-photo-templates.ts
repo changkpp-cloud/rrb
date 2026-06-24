@@ -260,6 +260,8 @@ export function buildAiPhotoPrompt(input: AiPhotoPromptInput) {
     // Old-style [token] — backward-compat with templates 2–4
     "[deceased_name]": input.deceasedName?.trim() || "ผู้วายชนม์",
     "[funeral_place]": input.funeralPlace?.trim() || "ศาลางานศพไทย",
+    // ข้อความบนป้าย (ชื่อ+ตำแหน่ง) — ให้ตรงกับ {PLAQUE_PRINT_TEXT} และส่วน MANDATORY
+    "[wreath_label_text]": plaqueLines,
     // New-style {TOKEN}
     "{PLAQUE_PRINT_TEXT}": plaqueLines,
     "{DONOR_NAME}": input.donorName?.trim() || "ผู้ร่วมบุญ",

@@ -8,6 +8,11 @@
 
 ## 2026-06-24
 
+### แก้ AI prompt ให้ภาพแม่นขึ้น — เติม [wreath_label_text] ที่ค้าง
+- ทดสอบ AI จำลองมอบหรีดจริง (gpt-image-1.5) เจอว่า prompt มี `[wreath_label_text]` ค้างไม่ถูกแทนที่ (token นี้อยู่ใน DB template `ai_photo_templates` แต่ไม่มีใน replacements map ของ `buildAiPhotoPrompt`)
+- เพิ่ม `[wreath_label_text]` → แทนด้วยข้อความป้ายจริง (ชื่อ+ตำแหน่ง) ให้ตรงกับ `{PLAQUE_PRINT_TEXT}` และส่วน MANDATORY → ข้อความบนป้ายถูกย้ำ 2 จุด ภาพแม่นขึ้น
+- ยืนยันด้วยการจำลองแทนที่ (ไม่เสียค่า OpenAI)
+
 ### 🔴 พบบั๊ก blocker: คอลัมน์ transfer_confirmed_* หายจาก DB → ยืนยันโอนเจ้าภาพไม่ได้
 - ทดสอบ flow ปิดงาน+โอนเจ้าภาพ เจอว่า `transfer_confirmed_at`/`transfer_confirmed_by` ไม่มีในฐานข้อมูล (นิยามไว้แค่ใน setup-fresh.sql ไม่มี migration แยก) → confirm-transfer query error → ตอบ 404 หลอกๆ → ศูนย์ยืนยันการโอนเงินให้เจ้าภาพไม่ได้
 - เพิ่ม migration `20260624000000_add_transfer_confirmed.sql` (ALTER TABLE เพิ่ม 2 คอลัมน์) — **ต้องรันใน Supabase ก่อนเปิดศูนย์**
