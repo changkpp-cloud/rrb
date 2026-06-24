@@ -7,6 +7,7 @@ import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostVerificationGate from "./HostVerificationGate";
 import MemorialPersonManager from "./host/MemorialPersonManager";
+import PrinterStatusAlert from "./PrinterStatusAlert";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 
 interface Props {
@@ -105,6 +106,9 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
       </div>
 
       <main className="max-w-lg mx-auto px-4 py-5">
+        <div className="mb-4">
+          <PrinterStatusAlert memorialId={memorial.id} />
+        </div>
 
         {/* ════ สรุปยอด ════ */}
         {activeTab === "summary" && (

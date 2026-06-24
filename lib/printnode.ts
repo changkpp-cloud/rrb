@@ -170,6 +170,25 @@ export interface NameplateJob {
   donationId?: string;
 }
 
+// เช็กสถานะเครื่องพิมพ์จาก PrintNode — คืน state เช่น "online" | "offline" | null (เช็กไม่ได้)
+export async function getPrinterState(printerId: string): Promise<string | null> {
+  const apiKey = process.env.PRINTNODE_API_KEY;
+  if (!apiKey || !printerId) return null;
+  try {
+    const res = await fetch(`${PRINTNODE_API}/printers/${Number(printerId)}`, {
+      headers: { Authorization: `Basic ${Buffer.from(`${apiKey}:`).toString("base64")}` },
+      signal: AbortSignal.timeout(4000),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const printer = Array.isArray(data) ? data[0] : data;
+    const state = printer?.state;
+    return typeof state === "string" ? state : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function sendPrintJob(job: NameplateJob): Promise<{ ok: boolean; jobId?: number; error?: string }> {
   const apiKey = process.env.PRINTNODE_API_KEY;
   if (!apiKey) return { ok: false, error: "PRINTNODE_API_KEY not set" };

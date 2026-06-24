@@ -26,6 +26,7 @@ import HostVerificationReview from "@/components/HostVerificationReview";
 import CenterMemorialDocsForm from "@/components/CenterMemorialDocsForm";
 import TransferConfirmButton from "@/components/TransferConfirmButton";
 import NameplateActions from "@/components/NameplateActions";
+import PrinterStatusAlert from "@/components/PrinterStatusAlert";
 import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
@@ -105,6 +106,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-6">
+        <PrinterStatusAlert memorialId={memorial.id} />
         <div className="grid grid-cols-3 gap-3 text-center">
           <Stat label="รับร่วมบุญแล้ว" value={confirmed.length.toLocaleString()} tone="emerald" />
           <Stat label="พิมพ์ไม่สำเร็จ" value={printError.length.toLocaleString()} tone={printError.length > 0 ? "amber" : "gold"} />
