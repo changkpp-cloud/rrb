@@ -5,6 +5,8 @@ import { Banknote, User, ChevronRight } from "lucide-react";
 
 export const revalidate = 60;
 
+const SYSTEM_FEE = 100;
+
 async function getHostsData() {
   const supabase = createAdminClient();
   const { data: memorials } = await supabase
@@ -21,15 +23,22 @@ async function getHostsData() {
     .select("memorial_id, amount, status")
     .in("memorial_id", memIds);
 
-  const donMap: Record<string, number> = {};
+  const donMap: Record<string, { amount: number; count: number }> = {};
   for (const d of donations ?? []) {
-    if (d.status === "confirmed") donMap[d.memorial_id] = (donMap[d.memorial_id] || 0) + (d.amount || 0);
+    if (d.status === "confirmed") {
+      const e = donMap[d.memorial_id] ?? { amount: 0, count: 0 };
+      e.amount += d.amount || 0;
+      e.count += 1;
+      donMap[d.memorial_id] = e;
+    }
   }
 
-  return memorials.map(m => ({
-    ...m,
-    totalAmount: donMap[m.id] || 0,
-  }));
+  return memorials.map(m => {
+    const agg = donMap[m.id] ?? { amount: 0, count: 0 };
+    // ค่าดำเนินการ 100 บาท/รายการ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
+    const netAmount = Math.max(0, agg.amount - agg.count * SYSTEM_FEE);
+    return { ...m, totalAmount: agg.amount, donorCount: agg.count, netAmount };
+  });
 }
 
 const STATUS_LABEL: Record<string, string> = { draft: "ร่าง", active: "เปิดอยู่", closed: "ปิดแล้ว" };
@@ -41,8 +50,8 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default async function AdminHostsPage() {
   const hosts = await getHostsData();
-  const totalPending = hosts.filter(h => h.funeral_status === "active").reduce((s, h) => s + h.totalAmount, 0);
-  const totalPaid = hosts.filter(h => h.funeral_status === "closed").reduce((s, h) => s + h.totalAmount, 0);
+  const totalPending = hosts.filter(h => h.funeral_status === "active").reduce((s, h) => s + h.netAmount, 0);
+  const totalPaid = hosts.filter(h => h.funeral_status === "closed").reduce((s, h) => s + h.netAmount, 0);
 
   return (
     <div className="space-y-4">
@@ -55,11 +64,11 @@ export default async function AdminHostsPage() {
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-center">
           <p className="text-lg font-bold text-amber-600">{totalPending.toLocaleString()}</p>
-          <p className="text-[11px] text-amber-700">บาท · รอนำส่ง</p>
+          <p className="text-[11px] text-amber-700">บาท · รอนำส่ง (สุทธิ)</p>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-center">
           <p className="text-lg font-bold text-emerald-600">{totalPaid.toLocaleString()}</p>
-          <p className="text-[11px] text-emerald-700">บาท · งานปิดแล้ว</p>
+          <p className="text-[11px] text-emerald-700">บาท · นำส่งแล้ว (สุทธิ)</p>
         </div>
       </div>
 
@@ -110,8 +119,10 @@ export default async function AdminHostsPage() {
               {/* Amount */}
               <div className="flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gold-100">
                 <Banknote className="w-3.5 h-3.5 text-gold-500" />
-                <p className="text-xs font-bold text-gold-700">{h.totalAmount.toLocaleString()} บาท</p>
-                <span className="text-[10px] text-gold-400">ยอดร่วมบุญ (ยืนยัน)</span>
+                <p className="text-xs font-bold text-gold-700">{h.netAmount.toLocaleString()} บาท</p>
+                <span className="text-[10px] text-gold-400">
+                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} ({h.donorCount} ราย × 100)
+                </span>
               </div>
             </Link>
           ))}
