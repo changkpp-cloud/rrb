@@ -25,6 +25,7 @@ import MemorialShareCard from "@/components/MemorialShareCard";
 import HostVerificationReview from "@/components/HostVerificationReview";
 import CenterMemorialDocsForm from "@/components/CenterMemorialDocsForm";
 import TransferConfirmButton from "@/components/TransferConfirmButton";
+import NameplateActions from "@/components/NameplateActions";
 import { getSiteUrl } from "@/lib/site-url";
 
 const SYSTEM_FEE = 100;
@@ -335,6 +336,9 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
                 ดูสลิป
               </a>
             </div>
+          )}
+          {mode === "nameplate" && (
+            <NameplateActions donationId={d.id} status={d.nameplate_status} />
           )}
           {mode === "warning" && d.slip_duplicate_warning && (
             <div className="mt-2 ml-10 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-medium text-amber-700">

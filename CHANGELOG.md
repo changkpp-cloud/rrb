@@ -8,6 +8,11 @@
 
 ## 2026-06-24
 
+### เพิ่มปุ่มจัดการป้ายชื่อให้ศูนย์ (launch-critical ก่อนเปิดศูนย์แรก)
+- เดิม: คิวพิมพ์เป็น read-only — ศูนย์ **พิมพ์ซ้ำไม่ได้** (ป้าย error ค้างถาวร) และ **mark "ติดบอร์ดแล้ว" ไม่ได้** → สถานะไม่ขึ้น `posted` → หน้าโอนเงินไม่มีวันพร้อม
+- เพิ่ม endpoint `POST /api/donations/[id]/nameplate` (action: reprint/posted/printed, ตรวจสิทธิ์ศูนย์) + คอมโพเนนต์ `NameplateActions` (ปุ่ม "พิมพ์ซ้ำ" / "ติดบอร์ดแล้ว") ในคิวพิมพ์ของหน้าจัดการงาน
+- หมายเหตุ: `/api/print-nameplate` + worker `PRINT_SERVICE_URL` เป็นระบบพิมพ์คู่ขนานที่ไม่ได้ใช้ (active path = PrintNode `sendPrintJob`) — เก็บไว้เผื่อ self-hosted printing
+
 ### สร้างสมองกลาง (Knowledge Base) ของบริษัท — `docs/brain/`
 - ฐานความรู้กลางให้ AI Agent ทุกตัว + ทีมดึงไปใช้ (Single Source of Truth ฝั่งธุรกิจ/แบรนด์)
 - 9 ไฟล์: README(สารบัญ), แนวคิดโครงการ, flow ระบบ, คำอธิบายต่อ อปท., ข้อห้ามเรื่องเงิน, FAQ, มาตรฐานแบรนด์, คลัง prompt, อภิธานศัพท์
