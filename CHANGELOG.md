@@ -12,6 +12,7 @@
 - ทดสอบ flow ปิดงาน+โอนเจ้าภาพ เจอว่า `transfer_confirmed_at`/`transfer_confirmed_by` ไม่มีในฐานข้อมูล (นิยามไว้แค่ใน setup-fresh.sql ไม่มี migration แยก) → confirm-transfer query error → ตอบ 404 หลอกๆ → ศูนย์ยืนยันการโอนเงินให้เจ้าภาพไม่ได้
 - เพิ่ม migration `20260624000000_add_transfer_confirmed.sql` (ALTER TABLE เพิ่ม 2 คอลัมน์) — **ต้องรันใน Supabase ก่อนเปิดศูนย์**
 - ส่วน logic ปิดงาน + confirm-transfer ตรวจแล้วถูกต้อง (auth ครบ, เช็คลำดับ ปิดงาน→มีบัญชี→กันยืนยันซ้ำ) แค่ติดคอลัมน์ DB
+- ✅ รัน migration แล้ว (24 มิ.ย.) — ทดสอบ chain ปิดงาน→ยืนยันโอน ผ่านครบ (400/200/200/409, DB บันทึก transfer_confirmed_* ถูกต้อง)
 
 ### ปิดช่องโหว่: เพิ่ม auth ที่ API จัดการงาน (เดิมเปิดโล่ง)
 - `POST /api/memorials/create` ไม่มี auth — ยิงตรงสร้างงานให้ center_id ไหนก็ได้ → เพิ่ม `getCenterAccess` + `canEditCenterWork` (คนนอก 403, ศูนย์ล็อกอินเปิดงานได้ปกติ)
