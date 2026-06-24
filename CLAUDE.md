@@ -197,6 +197,11 @@ NEXT_PUBLIC_SITE_URL=https://rrb.center
 - **สร้าง donation ครั้งเดียวตอนมีชื่อจริง — ห้าม PATCH ชื่อทีหลัง** (เคยมีบัค donor_name ไม่อัปเดต)
 - สลิปซ้ำ = เก็บเป็น `slip_duplicate_warning` (เตือนย้อนหลัง ไม่บล็อก)
 
+**กฎค่าดำเนินการ (สำคัญ — เรื่องเงิน):**
+- **ค่าดำเนินการ = `SYSTEM_FEE` (100 บาท) × จำนวนรายการที่ confirmed** (100 บาท/รายการเสมอ ไม่ว่ายอดเท่าไหร่)
+- ยอดสุทธิโอนเจ้าภาพ = `ยอดรวม − (จำนวนราย × 100)`
+- ต้องคิดสูตรเดียวกันทั้งฝั่งเจ้าภาพ (HostDashboardClient, host summary) และฝั่งศูนย์ (memorial page, CloseMemorialButton, transfers) — **ห้ามคิดเหมา 100/งาน**
+
 ---
 
 ## Design System

@@ -65,7 +65,7 @@ async function getTransfers(centerId: string) {
       const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
       const unposted = confirmed.filter((d) => d.nameplate_status !== "posted").length;
       const ceremonyReached = new Date(m.ceremony_date) <= today;
-      const netAmount = Math.max(amount - SYSTEM_FEE, 0);
+      const netAmount = Math.max(amount - confirmed.length * SYSTEM_FEE, 0);
       const hasHostBank = Boolean(m.host_bank_account_number);
       const ready = m.funeral_status === "active" && ceremonyReached && unposted === 0 && confirmed.length > 0 && hasHostBank;
       const transferred = Boolean(m.transfer_confirmed_at);

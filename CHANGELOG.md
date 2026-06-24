@@ -8,6 +8,12 @@
 
 ## 2026-06-24
 
+### แก้บั๊กค่าดำเนินการ (เรื่องเงิน)
+- ฝั่งศูนย์คิดค่าดำเนินการเหมา 100 บาท/งาน แต่ฝั่งเจ้าภาพคิด 100 บาท/รายการ → ยอดนำส่งเจ้าภาพไม่ตรงกัน
+- แก้ให้ฝั่งศูนย์เป็น `จำนวนราย × 100` ตรงตามแบบเสนอโครงการ อปท. (100 บาท/รายการเสมอ) — `memorial/[memId]/page.tsx`, `CloseMemorialButton.tsx`, `transfers/page.tsx`
+- บันทึกกฎค่าดำเนินการลง CLAUDE.md
+- 🔸 ค้าง: หน้า admin hosts ยังโชว์ "ยอดนำส่ง" เป็นยอดรวม (ก่อนหักค่าธรรมเนียม) — เป็นหน้าสรุป ไม่ใช่ยอดโอนจริง
+
 ### แก้ปัญหา in-app browser (LINE/Facebook) บนมือถือ
 - เปิดแอปธนาคารจากในแชทไม่ได้ → เริ่มจาก `intent://`+package, เอา Play Store fallback ออก, สุดท้ายใช้ custom scheme ตรงๆ (เลี่ยงการอ้อม Play Store โชว์ "อัปเดต") — `PaymentPageClient.tsx`
 - เพิ่ม `ForceExternalBrowser` — เปิดลิงก์งานในแชทแล้วเด้งออกเบราว์เซอร์จริง: LINE auto (`openExternalBrowser=1`), FB Android แสดงปุ่ม "เปิดใน Chrome" ให้กดเอง, FB iOS แนะนำเปิดใน Safari — `components/ForceExternalBrowser.tsx`, `app/[slug]/layout.tsx`

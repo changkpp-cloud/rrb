@@ -85,7 +85,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const posted = confirmed.filter((d) => d.nameplate_status === "posted");
   const printError = confirmed.filter((d) => (d.nameplate_status as string) === "error");
   const total = confirmed.reduce((s, d) => s + d.amount, 0);
-  const netAmount = Math.max(total - SYSTEM_FEE, 0);
+  const systemFeeTotal = confirmed.length * SYSTEM_FEE;
+  const netAmount = Math.max(total - systemFeeTotal, 0);
 
   return (
     <div className="min-h-screen bg-white">
@@ -189,10 +190,10 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         </section>
 
         <section id="finance" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Banknote} title="การเงิน" subtitle={`ยอดสุทธิประมาณ ${netAmount.toLocaleString()} บาท หลังหักค่าดำเนินการ ${SYSTEM_FEE.toLocaleString()} บาท`} />
+          <SectionHeader icon={Banknote} title="การเงิน" subtitle={`ยอดสุทธิประมาณ ${netAmount.toLocaleString()} บาท หลังหักค่าดำเนินการ ${systemFeeTotal.toLocaleString()} บาท`} />
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
             <InfoRow label="ยอดร่วมบุญรับแล้ว" value={`${total.toLocaleString()} บาท`} strong />
-            <InfoRow label="ค่าดำเนินการระบบ" value={`-${SYSTEM_FEE.toLocaleString()} บาท`} />
+            <InfoRow label={`ค่าดำเนินการระบบ (${confirmed.length} ราย × ${SYSTEM_FEE})`} value={`-${systemFeeTotal.toLocaleString()} บาท`} />
             <InfoRow label="ยอดสุทธิโอนเจ้าภาพ" value={`${netAmount.toLocaleString()} บาท`} strong />
             <InfoRow label="ธนาคารเจ้าภาพ" value={memorial.host_bank_name || "-"} />
             <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />
@@ -221,7 +222,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             hostBankName={memorial.host_bank_name ?? null}
             hostBankAccount={memorial.host_bank_account_number ?? null}
             hostBankAccountName={memorial.host_bank_account_name ?? null}
-            systemFee={SYSTEM_FEE}
+            systemFee={systemFeeTotal}
             isClosed={memorial.funeral_status === "closed"}
           />
         </section>
