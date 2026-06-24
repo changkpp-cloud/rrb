@@ -72,9 +72,16 @@ export default function ForceExternalBrowser() {
               <ExternalLink className="h-4 w-4" />
               เปิดใน Chrome
             </button>
-            <p className="mt-2 text-[10px] leading-relaxed text-gold-400">
-              เฟซบุ๊กจะถามยืนยัน “เปิดแอปจากภายนอก” ให้กด “ดำเนินการต่อ”
-            </p>
+            <div className="mt-3 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-left">
+              <p className="text-[11px] font-bold text-amber-800">หลังกดปุ่ม เฟซบุ๊กจะถามว่า:</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-amber-700">
+                “คุณกำลังจะออกจากแอป” → ให้กด{" "}
+                <span className="font-bold">“ดำเนินการต่อ”</span> เพื่อไปเบราว์เซอร์
+              </p>
+              <p className="mt-1 text-[10px] leading-relaxed text-amber-600">
+                * เป็นการออกจาก “เฟซบุ๊ก” ไป Chrome เท่านั้น ไม่ใช่ออกจากหน้าหรีดร่วมบุญ
+              </p>
+            </div>
           </>
         ) : (
           <>
