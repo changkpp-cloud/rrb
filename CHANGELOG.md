@@ -16,6 +16,7 @@
 
 ### แก้ปัญหา in-app browser (LINE/Facebook) บนมือถือ
 - เปิดแอปธนาคารจากในแชทไม่ได้ → เริ่มจาก `intent://`+package, เอา Play Store fallback ออก, สุดท้ายใช้ custom scheme ตรงๆ (เลี่ยงการอ้อม Play Store โชว์ "อัปเดต") — `PaymentPageClient.tsx`
+- เพิ่ม fallback อัตโนมัติ: กดแอปธนาคารแล้วถ้าไม่เปิดใน ~1.5 วิ (detect ผ่าน visibilitychange/blur) แสดงคำแนะนำให้คัดลอกเลขพร้อมเพย์แล้วเปิดแอปเอง — ใช้ได้กับทุกแอปไม่ว่า scheme จะถูกไหม; ลบ field `pkg` ที่ไม่ใช้แล้ว (scheme KTB/KMA/TTB ยังรอเทสต์เครื่องจริง)
 - เพิ่ม `ForceExternalBrowser` — เปิดลิงก์งานในแชทแล้วเด้งออกเบราว์เซอร์จริง: LINE auto (`openExternalBrowser=1`), FB Android แสดงปุ่ม "เปิดใน Chrome" ให้กดเอง, FB iOS แนะนำเปิดใน Safari — `components/ForceExternalBrowser.tsx`, `app/[slug]/layout.tsx`
 - เพิ่มคำอธิบายกล่องยืนยันของ FB ("ออกจากแอป = ออกจาก Facebook ไม่ใช่ออกจากหรีดร่วมบุญ") กันผู้ใช้กดยกเลิก
 

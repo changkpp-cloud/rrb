@@ -16,21 +16,16 @@ interface Props {
   promptpayPhone?: string | null;
 }
 
-// scheme = custom URL scheme ของแอป (ใช้บน iOS), pkg = Android package (ใช้ทำ intent:// ให้เปิดได้ใน in-app browser ของ LINE/FB)
+// scheme = custom URL scheme ของแอป (เปิดแอปธนาคารในเบราว์เซอร์จริง)
+// ยืนยันแน่นอน: kplus, scbeasy, bualuangmbanking · ยังไม่ยืนยันทางการ: ktbnext, kma, ttbtouch (รอเทสต์เครื่องจริง)
 const BANK_LINKS = [
-  { label: "K PLUS", scheme: "kplus", pkg: "com.kasikorn.retail.mbanking.wap", bg: "#1ba345", text: "#fff" },
-  { label: "SCB", scheme: "scbeasy", pkg: "com.scb.phone", bg: "#4b2d7f", text: "#fff" },
-  { label: "KTB", scheme: "ktbnext", pkg: "ktbcs.netbank", bg: "#009fe3", text: "#fff" },
-  { label: "BBL", scheme: "bualuangmbanking", pkg: "com.bbl.mobilebanking", bg: "#1e3a8a", text: "#fff" },
-  { label: "BAY", scheme: "kma", pkg: "com.krungsri.kma", bg: "#f4a91e", text: "#fff" },
-  { label: "TTB", scheme: "ttbtouch", pkg: "com.TMBTOUCH.PRODUCTION", bg: "#009ade", text: "#fff" },
+  { label: "K PLUS", scheme: "kplus", bg: "#1ba345", text: "#fff" },
+  { label: "SCB", scheme: "scbeasy", bg: "#4b2d7f", text: "#fff" },
+  { label: "KTB", scheme: "ktbnext", bg: "#009fe3", text: "#fff" },
+  { label: "BBL", scheme: "bualuangmbanking", bg: "#1e3a8a", text: "#fff" },
+  { label: "BAY", scheme: "kma", bg: "#f4a91e", text: "#fff" },
+  { label: "TTB", scheme: "ttbtouch", bg: "#009ade", text: "#fff" },
 ];
-
-// เปิดแอปธนาคารด้วย custom scheme ตรงๆ — ในเบราว์เซอร์จริง (Chrome/Safari) แอปที่ติดตั้งจะเปิดทันที
-// ไม่ใช้ intent://+package เพราะ Chrome จะอ้อมไปหน้า Play Store (โชว์ "อัปเดต") เมื่อ launch ไม่ตรงเป๊ะ
-function openBankApp(b: (typeof BANK_LINKS)[number]) {
-  window.location.href = `${b.scheme}://`;
-}
 
 export default function PaymentPageClient({ memorial, basePath = "", promptpayPhone }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
@@ -52,6 +47,21 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     const ua = navigator.userAgent || "";
     setInAppBrowser(/Line\/|FBAN|FBAV|FB_IAB|Instagram/i.test(ua));
   }, []);
+
+  // เปิดแอปธนาคารด้วย custom scheme — แอปที่ติดตั้งจะเปิดทันที
+  // ถ้าแอปไม่เปิดใน ~1.5 วิ (scheme ไม่ตรง/ไม่ได้ติดตั้ง) แสดงคำแนะนำให้คัดลอกเลขพร้อมเพย์แทน
+  const [bankHint, setBankHint] = useState(false);
+  function openBankApp(b: (typeof BANK_LINKS)[number]) {
+    setBankHint(false);
+    let switched = false;
+    const mark = () => { switched = true; };
+    document.addEventListener("visibilitychange", () => { if (document.hidden) mark(); }, { once: true });
+    window.addEventListener("blur", mark, { once: true });
+    window.location.href = `${b.scheme}://`;
+    window.setTimeout(() => {
+      if (!switched && !document.hidden) setBankHint(true);
+    }, 1500);
+  }
 
   // เด้งออกไปเปิดหน้านี้ในเบราว์เซอร์จริง (Chrome) ที่ deep link แอปธนาคารทำงานได้
   function openInExternalBrowser() {
@@ -269,6 +279,11 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     </a>
                   ))}
                 </div>
+                {bankHint && (
+                  <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-700 text-center">
+                    ถ้าแอปธนาคารไม่เปิด — กด <span className="font-bold">“คัดลอกเลขพร้อมเพย์”</span> ด้านบน แล้วเปิดแอปธนาคารเอง เพื่อสแกน QR หรือวางเลขโอนเงิน
+                  </div>
+                )}
               </div>
             </Card>
 
