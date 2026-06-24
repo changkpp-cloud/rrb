@@ -113,7 +113,7 @@ function PrintNameInner() {
             <div className="flex gap-3">
               <button onClick={() => setShowModal(false)} disabled={sending} className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-40">แก้ไขข้อความ</button>
               <button onClick={handleSend} disabled={sending} className="flex-1 py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md active:scale-[0.98] transition-all disabled:opacity-60">
-                {sending ? "กำลังส่งข้อมูล" : "ยืนยันส่งพิมพ์"}
+                {sending ? "กำลังส่งพิมพ์" : "ยืนยันส่งพิมพ์"}
               </button>
             </div>
           </div>
