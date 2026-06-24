@@ -8,6 +8,8 @@
 - ไม่ commit ไฟล์ `.env.local` หรือ secret ใดๆ
 - TypeScript strict — ต้อง `npx tsc --noEmit` ผ่านก่อน push เสมอ
 
+> **สมองกลาง (Knowledge Base):** ความรู้ฝั่งธุรกิจ/การสื่อสาร/แบรนด์ อยู่ที่ `docs/brain/` — ใช้เป็นแหล่งอ้างอิงกลางของ AI agent ทุกตัวและทีม (`CLAUDE.md` = เทคนิคโค้ด, `docs/brain` = ธุรกิจ/แบรนด์)
+
 ---
 
 ## Tech Stack
