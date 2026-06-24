@@ -1,9 +1,9 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Image from "next/image";
-import { Copy, Check, CloudUpload, Download } from "lucide-react";
+import { Copy, Check, CloudUpload, Download, ExternalLink } from "lucide-react";
 import PromptPayQR from "./PromptPayQR";
 import Button from "@/components/ui/Button";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
@@ -51,6 +51,33 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const qrRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { slug } = useParams<{ slug: string }>();
+
+  // ตรวจจับ in-app browser ของ LINE/Facebook — ที่นี่ปุ่ม deep link แอปธนาคารใช้ไม่ได้ (Android 11+ package visibility)
+  const [inAppBrowser, setInAppBrowser] = useState(false);
+  useEffect(() => {
+    const ua = navigator.userAgent || "";
+    setInAppBrowser(/Line\/|FBAN|FBAV|FB_IAB|Instagram/i.test(ua));
+  }, []);
+
+  // เด้งออกไปเปิดหน้านี้ในเบราว์เซอร์จริง (Chrome) ที่ deep link แอปธนาคารทำงานได้
+  function openInExternalBrowser() {
+    const ua = navigator.userAgent || "";
+    const url = window.location.href;
+    if (/Line\//i.test(ua)) {
+      // LINE รองรับ param พิเศษ openExternalBrowser=1
+      const sep = url.includes("?") ? "&" : "?";
+      window.location.href = `${url}${sep}openExternalBrowser=1`;
+      return;
+    }
+    if (/android/i.test(ua)) {
+      // Facebook/IG บน Android — บังคับเปิดด้วย Chrome ผ่าน intent
+      const noScheme = url.replace(/^https?:\/\//, "");
+      window.location.href = `intent://${noScheme}#Intent;scheme=https;package=com.android.chrome;end`;
+      return;
+    }
+    // iOS อื่นๆ — เปิดแท็บใหม่ (ผู้ใช้อาจต้องกดเมนู "เปิดในเบราว์เซอร์" เอง)
+    window.open(url, "_blank");
+  }
 
   function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
@@ -224,6 +251,16 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
 
               {/* Bank deep links */}
               <div className="mt-3">
+                {inAppBrowser && (
+                  <button
+                    type="button"
+                    onClick={openInExternalBrowser}
+                    className="mb-3 flex w-full items-center justify-center gap-2 rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 text-xs font-semibold text-amber-800 active:opacity-80"
+                  >
+                    <ExternalLink className="h-4 w-4 shrink-0" />
+                    เปิดในเบราว์เซอร์เพื่อกดเข้าแอปธนาคาร
+                  </button>
+                )}
                 <p className="text-[10px] text-gold-400 mb-2 text-center">เปิดแอปธนาคารเพื่อโอนเงิน</p>
                 <div className="grid grid-cols-6 gap-1.5">
                   {BANK_LINKS.map(b => (
