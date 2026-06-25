@@ -6,6 +6,13 @@
 
 ---
 
+## 2026-06-25
+
+### แก้บั๊ก: รูปผู้วายชนม์ไม่แสดงบน iPhone ในหน้าขอบคุณ/e-card
+- **อาการ:** เปิดหน้าขอบคุณบน iPhone แล้วรูปผู้วายชนม์หาย (ตัวหนังสือ/ลายเส้นยังอยู่) แต่ Android แสดงครบ
+- **สาเหตุ:** รูปอัปโหลดขนาดเต็มจากกล้องมือถือ (~12MP) → `html-to-image (toPng)` ที่ใช้ render การ์ดเป็น PNG ชนลิมิต decode/canvas ของ iOS Safari → drop เฉพาะรูป ขณะ Android ไม่มีลิมิตเลยออกครบ
+- **แก้:** `ECardClient.tsx` — ย่อรูปผ่าน canvas ให้ ≤720px ก่อนทำ data URL (เล็กพอให้ iOS embed/decode ได้ + กัน canvas CORS taint ผ่าน blob URL) + warm up `toPng` หนึ่งรอบก่อนจับจริง (Safari มักทิ้งรูปฝังในรอบ rasterize แรก)
+
 ## 2026-06-24
 
 ### แก้ AI prompt ให้ภาพแม่นขึ้น — เติม [wreath_label_text] ที่ค้าง

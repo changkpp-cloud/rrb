@@ -78,30 +78,46 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
     let cancelled = false;
     setMemorialPhotoSrc(memorial.photo_url);
 
-    fetch(memorial.photo_url)
-      .then((response) => {
+    // Fetch + downscale the deceased photo to a bounded data URL.
+    // Why: phone-camera uploads are stored full-size (e.g. 3024×4032 ≈ 12MP).
+    // iOS Safari caps the pixel area it can decode/rasterize, so html-to-image
+    // (toPng) silently DROPS the embedded full-res photo while keeping text/SVG
+    // — the e-card renders on Android but shows a blank photo on iPhone.
+    // Drawing through a blob: URL also avoids canvas CORS taint.
+    const MAX_DIM = 720;
+    (async () => {
+      let objectUrl: string | null = null;
+      try {
+        const response = await fetch(memorial.photo_url!);
         if (!response.ok) throw new Error("photo fetch failed");
-        return response.blob();
-      })
-      .then(
-        (blob) =>
-          new Promise<string>((resolve, reject) => {
-            const reader = new FileReader();
-            reader.onload = () => resolve(String(reader.result));
-            reader.onerror = () => reject(new Error("photo read failed"));
-            reader.readAsDataURL(blob);
-          })
-      )
-      .then((dataUrl) => {
+        const blob = await response.blob();
+        objectUrl = URL.createObjectURL(blob);
+
+        const img = new Image();
+        img.decoding = "async";
+        img.src = objectUrl;
+        await img.decode();
+
+        const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+        const dataUrl = canvas.toDataURL("image/jpeg", 0.9);
+
         if (cancelled) return;
         setMemorialPhotoSrc(dataUrl);
         try {
           window.sessionStorage.setItem(memorialPhotoCacheKey, dataUrl);
         } catch {}
-      })
-      .catch(() => {
+      } catch {
         if (!cancelled) setMemorialPhotoSrc(memorial.photo_url ?? "");
-      });
+      } finally {
+        if (objectUrl) URL.revokeObjectURL(objectUrl);
+      }
+    })();
 
     return () => {
       cancelled = true;
@@ -149,6 +165,10 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       try {
         await document.fonts.ready;
         const { toPng } = await import("html-to-image");
+        // Safari frequently drops embedded images on the FIRST rasterization
+        // pass — warm up once (low cost), then capture the real export.
+        await toPng(cardRef.current, { pixelRatio: 1, cacheBust: true });
+        if (cancelled) return;
         const dataUrl = await toPng(cardRef.current, { pixelRatio: 3, cacheBust: true });
         if (cancelled) return;
         setImageUrl(dataUrl);
