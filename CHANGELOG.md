@@ -12,6 +12,7 @@
 - **อาการ:** เปิดหน้าขอบคุณบน iPhone แล้วรูปผู้วายชนม์หาย (ตัวหนังสือ/ลายเส้นยังอยู่) แต่ Android แสดงครบ
 - **สาเหตุ:** รูปอัปโหลดขนาดเต็มจากกล้องมือถือ (~12MP) → `html-to-image (toPng)` ที่ใช้ render การ์ดเป็น PNG ชนลิมิต decode/canvas ของ iOS Safari → drop เฉพาะรูป ขณะ Android ไม่มีลิมิตเลยออกครบ
 - **แก้:** `ECardClient.tsx` — ย่อรูปผ่าน canvas ให้ ≤720px ก่อนทำ data URL (เล็กพอให้ iOS embed/decode ได้ + กัน canvas CORS taint ผ่าน blob URL) + warm up `toPng` หนึ่งรอบก่อนจับจริง (Safari มักทิ้งรูปฝังในรอบ rasterize แรก)
+- **แก้ที่ต้นทางด้วย:** ฟอร์มเปิดงาน (`CreateMemorialClient.tsx`) ย่อรูปผู้วายชนม์ตั้งแต่ตอนเลือกไฟล์ (≤1280px JPEG) ผ่าน util ใหม่ `lib/compress-image.ts` → `photo_url` เก็บไฟล์ขนาดพอเหมาะตั้งแต่แรก ทุกหน้าที่ดึงไปใช้ได้ประโยชน์ + อัปโหลดเร็วขึ้น (display-time downscale ยังคงไว้เป็น defense สำหรับงานเก่าที่อัปไฟล์เต็มไว้แล้ว)
 
 ## 2026-06-24
 

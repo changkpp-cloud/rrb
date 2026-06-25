@@ -10,6 +10,7 @@ import ThaiDateInput from "@/components/ThaiDateInput";
 import ThaiAddressSelect, { type ThaiAddressValue } from "@/components/ThaiAddressSelect";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 import { getSiteUrl } from "@/lib/site-url";
+import { compressImage } from "@/lib/compress-image";
 
 interface CenterBank {
   bank_name?: string | null;
@@ -374,7 +375,13 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 label="รูปถ่ายผู้วายชนม์"
                 required
                 preview={photoPreview}
-                onFile={f => { setPhotoFile(f); setPhotoPreview(URL.createObjectURL(f)); }}
+                onFile={async f => {
+                  // ย่อรูปก่อนเก็บ — กันรูปใหญ่เกินลิมิต iOS ในหน้า e-card
+                  let img = f;
+                  try { img = await compressImage(f); } catch { /* ใช้ไฟล์เดิม */ }
+                  setPhotoFile(img);
+                  setPhotoPreview(URL.createObjectURL(img));
+                }}
               />
             </div>
 
