@@ -8,6 +8,7 @@ import PromptPayQR from "./PromptPayQR";
 import Button from "@/components/ui/Button";
 import LoadingOverlay from "@/components/ui/LoadingOverlay";
 import { savePaidData } from "@/components/SlugBottomNav";
+import { compressImage } from "@/lib/compress-image";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface Props {
@@ -83,11 +84,14 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     window.open(url, "_blank");
   }
 
-  function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleSlipFile(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
-    setSlipFile(f);
-    setSlipPreview(URL.createObjectURL(f));
+    // ย่อสลิปให้โหลดเร็ว แต่คงความละเอียดพออ่านตัวเลขออก
+    let img = f;
+    try { img = await compressImage(f, { maxDim: 1600 }); } catch { /* ใช้ไฟล์เดิม */ }
+    setSlipFile(img);
+    setSlipPreview(URL.createObjectURL(img));
     setError("");
   }
 

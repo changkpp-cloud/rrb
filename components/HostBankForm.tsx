@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { Check, Upload, Eye } from "lucide-react";
+import { compressImage } from "@/lib/compress-image";
 import type { Memorial } from "@/lib/supabase/types";
 
 interface Props {
@@ -39,9 +40,12 @@ export default function HostBankForm({ memorial }: Props) {
     { key: "id_card",    label: "บัตรประชาชนเจ้าภาพ",          hint: "ชื่อตรงกับใบมรณะและบัญชี",  currentUrl: memorial.host_id_card_url },
   ];
 
-  function handleFile(key: DocField["key"], file: File) {
-    setFiles(prev => ({ ...prev, [key]: file }));
-    setPreviews(prev => ({ ...prev, [key]: URL.createObjectURL(file) }));
+  async function handleFile(key: DocField["key"], file: File) {
+    // ย่อเอกสารรูปให้โหลดเร็ว แต่คงความละเอียดพออ่านชื่อ/เลขบัญชีออก
+    let img = file;
+    try { img = await compressImage(file, { maxDim: 1600 }); } catch { /* ใช้ไฟล์เดิม */ }
+    setFiles(prev => ({ ...prev, [key]: img }));
+    setPreviews(prev => ({ ...prev, [key]: URL.createObjectURL(img) }));
   }
 
   async function handleSave() {

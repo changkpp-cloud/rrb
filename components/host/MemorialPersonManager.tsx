@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Camera, Check, Loader2, Pencil, Plus, Star, Trash2, X } from "lucide-react";
+import { compressImage } from "@/lib/compress-image";
 import type { MemorialPerson } from "@/components/ai-photo/HostPersonPicker";
 
 interface Props {
@@ -78,11 +79,14 @@ export default function MemorialPersonManager({ memorialId }: Props) {
     setShowForm(true);
   }
 
-  function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handlePhotoChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
-    const preview = URL.createObjectURL(file);
-    setForm(f => ({ ...f, photo: file, photoPreview: preview }));
+    // ย่อรูปก่อนเก็บ — โหลดเร็ว + ส่งเข้า AI ง่ายขึ้น
+    let img = file;
+    try { img = await compressImage(file); } catch { /* ใช้ไฟล์เดิม (เช่น HEIC ที่ decode ไม่ได้) */ }
+    const preview = URL.createObjectURL(img);
+    setForm(f => ({ ...f, photo: img, photoPreview: preview }));
   }
 
   async function handleSave() {

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { CheckCircle2, Loader2, QrCode, Save, Upload } from "lucide-react";
 import Image from "next/image";
+import { compressImage } from "@/lib/compress-image";
 
 type EditableCenter = {
   id: string;
@@ -58,8 +59,11 @@ export default function CenterSettingsForm({ center }: { center: EditableCenter 
     setUploadingQr(true);
     setError("");
     try {
+      // ย่อ QR ให้เล็กลง (พื้นขาวกัน PNG โปร่งใสเป็นดำ) — ยังคมพอสแกนได้
+      let qr = file;
+      try { qr = await compressImage(file, { maxDim: 1280 }); } catch { /* ใช้ไฟล์เดิม */ }
       const fd = new FormData();
-      fd.append("file", file);
+      fd.append("file", qr);
       const res = await fetch(`/api/centers/${center.id}/upload-qr`, { method: "POST", body: fd });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "อัปโหลดล้มเหลว");

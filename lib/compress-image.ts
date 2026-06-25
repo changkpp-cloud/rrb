@@ -18,11 +18,12 @@ function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
 
 /**
  * ย่อรูปเป็น JPEG ที่ด้านยาวสุด ≤ maxDim และขนาดไฟล์ ≤ maxBytes
- * ถ้าไม่ใช่ไฟล์รูปจะ throw — ผู้เรียกควร try/catch แล้ว fallback เป็นไฟล์เดิม
+ * - เติมพื้นหลังขาวก่อนวาด: กัน PNG โปร่งใส (QR/โลโก้) กลายเป็นพื้นดำเมื่อแปลงเป็น JPEG
+ * - ถ้าไม่ใช่ไฟล์รูป (เช่น PDF) จะ throw — ผู้เรียกต้อง try/catch แล้ว fallback เป็นไฟล์เดิม
  */
 export async function compressImage(
   file: File,
-  { maxDim = DEFAULT_MAX_DIM, maxBytes = DEFAULT_MAX_BYTES } = {},
+  { maxDim = DEFAULT_MAX_DIM, maxBytes = DEFAULT_MAX_BYTES, background = "#ffffff" } = {},
 ): Promise<File> {
   if (!file.type.startsWith("image/")) throw new Error("กรุณาเลือกไฟล์รูปภาพ");
   const url = URL.createObjectURL(file);
@@ -38,7 +39,10 @@ export async function compressImage(
     const canvas = document.createElement("canvas");
     canvas.width = w;
     canvas.height = h;
-    canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
+    const ctx = canvas.getContext("2d")!;
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(img, 0, 0, w, h);
 
     let blob = await canvasToBlob(canvas, 0.9);
     for (const q of [0.85, 0.8, 0.72]) {

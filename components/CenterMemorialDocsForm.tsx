@@ -3,7 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Save, Loader2, CheckCircle2, XCircle, Eye } from "lucide-react";
+import { compressImage } from "@/lib/compress-image";
 import type { Memorial } from "@/lib/supabase/types";
+
+// ย่อเฉพาะไฟล์รูป (≤1600px พออ่านตัวหนังสือออก) — ไฟล์ PDF จะ throw แล้วคืนไฟล์เดิม
+async function shrinkDoc(f: File | null): Promise<File | null> {
+  if (!f) return null;
+  try { return await compressImage(f, { maxDim: 1600 }); } catch { return f; }
+}
 
 const inputClass =
   "w-full px-3 py-2.5 rounded-xl border border-gold-200 bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm";
@@ -73,8 +80,8 @@ export default function CenterMemorialDocsForm({ memorial }: { memorial: Memoria
     <div className="rounded-2xl gold-border bg-cream-50 card-shadow px-4 py-4 space-y-3">
       <p className="text-xs font-semibold text-gold-600">เพิ่ม / แก้ไขเอกสารและบัญชีเจ้าภาพ (โดยศูนย์)</p>
 
-      <DocPicker label="ใบมรณะบัตร" file={deathCert} currentUrl={memorial.death_certificate_url ?? null} onFile={setDeathCert} />
-      <DocPicker label="บัตรประชาชน / สมุดบัญชีเจ้าภาพ" file={idCard} currentUrl={memorial.host_id_card_url ?? null} onFile={setIdCard} />
+      <DocPicker label="ใบมรณะบัตร" file={deathCert} currentUrl={memorial.death_certificate_url ?? null} onFile={async f => setDeathCert(await shrinkDoc(f))} />
+      <DocPicker label="บัตรประชาชน / สมุดบัญชีเจ้าภาพ" file={idCard} currentUrl={memorial.host_id_card_url ?? null} onFile={async f => setIdCard(await shrinkDoc(f))} />
 
       <div className="border-t border-gold-100 pt-3 space-y-3">
         <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">บัญชีรับเงินโอนเจ้าภาพ</p>

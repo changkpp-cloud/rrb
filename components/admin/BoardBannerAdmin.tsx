@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Upload, Save, Loader2, CheckCircle2, XCircle, Trash2, ImageIcon } from "lucide-react";
+import { compressImage } from "@/lib/compress-image";
 
 interface Props {
   currentImageUrl: string | null;
@@ -20,9 +21,13 @@ export default function BoardBannerAdmin({ currentImageUrl, defaultImageUrl, cur
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
-  function pick(f: File | null) {
-    setFile(f);
-    setPreview(f ? URL.createObjectURL(f) : null);
+  async function pick(f: File | null) {
+    if (!f) { setFile(null); setPreview(null); return; }
+    // แบนเนอร์แสดงกว้าง — ย่อ ≤1600px เพื่อโหลดเร็วบนหน้างาน
+    let img = f;
+    try { img = await compressImage(f, { maxDim: 1600 }); } catch { /* ใช้ไฟล์เดิม */ }
+    setFile(img);
+    setPreview(URL.createObjectURL(img));
   }
 
   async function save() {

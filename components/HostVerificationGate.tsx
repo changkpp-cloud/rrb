@@ -2,7 +2,13 @@
 
 import { useState, useRef } from "react";
 import { CheckCircle2, Clock, Upload, Eye, ShieldCheck } from "lucide-react";
+import { compressImage } from "@/lib/compress-image";
 import type { Memorial } from "@/lib/supabase/types";
+
+// ย่อเฉพาะไฟล์รูป (≤1600px) — PDF จะ throw แล้วคืนไฟล์เดิม
+async function shrinkDoc(f: File): Promise<File> {
+  try { return await compressImage(f, { maxDim: 1600 }); } catch { return f; }
+}
 
 interface Props {
   memorial: Memorial;
@@ -101,14 +107,14 @@ function SubmitPanel({ memorialId }: { memorialId: string }) {
           required
           file={deathFile}
           fileRef={deathRef}
-          onChange={setDeathFile}
+          onChange={async f => setDeathFile(await shrinkDoc(f))}
         />
         <FilePickRow
           label="สมุดธนาคาร (หน้าแรก)"
           required
           file={bankBookFile}
           fileRef={bankRef}
-          onChange={setBankBookFile}
+          onChange={async f => setBankBookFile(await shrinkDoc(f))}
         />
       </div>
 
