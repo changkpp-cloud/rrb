@@ -52,16 +52,46 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   // เปิดแอปธนาคารด้วย custom scheme — แอปที่ติดตั้งจะเปิดทันที
   // ถ้าแอปไม่เปิดใน ~1.5 วิ (scheme ไม่ตรง/ไม่ได้ติดตั้ง) แสดงคำแนะนำให้คัดลอกเลขพร้อมเพย์แทน
   const [bankHint, setBankHint] = useState(false);
+  // banner แจ้งให้อัปโหลดสลิปเมื่อกลับจากแอปธนาคาร
+  const [returnBanner, setReturnBanner] = useState(false);
+  const slipSectionRef = useRef<HTMLDivElement>(null);
+  // ref กันไม่ให้ banner ขึ้นซ้ำถ้าผู้ใช้กลับมาโดยไม่ได้กดปุ่มแอปธนาคาร
+  const wentToBankApp = useRef(false);
+
   function openBankApp(b: (typeof BANK_LINKS)[number]) {
     setBankHint(false);
-    let switched = false;
-    const mark = () => { switched = true; };
-    document.addEventListener("visibilitychange", () => { if (document.hidden) mark(); }, { once: true });
-    window.addEventListener("blur", mark, { once: true });
+    setReturnBanner(false);
+    wentToBankApp.current = false;
+
+    const onHidden = () => {
+      if (document.hidden) wentToBankApp.current = true;
+    };
+    const onReturn = () => {
+      if (!document.hidden && wentToBankApp.current && !slipFile) {
+        setReturnBanner(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onHidden, { once: true });
+    document.addEventListener("visibilitychange", onReturn);
+    // ล้าง listener onReturn เมื่อ component unmount
+    const cleanup = () => document.removeEventListener("visibilitychange", onReturn);
+    window.addEventListener("pagehide", cleanup, { once: true });
+
     window.location.href = `${b.scheme}://`;
     window.setTimeout(() => {
-      if (!switched && !document.hidden) setBankHint(true);
+      if (!wentToBankApp.current && !document.hidden) setBankHint(true);
     }, 1500);
+  }
+
+  function dismissReturnBanner() {
+    setReturnBanner(false);
+    wentToBankApp.current = false;
+  }
+
+  function handleReturnBannerTap() {
+    dismissReturnBanner();
+    slipSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    setTimeout(() => fileRef.current?.click(), 400);
   }
 
   // เด้งออกไปเปิดหน้านี้ในเบราว์เซอร์จริง (Chrome) ที่ deep link แอปธนาคารทำงานได้
@@ -291,7 +321,24 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
               </div>
             </Card>
 
+            {/* ─── banner กลับจากแอปธนาคาร ─── */}
+            {returnBanner && (
+              <button
+                type="button"
+                onClick={handleReturnBannerTap}
+                className="flex w-full items-center gap-3 rounded-2xl border border-emerald-300 bg-emerald-50 px-4 py-3.5 text-left shadow-sm active:opacity-80"
+              >
+                <span className="text-2xl">✅</span>
+                <div className="flex-1">
+                  <p className="text-sm font-bold text-emerald-800">โอนเสร็จแล้วใช่ไหม?</p>
+                  <p className="text-xs text-emerald-600">แตะที่นี่เพื่ออัปโหลดสลิปได้เลย</p>
+                </div>
+                <span className="text-emerald-400 text-lg">›</span>
+              </button>
+            )}
+
             {/* ─── 2: อัปโหลดสลิป + ยอดเงิน ─── */}
+            <div ref={slipSectionRef}>
             <Card>
               <OrnamentTitle>โอนแล้ว — แนบสลิป</OrnamentTitle>
 
@@ -331,6 +378,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                 </div>
               )}
             </Card>
+            </div>
 
             {error && (
               <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-xs text-red-700 text-center">{error}</div>
