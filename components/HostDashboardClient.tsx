@@ -19,13 +19,18 @@ interface Props {
 
 type TabId = "summary" | "donors" | "report" | "bank" | "persons";
 
-const TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
+// FEATURE FLAG: set SHOW_PERSONS_TAB = true เมื่อพร้อมเปิดใช้งานแท็บภาพจำลอง
+const SHOW_PERSONS_TAB = false;
+
+const ALL_TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "summary", label: "สรุปยอด",     icon: Banknote },
   { id: "donors",  label: "รายชื่อ",      icon: Users },
   { id: "report",  label: "รายงาน",       icon: FileText },
   { id: "bank",    label: "บัญชีรับเงิน", icon: Banknote },
   { id: "persons", label: "ภาพจำลอง",     icon: Camera },
 ];
+
+const TABS = SHOW_PERSONS_TAB ? ALL_TABS : ALL_TABS.filter(t => t.id !== "persons");
 
 function formatThaiDate(isoDate: string): string {
   const months = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
