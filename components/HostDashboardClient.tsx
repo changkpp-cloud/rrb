@@ -111,9 +111,6 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
       </div>
 
       <main className="max-w-lg mx-auto px-4 py-5">
-        <div className="mb-4">
-          <PrinterStatusAlert memorialId={memorial.id} />
-        </div>
 
         {/* ════ สรุปยอด ════ */}
         {activeTab === "summary" && (
@@ -208,6 +205,8 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
         {/* ════ รายชื่อ ════ */}
         {activeTab === "donors" && (
           <div className="space-y-3">
+            <PrinterStatusAlert memorialId={memorial.id} />
+
             <div className="flex items-center justify-between px-1">
               <p className="text-sm font-bold text-gold-700">รายชื่อผู้ร่วมบุญ</p>
               <div className="flex items-center gap-2">
