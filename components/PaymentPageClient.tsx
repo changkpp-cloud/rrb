@@ -51,7 +51,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
 
   // เปิดแอปธนาคารด้วย custom scheme — แอปที่ติดตั้งจะเปิดทันที
   // ถ้าแอปไม่เปิดใน ~1.5 วิ (scheme ไม่ตรง/ไม่ได้ติดตั้ง) แสดงคำแนะนำให้คัดลอกเลขพร้อมเพย์แทน
-  const [bankHint, setBankHint] = useState(false);
   // banner แจ้งให้อัปโหลดสลิปเมื่อกลับจากแอปธนาคาร
   const [returnBanner, setReturnBanner] = useState(false);
   const slipSectionRef = useRef<HTMLDivElement>(null);
@@ -59,7 +58,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const wentToBankApp = useRef(false);
 
   function openBankApp(b: (typeof BANK_LINKS)[number]) {
-    setBankHint(false);
     setReturnBanner(false);
     wentToBankApp.current = false;
 
@@ -78,9 +76,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     window.addEventListener("pagehide", cleanup, { once: true });
 
     window.location.href = `${b.scheme}://`;
-    window.setTimeout(() => {
-      if (!wentToBankApp.current && !document.hidden) setBankHint(true);
-    }, 1500);
   }
 
   function dismissReturnBanner() {
@@ -313,11 +308,6 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     </a>
                   ))}
                 </div>
-                {bankHint && (
-                  <div className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-700 text-center">
-                    ถ้าแอปธนาคารไม่เปิด — กด <span className="font-bold">“คัดลอกเลขพร้อมเพย์”</span> ด้านบน แล้วเปิดแอปธนาคารเอง เพื่อสแกน QR หรือวางเลขโอนเงิน
-                  </div>
-                )}
               </div>
             </Card>
 
