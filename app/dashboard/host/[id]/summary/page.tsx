@@ -1,15 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { Download, Users } from "lucide-react";
-import LotusIcon from "@/components/LotusIcon";
 import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
+import { Users, ImageDown, Share2 } from "lucide-react";
+import LotusIcon from "@/components/LotusIcon";
 import type { Donation } from "@/lib/supabase/types";
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" });
-}
 
 export default function HostSummaryPage() {
   const params = useParams<{ id: string }>();
@@ -17,7 +12,8 @@ export default function HostSummaryPage() {
   const [donations, setDonations] = useState<Donation[]>([]);
   const [memorialName, setMemorialName] = useState("งานมงคล");
   const [loading, setLoading] = useState(true);
-  const printRef = useRef<HTMLDivElement>(null);
+  const [saving, setSaving] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function load() {
@@ -40,39 +36,79 @@ export default function HostSummaryPage() {
   const fee = donations.length * 100;
   const net = Math.max(0, total - fee);
 
-  function handlePrint() {
-    window.print();
+  async function handleSaveImage() {
+    if (!contentRef.current) return;
+    setSaving(true);
+    try {
+      const { toPng } = await import("html-to-image");
+      const dataUrl = await toPng(contentRef.current, { pixelRatio: 2 });
+      const a = document.createElement("a");
+      a.href = dataUrl;
+      a.download = `สรุปการเงิน-${memorialName || id}.png`;
+      a.click();
+    } catch {}
+    setSaving(false);
+  }
+
+  async function handleShare() {
+    const url = window.location.href;
+    const text = `สรุปการเงิน — ${memorialName}`;
+    if (navigator.share) {
+      await navigator.share({ title: text, url }).catch(() => {});
+    } else {
+      window.open(
+        `https://line.me/R/msg/text/?${encodeURIComponent(text + "\n" + url)}`,
+        "_blank"
+      );
+    }
   }
 
   return (
     <div className="min-h-screen" style={{ background: "#ffffff" }}>
-      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200 print:hidden">
+      {/* Header — ไม่ติดไปในภาพ */}
+      <header className="sticky top-0 z-40 bg-cream-100/95 backdrop-blur-sm border-b border-gold-200">
         <div className="max-w-lg mx-auto px-4 py-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LotusIcon className="w-5 h-5 text-gold-600" />
             <div className="text-center">
-              <p className="text-sm font-bold gold-gradient-text">สรุปพิธีกร</p>
-              <p className="text-[9px] text-gold-500 -mt-0.5">MC Summary</p>
+              <p className="text-sm font-bold gold-gradient-text">สรุปการเงิน</p>
+              <p className="text-[9px] text-gold-500 -mt-0.5">Financial Summary</p>
             </div>
             <LotusIcon className="w-5 h-5 text-gold-600 scale-x-[-1]" />
           </div>
-          <button onClick={handlePrint} className="w-8 h-8 rounded-full border border-gold-300 bg-cream-50 flex items-center justify-center text-gold-600 hover:bg-gold-50 transition-all">
-            <Download className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleShare}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg gold-border bg-cream-50 text-xs text-gold-700 font-semibold hover:bg-cream-100 transition-colors"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              แชร์
+            </button>
+            <button
+              onClick={handleSaveImage}
+              disabled={saving}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg gold-border bg-cream-50 text-xs text-gold-700 font-semibold hover:bg-cream-100 transition-colors disabled:opacity-50"
+            >
+              <ImageDown className="w-3.5 h-3.5" />
+              {saving ? "กำลังบันทึก..." : "บันทึกภาพ"}
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
+      <main className="max-w-lg mx-auto px-4 py-5">
         {loading ? (
           <div className="text-center py-16 text-gold-400 text-sm">กำลังโหลด...</div>
         ) : (
-          <div ref={printRef} className="space-y-4">
-
-            {/* Print header */}
+          /* contentRef ครอบเฉพาะเนื้อหา — ส่วนนี้เท่านั้นที่ถ่ายเป็นภาพ */
+          <div ref={contentRef} className="space-y-4 bg-white px-1 py-2">
+            {/* Title */}
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-4 text-center">
-              <p className="text-xs text-gold-500 uppercase tracking-wider mb-1">สรุปรายชื่อผู้ร่วมบุญ</p>
+              <p className="text-xs text-gold-500 uppercase tracking-wider mb-1">สรุปการเงิน</p>
               <p className="text-lg font-bold text-gold-800">{memorialName}</p>
-              <p className="text-[10px] text-gold-400 mt-1">พิมพ์วันที่ {new Date().toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}</p>
+              <p className="text-[10px] text-gold-400 mt-1">
+                {new Date().toLocaleDateString("th-TH", { day: "numeric", month: "long", year: "numeric" })}
+              </p>
             </div>
 
             {/* Financial summary */}
@@ -110,7 +146,7 @@ export default function HostSummaryPage() {
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-semibold text-gold-800 leading-tight">{d.donor_name}</p>
                       {d.donor_title && <p className="text-[10px] text-gold-500">{d.donor_title}</p>}
-                      {d.message && <p className="text-[10px] text-gold-400 italic">"{d.message}"</p>}
+                      {d.message && <p className="text-[10px] text-gold-400 italic">&ldquo;{d.message}&rdquo;</p>}
                     </div>
                     <p className="text-sm font-bold text-gold-700 shrink-0">{d.amount.toLocaleString()} ฿</p>
                   </div>
@@ -121,9 +157,8 @@ export default function HostSummaryPage() {
               </div>
             </div>
 
-            {/* Footer note */}
-            <p className="text-center text-[10px] text-gold-400 pb-2">
-              เอกสารนี้ออกโดยระบบหรีดร่วมบุญ · ใช้สำหรับพิธีกรอ่านรายชื่อ
+            <p className="text-center text-[10px] text-gold-400 pb-1">
+              หรีดร่วมบุญ · สรุปการเงินสำหรับเจ้าภาพ
             </p>
           </div>
         )}

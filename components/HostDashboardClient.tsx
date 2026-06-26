@@ -25,7 +25,7 @@ const SHOW_PERSONS_TAB = false;
 const ALL_TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "summary", label: "สรุปยอด",     icon: Banknote },
   { id: "donors",  label: "รายชื่อ",      icon: Users },
-  { id: "report",  label: "รายงาน",       icon: FileText },
+  { id: "report",  label: "สรุปการเงิน",   icon: FileText },
   { id: "bank",    label: "บัญชีรับเงิน", icon: Banknote },
   { id: "persons", label: "ภาพจำลอง",     icon: Camera },
 ];
