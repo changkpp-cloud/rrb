@@ -40,14 +40,7 @@ export default function HostPersonPicker({ memorialId, selectedId, onChange }: P
 
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-gold-700">เลือกเจ้าภาพ / ญาติที่ต้องการให้อยู่ในภาพ</p>
-
-      {persons.length === 0 ? (
-        <div className="bg-cream-50 gold-border rounded-xl px-4 py-4 text-center space-y-1">
-          <Users className="w-8 h-8 text-gold-300 mx-auto" />
-          <p className="text-xs text-gold-500">เจ้าภาพยังไม่ได้เพิ่มบุคคลสำหรับสร้างภาพจำลอง</p>
-        </div>
-      ) : (
+      {persons.length === 0 ? null : (
         <div className="space-y-2">
           {/* ไม่เลือก */}
           <button
@@ -106,9 +99,6 @@ export default function HostPersonPicker({ memorialId, selectedId, onChange }: P
         </div>
       )}
 
-      <p className="text-[10px] text-gold-400 leading-relaxed">
-        ระบบจะใช้เฉพาะรูปที่เจ้าภาพอนุญาตให้ใช้ในภาพจำลองเท่านั้น
-      </p>
     </div>
   );
 }
