@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Users, Download, ExternalLink, Pencil, Banknote, FileText, Camera } from "lucide-react";
+import { AlertTriangle, Users, Download, ExternalLink, Pencil, Banknote, FileText, Camera, Mic } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostVerificationGate from "./HostVerificationGate";
@@ -210,11 +210,18 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
               <p className="text-sm font-bold text-gold-700">รายชื่อผู้ร่วมบุญ</p>
-              <div className="flex items-center gap-1.5 text-xs text-gold-500">
-                <Users className="w-3.5 h-3.5" />
-                <span><span className="font-semibold text-gold-700">{confirmed.length}</span> ราย</span>
-                <span className="text-gold-300">·</span>
-                <span className="font-semibold text-gold-700">{totalAmount.toLocaleString()} ฿</span>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 text-xs text-gold-500">
+                  <Users className="w-3.5 h-3.5" />
+                  <span><span className="font-semibold text-gold-700">{confirmed.length}</span> ราย</span>
+                </div>
+                <Link
+                  href={`/dashboard/host/${id}/announce`}
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-lg gold-border bg-cream-50 text-xs text-gold-700 font-semibold hover:bg-cream-100 transition-colors"
+                >
+                  <Mic className="w-3 h-3" />
+                  บันทึกรายชื่อพิธีกร
+                </Link>
               </div>
             </div>
 
