@@ -347,7 +347,7 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                     <path d="M 76 32 Q 82 26 88 22" stroke="#b89040" strokeWidth="0.7" fill="none" opacity="0.38"/>
                   </svg>
                   {/* Oval photo */}
-                  <div style={{ width: Math.round(76*s), height: Math.round(90*s), borderRadius: "50% / 45%", overflow: "hidden", border: `${Math.round(2*s)}px solid #e8c97a`, boxShadow: `0 ${Math.round(3*s)}px ${Math.round(12*s)}px rgba(184,134,11,0.15), 0 0 0 ${Math.round(3*s)}px rgba(253,248,238,0.85), 0 0 0 ${Math.round(6*s)}px rgba(201,168,76,0.15)`, position: "relative", zIndex: 2 }}>
+                  <div style={{ width: Math.round(76*s), height: Math.round(90*s), overflow: "hidden", position: "relative", zIndex: 2 }}>
                     {memorialPhotoSrc ? (
                       <img src={memorialPhotoSrc} alt={deceasedName} style={{ width: "100%", height: "100%", objectFit: "cover" }} crossOrigin={memorialPhotoSrc.startsWith("data:") ? undefined : "anonymous"} />
                     ) : (
