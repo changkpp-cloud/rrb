@@ -71,7 +71,7 @@ export default function HostAnnouncePage() {
                 <p className="text-xs text-gold-500 uppercase tracking-wider">รายชื่อผู้มอบหรีดร่วมบุญ</p>
               </div>
               {memorialName && (
-                <p className="text-lg font-bold text-gold-800">งานพระราชทานเพลิงศพ {memorialName}</p>
+                <p className="text-lg font-bold text-gold-800">{memorialName}</p>
               )}
               <p className="text-[10px] text-gold-400 mt-1">
                 รวม {ordered.length} ราย · พิมพ์วันที่{" "}
@@ -103,9 +103,11 @@ export default function HostAnnouncePage() {
                       </span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gold-800 leading-snug">
-                          {d.donor_title ? `${d.donor_title} ` : ""}
                           {d.donor_name}
                         </p>
+                        {d.donor_title && (
+                          <p className="text-[10px] text-gold-600 mt-0.5">{d.donor_title}</p>
+                        )}
                         {d.message && (
                           <p className="text-[10px] text-gold-400 italic mt-0.5">
                             &ldquo;{d.message}&rdquo;
