@@ -130,3 +130,6 @@
 ## 2026-06-26
 - ลบกรอบวงรี (oval border) ออกจากรูปผู้วายชนม์ในหน้า E-Card (pp/ecard/ECardClient.tsx) — แสดงรูปแบบสี่เหลี่ยมตามขนาดเดิม ไม่มีเส้นขอบหรือเงา
 
+
+## 2026-06-26
+- ซ่อนแท็บ `ภาพจำลอง` ในแดชบอร์ดเจ้าภาพ (components/HostDashboardClient.tsx) ด้วย feature flag `SHOW_PERSONS_TAB = false` — โค้ดและ content ยังอยู่ครบ แค่ไม่แสดงในแถบเมนู เมื่อพร้อมเปิดให้เปลี่ยน flag เป็น `true`
