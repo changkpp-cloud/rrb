@@ -7,6 +7,7 @@ import {
   UserRound,
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
+import SiteFooter from "@/components/SiteFooter";
 import { getActiveMemorials } from "@/lib/memorial";
 
 export const dynamic = "force-dynamic";
@@ -131,6 +132,8 @@ export default async function Home() {
           )}
         </div>
       </section>
+
+      <SiteFooter />
     </main>
   );
 }
