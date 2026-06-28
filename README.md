@@ -66,7 +66,7 @@ supabase/
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Service role key (admin ops only) |
-| `NEXT_PUBLIC_SITE_URL` | Public site URL, currently `https://rrb.center` |
+| `NEXT_PUBLIC_SITE_URL` | Public site URL, currently `https://ruamboon.online` |
 
 ## Features
 - Mobile-first Thai Buddhist design (gold + cream palette)

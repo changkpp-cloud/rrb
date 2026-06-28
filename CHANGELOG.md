@@ -8,6 +8,11 @@
 
 ## 2026-06-28
 
+### อัปเดตชื่อเว็บในเอกสาร rrb.center → ruamboon.online ทั้งหมด
+- เปลี่ยน rrb.center เป็น ruamboon.online ในเอกสารทุกที่ที่ระบุเป็น "โดเมน/URL ของเว็บ"
+- **ไฟล์:** `ระบบสรุป-หรีดร่วมบุญ.md` (5 จุด), `SYSTEM_DOCUMENTATION.md` (2), `docs/checklist-เปิดศูนย์แรก.md`, `docs/brain/06-มาตรฐานแบรนด์.md`, `docs/brain/02-flow-ระบบ.md`, `README.md` + comment ใน `CreateMemorialClient.tsx` ที่ stale
+- **คงไว้ตั้งใจ:** CHANGELOG เดิม (ประวัติ ณ ตอนนั้น) และหมายเหตุ "rrb.center ยังใช้งานได้คู่กัน" ใน `lib/site-url.ts` / `CLAUDE.md` / `docs/brain/06` (อธิบายพฤติกรรม dual-domain จริง)
+
 ### แทนที่ "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ" ด้วยสโลแกนใหม่ทั้งหมด
 - เปลี่ยนวลีแบรนด์เก่าเป็นสโลแกนใหม่ (`SITE_SLOGAN`) ทุกจุด — กลับลำจากรอบก่อนที่ "เพิ่มต่อท้าย" มาเป็น "แทนที่"
 - **โค้ด:** `app/layout.tsx` (meta description = สโลแกน + "สำหรับงานศพไทย"), `app/[slug]/page.tsx` (fallback ทั้ง 2 จุด = สโลแกนล้วน)

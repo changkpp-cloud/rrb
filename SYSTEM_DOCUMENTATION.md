@@ -167,7 +167,7 @@ Donor submits name (print-name page)
 #### Step 1 — Enter Event Page
 
 ```
-Donor opens: https://rrb.center/{slug}
+Donor opens: https://ruamboon.online/{slug}
 → Server fetches memorial by slug (revalidate: 60s ISR)
 → Displays:
     • Deceased name, photo, birth/death dates, age
@@ -728,7 +728,7 @@ app_users (1)
 | `HOST_SESSION_SECRET` | For host auth | Signs host_session tokens |
 | `CRON_SECRET` | For worker | Authorizes `GET /api/worker` cron calls |
 | `PAYMENT_WEBHOOK_SECRET` | For webhooks | HMAC-SHA256 verify payment webhooks |
-| `NEXT_PUBLIC_SITE_URL` | For links | Base URL (default: https://rrb.center) |
+| `NEXT_PUBLIC_SITE_URL` | For links | Base URL (default: https://ruamboon.online) |
 | `CENTER_DAILY_DONATION_LIMIT` | Optional | Override default limit of 1,000/day |
 | `OPENAI_IMAGE_MODEL` | Optional | Override image model (default: gpt-image-1.5) |
 | `OPENAI_IMAGE_SIZE` | Optional | Override image size (default: 1024x1024) |

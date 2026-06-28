@@ -17,7 +17,7 @@
 
 ## 2. Environment Variables (Vercel + .env.local)
 - [ ] `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` / `SUPABASE_SERVICE_ROLE_KEY`
-- [ ] `NEXT_PUBLIC_SITE_URL=https://rrb.center`
+- [ ] `NEXT_PUBLIC_SITE_URL=https://ruamboon.online`
 - [ ] `ADMIN_PASSWORD` (เปลี่ยนจาก default ESG2025)
 - [ ] `HOST_SESSION_SECRET` (สำหรับ login เจ้าภาพ)
 - [ ] `OPENAI_API_KEY` (สำหรับภาพ AI จำลองมอบหรีด)
