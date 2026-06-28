@@ -6,6 +6,14 @@
 
 ---
 
+## 2026-06-28
+
+### เปลี่ยนโดเมนหลักเป็น ruamboon.online (ใช้คู่กับ rrb.center)
+- **ที่มา:** ซื้อโดเมนใหม่ `ruamboon.online` ตั้งเป็นโดเมนหลักของระบบ ลิงก์/QR ที่สร้างใหม่ใช้โดเมนนี้
+- **นโยบาย:** ใช้คู่กัน **ไม่ redirect** — `rrb.center` ยังชี้มาเว็บเดียวกัน ลิงก์/QR เก่าที่แจกไปแล้วเปิดได้ปกติ
+- **แก้โค้ด:** `lib/site-url.ts` (ค่า `SITE_URL` fallback), `.env.local.example` + `.env.local` (`NEXT_PUBLIC_SITE_URL`), ข้อความตัวอย่าง URL ใน `CreateMemorialClient.tsx` และหน้าเปิดศูนย์ `admin/centers/new/page.tsx`
+- **ต้องทำฝั่ง infra (นอกโค้ด):** เพิ่มโดเมน `ruamboon.online` ใน Vercel + ตั้ง DNS ที่ Hostinger ให้ชี้ Vercel + อัปเดต env `NEXT_PUBLIC_SITE_URL` บน Vercel แล้ว redeploy (สำคัญ: env บน Vercel ชนะค่า fallback ในโค้ด)
+
 ## 2026-06-25
 
 ### แก้บั๊ก: รูปผู้วายชนม์ไม่แสดงบน iPhone ในหน้าขอบคุณ/e-card

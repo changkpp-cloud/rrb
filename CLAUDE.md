@@ -34,7 +34,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_PASSWORD=          # default: ESG2025
 OPENAI_API_KEY=          # สำหรับ generate-wreath DALL-E 3
-NEXT_PUBLIC_SITE_URL=https://rrb.center
+NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rrb.center ยังใช้งานได้คู่กัน — ลิงก์เก่าเปิดได้)
 ```
 
 ---

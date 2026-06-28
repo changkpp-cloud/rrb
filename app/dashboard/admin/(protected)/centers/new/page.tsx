@@ -90,7 +90,7 @@ export default function NewCenterPage() {
     const text = [
       `ศูนย์: ${sd.centerName}`,
       `รหัสเข้าระบบ: ${sd.accessCode}`,
-      `URL เข้าระบบ: https://rrb.center/dashboard/center`,
+      `URL เข้าระบบ: https://ruamboon.online/dashboard/center`,
     ].join("\n");
     await navigator.clipboard.writeText(text);
     setCopied(true);
@@ -114,7 +114,7 @@ export default function NewCenterPage() {
 
           <div className="bg-white rounded-xl border border-emerald-200 px-4 py-3 space-y-3">
             <p className="text-xs font-bold text-gold-700">ส่งข้อมูลนี้ให้เจ้าหน้าที่ศูนย์</p>
-            <InfoRow label="URL เข้าระบบ" value="rrb.center/dashboard/center" mono />
+            <InfoRow label="URL เข้าระบบ" value="ruamboon.online/dashboard/center" mono />
             <InfoRow label="รหัสประจำศูนย์" value={successData.centerCode} mono />
             <div>
               <p className="text-[10px] text-gold-500 mb-1.5">รหัสเข้าระบบ (ใช้ login ที่หน้าศูนย์)</p>

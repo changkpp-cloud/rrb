@@ -409,7 +409,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                 />
               </div>
               <p className="text-[10px] text-gold-400 mt-1 break-all">
-                ตัวอย่าง: rrb.center/{[slugPrefix, slugPart].filter(Boolean).join("-") || "…"}
+                ตัวอย่าง: ruamboon.online/{[slugPrefix, slugPart].filter(Boolean).join("-") || "…"}
               </p>
             </Field>
 
