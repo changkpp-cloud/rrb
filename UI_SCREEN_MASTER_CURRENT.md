@@ -54,7 +54,7 @@
 - **CeremonyInfo** — iOS grouped table: Row สวดพระอภิธรรม (icon + วันที่ + สถานที่) / Row ฌาปนกิจ (icon + วัน/เวลา + สถานที่)
 - **WreathBoard** — รูปบอร์ดหรีดร่วมบุญ (PNG) + section label "หรีดร่วมบุญ"
 - **PaymentSection** — CTA button pill "มอบหรีดร่วมบุญ"
-- **SiteFooter** — "ร่วมอาลัย · ร่วมทำบุญ · ร่วมลดขยะ"
+- **SiteFooter** — "เปลี่ยนพวงหรีดเป็นทุน ร่วมบุญเจ้าภาพ · ลดขยะต้นทาง สร้างสวัสดิการผู้วายชนม์"
 
 **Buttons / CTA**
 - `มอบหรีดร่วมบุญ` → `/{slug}/payment` (pill gold-gradient button, full-width)

@@ -31,7 +31,7 @@ function formatMetadataDate(dateValue: string | null | undefined) {
 }
 
 function buildShareDescription(memorial: Awaited<ReturnType<typeof getMemorialBySlug>>) {
-  if (!memorial) return `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ · ${SITE_SLOGAN}`;
+  if (!memorial) return SITE_SLOGAN;
 
   const birthDate = formatMetadataDate(memorial.birth_date);
   const deathDate = formatMetadataDate(memorial.death_date);
@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
   if (!memorial) {
     return {
       title: "หรีดร่วมบุญ",
-      description: `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ · ${SITE_SLOGAN}`,
+      description: SITE_SLOGAN,
       alternates: { canonical: pageUrl },
     };
   }

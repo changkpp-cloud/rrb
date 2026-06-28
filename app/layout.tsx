@@ -14,7 +14,7 @@ const sarabun = Sarabun({
 
 export const metadata: Metadata = {
   title: "ระบบร่วมทำบุญออนไลน์",
-  description: `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ สำหรับงานศพไทย · ${SITE_SLOGAN}`,
+  description: `${SITE_SLOGAN} สำหรับงานศพไทย`,
   keywords: ["หรีดร่วมบุญ", "งานศพ", "zero waste", "ทำบุญ", "พวงหรีด"],
   openGraph: {
     title: "ระบบร่วมทำบุญออนไลน์",
