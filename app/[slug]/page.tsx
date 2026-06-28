@@ -6,7 +6,7 @@ import CeremonyInfo from "@/components/CeremonyInfo";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
 import { getMemorialBySlug } from "@/lib/memorial";
-import { getSiteUrl } from "@/lib/site-url";
+import { getSiteUrl, SITE_SLOGAN } from "@/lib/site-url";
 import { getSiteSettings, HOME_BOARD_IMAGE_KEY, HOME_BOARD_CAPTION_KEY } from "@/lib/site-settings";
 
 export const revalidate = 60;
@@ -31,7 +31,7 @@ function formatMetadataDate(dateValue: string | null | undefined) {
 }
 
 function buildShareDescription(memorial: Awaited<ReturnType<typeof getMemorialBySlug>>) {
-  if (!memorial) return "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ";
+  if (!memorial) return `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ · ${SITE_SLOGAN}`;
 
   const birthDate = formatMetadataDate(memorial.birth_date);
   const deathDate = formatMetadataDate(memorial.death_date);
@@ -39,12 +39,15 @@ function buildShareDescription(memorial: Awaited<ReturnType<typeof getMemorialBy
   const ceremonyPlace = [memorial.ceremony_location, memorial.ceremony_hall].filter(Boolean).join(" ");
   const ceremonyTime = memorial.ceremony_time ? ` เวลา ${memorial.ceremony_time} น.` : "";
 
-  return [
+  const info = [
     birthDate ? `ชาตะ ${birthDate}` : null,
     deathDate ? `มรณะ ${deathDate}` : null,
     memorial.age ? `อายุ ${memorial.age} ปี` : null,
     ceremonyDate ? `กำหนดพิธี ${ceremonyDate}${ceremonyTime}${ceremonyPlace ? ` ณ ${ceremonyPlace}` : ""}` : null,
   ].filter(Boolean).join(" · ");
+
+  // ต่อท้ายสโลแกนแบรนด์ (ไม่ลบข้อมูลงาน แค่เพิ่ม)
+  return info ? `${info} · ${SITE_SLOGAN}` : SITE_SLOGAN;
 }
 
 export async function generateMetadata({ params }: SlugParams): Promise<Metadata> {
@@ -56,7 +59,7 @@ export async function generateMetadata({ params }: SlugParams): Promise<Metadata
   if (!memorial) {
     return {
       title: "หรีดร่วมบุญ",
-      description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ",
+      description: `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ · ${SITE_SLOGAN}`,
       alternates: { canonical: pageUrl },
     };
   }

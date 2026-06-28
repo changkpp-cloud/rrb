@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Sarabun } from "next/font/google";
 import "./globals.css";
 import FloatingBackButton from "@/components/FloatingBackButton";
+import { SITE_SLOGAN } from "@/lib/site-url";
 
 // Self-host Sarabun (ไทย+ละติน) — เร็วกว่าโหลดจาก Google Fonts ภายนอกมาก
 const sarabun = Sarabun({
@@ -13,7 +14,7 @@ const sarabun = Sarabun({
 
 export const metadata: Metadata = {
   title: "ระบบร่วมทำบุญออนไลน์",
-  description: "ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ สำหรับงานศพไทย",
+  description: `ร่วมอาลัย ร่วมทำบุญ ร่วมลดขยะ สำหรับงานศพไทย · ${SITE_SLOGAN}`,
   keywords: ["หรีดร่วมบุญ", "งานศพ", "zero waste", "ทำบุญ", "พวงหรีด"],
   openGraph: {
     title: "ระบบร่วมทำบุญออนไลน์",
