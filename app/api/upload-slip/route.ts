@@ -3,7 +3,9 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
-const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+// สลิปโอนเงินจริงจากแอปธนาคาร (บันทึก/แชร์/แคปหน้าจอ) เป็นรูป JPG หรือ PNG เสมอ
+// ถ้าไม่ใช่ 2 แบบนี้ (เช่น HEIC, PDF, webp) ถือว่าไม่ใช่สลิปจริง → ปฏิเสธ
+const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png"]);
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!ALLOWED_SLIP_TYPES.has(slipFile.type)) {
-      return NextResponse.json({ error: "Unsupported slip file type" }, { status: 415 });
+      return NextResponse.json({ error: "Unsupported slip file type", not_a_slip: true }, { status: 415 });
     }
 
     const rawExt = slipFile.name.split(".").pop()?.toLowerCase();

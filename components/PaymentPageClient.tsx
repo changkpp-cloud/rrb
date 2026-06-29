@@ -15,6 +15,7 @@ interface Props {
   memorial: Memorial;
   basePath?: string;
   promptpayPhone?: string | null;
+  accountName?: string | null;
 }
 
 // scheme = custom URL scheme ของแอป (เปิดแอปธนาคารในเบราว์เซอร์จริง)
@@ -28,7 +29,11 @@ const BANK_LINKS = [
   { label: "TTB", scheme: "ttbtouch", bg: "#009ade", text: "#fff" },
 ];
 
-export default function PaymentPageClient({ memorial, basePath = "", promptpayPhone }: Props) {
+// สลิปโอนเงินจริงจากแอปธนาคารเป็นรูป JPG หรือ PNG เสมอ — ใช้เป็นด่านตรวจว่าไฟล์เป็นสลิปจริง
+// (ต้องตรงกับ ALLOWED_SLIP_TYPES ใน app/api/upload-slip/route.ts)
+const SLIP_ACCEPTED_TYPES = new Set(["image/jpeg", "image/png"]);
+
+export default function PaymentPageClient({ memorial, basePath = "", promptpayPhone, accountName }: Props) {
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
@@ -113,15 +118,25 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     const f = e.target.files?.[0];
     if (!f) return;
     // ย่อสลิปให้โหลดเร็ว แต่คงความละเอียดพออ่านตัวเลขออก
+    // compressImage จะแปลงรูปที่ decode ได้ (รวม HEIC บน iOS) เป็น JPEG ให้อัตโนมัติ
     let img = f;
     try { img = await compressImage(f, { maxDim: 1600 }); } catch { /* ใช้ไฟล์เดิม */ }
+    // สลิปโอนเงินจริงเป็นรูป JPG/PNG เท่านั้น — ถ้าไม่ใช่ (เช่น HEIC ที่แปลงไม่ได้, PDF, ไฟล์อื่น)
+    // ถือว่าไม่ใช่สลิป แจ้งผู้ใช้ทันทีไม่ต้องรอ submit
+    if (!SLIP_ACCEPTED_TYPES.has(img.type)) {
+      setError("ไฟล์นี้ไม่ใช่รูปสลิป กรุณาแนบสลิปที่บันทึก/แคปหน้าจอจากแอปธนาคาร (ไฟล์ .jpg หรือ .png)");
+      setSlipFile(null);
+      setSlipPreview(null);
+      e.target.value = "";
+      return;
+    }
     setSlipFile(img);
     setSlipPreview(URL.createObjectURL(img));
     setError("");
   }
 
   function copyPromptPay() {
-    const text = promptpayPhone ?? memorial.bank_account_number ?? "";
+    const text = promptpayPhone ?? memorial.host_bank_account_number ?? memorial.bank_account_number ?? "";
     navigator.clipboard.writeText(text);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -184,9 +199,13 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
       const res = await fetch("/api/upload-slip", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) {
-        setError(res.status === 409 || data?.duplicate
-          ? "สลิปนี้ถูกใช้แล้ว กรุณาใช้สลิปใหม่"
-          : "อัปโหลดสลิปไม่สำเร็จ กรุณาลองอีกครั้ง");
+        if (res.status === 409 || data?.duplicate) {
+          setError("สลิปนี้ถูกใช้แล้ว กรุณาใช้สลิปใหม่");
+        } else if (res.status === 415 || data?.not_a_slip) {
+          setError("ไฟล์นี้ไม่ใช่รูปสลิป กรุณาแนบสลิปที่บันทึก/แคปหน้าจอจากแอปธนาคาร (ไฟล์ .jpg หรือ .png)");
+        } else {
+          setError("อัปโหลดสลิปไม่สำเร็จ กรุณาลองอีกครั้ง");
+        }
         setSubmitting(false);
         return;
       }
@@ -222,6 +241,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
             {/* ─── 1: QR + บัญชี ─── */}
             <Card>
               <OrnamentTitle>ร่วมมอบ หรีดร่วมบุญ</OrnamentTitle>
+              <p className="mt-1.5 text-center text-[10px] text-emerald-600">เงินร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง</p>
 
               <div className="mt-3 flex items-stretch">
                 {/* QR */}
@@ -246,12 +266,12 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                 {/* Bank info */}
                 <div className="flex-1 pl-4 flex flex-col justify-center space-y-2">
                   <div>
-                    <p className="text-[10px] text-gold-500 font-medium">ชื่อบัญชี</p>
-                    <p className="text-base font-bold text-gold-800 leading-tight">ศูนย์หรีดร่วมบุญ</p>
+                    <p className="text-[10px] text-gold-500 font-medium">ชื่อบัญชี (เจ้าภาพ)</p>
+                    <p className="text-base font-bold text-gold-800 leading-tight">{accountName || memorial.host_name || "บัญชีเจ้าภาพ"}</p>
                   </div>
                   <div>
                     <p className="text-[10px] text-gold-500 font-medium">ธนาคาร</p>
-                    <p className="text-sm font-semibold text-gold-700">{(memorial.bank_name ?? "").split("\n")[1] ?? memorial.bank_name ?? ""}</p>
+                    <p className="text-sm font-semibold text-gold-700">{memorial.host_bank_name || ""}</p>
                   </div>
                   {promptpayPhone && (
                     <div>
@@ -262,7 +282,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                   {!promptpayPhone && (
                     <div>
                       <p className="text-[10px] text-gold-500 font-medium">เลขบัญชี</p>
-                      <p className="text-base font-bold text-gold-800 tracking-widest">{memorial.bank_account_number}</p>
+                      <p className="text-base font-bold text-gold-800 tracking-widest">{memorial.host_bank_account_number || memorial.bank_account_number}</p>
                     </div>
                   )}
                 </div>

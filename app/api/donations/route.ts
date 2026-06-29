@@ -8,7 +8,8 @@ import { sendPrintJob } from "@/lib/printnode";
 import { createHash } from "crypto";
 
 const MAX_SLIP_SIZE = 5 * 1024 * 1024;
-const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "application/pdf"]);
+// สลิปโอนเงินจริงเป็นรูป JPG หรือ PNG เท่านั้น (ดู app/api/upload-slip/route.ts)
+const ALLOWED_SLIP_TYPES = new Set(["image/jpeg", "image/png"]);
 
 type MemorialInfo = {
   center_id?: string | null;
@@ -21,8 +22,6 @@ function extensionFor(file: File) {
   const ext = file.name.split(".").pop()?.toLowerCase();
   if (ext && /^[a-z0-9]+$/.test(ext)) return ext;
   if (file.type === "image/png") return "png";
-  if (file.type === "image/webp") return "webp";
-  if (file.type === "application/pdf") return "pdf";
   return "jpg";
 }
 
