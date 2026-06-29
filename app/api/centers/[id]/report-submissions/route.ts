@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, canEditCenterWork, roleLabel } from "@/lib/iam";
 
-// ศูนย์ทำเครื่องหมายว่า "ส่งรายงานงวดนี้ให้ อปท. แล้ว" (หรือยกเลิก) → ใช้ทำ compliance tracker
-// อปท. (lgo_observer) ดูสถานะอย่างเดียว — เปลี่ยนสถานะไม่ได้ (canEditCenterWork = false)
+// ศูนย์ทำเครื่องหมายว่า "ส่งรายงานงวดนี้ให้เทศบาลแล้ว" (หรือยกเลิก) → ใช้ทำ compliance tracker
+// ตัวแทนเทศบาล (lgo_observer) ดูสถานะอย่างเดียว — เปลี่ยนสถานะไม่ได้ (canEditCenterWork = false)
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },

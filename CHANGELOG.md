@@ -226,4 +226,11 @@
 - API `POST /api/centers/[id]/report-submissions` — ศูนย์ (canEditCenterWork) ทำเครื่องหมาย/ยกเลิก · อปท. เปลี่ยนไม่ได้
 - หน้า report: เพิ่ม `ReportSubmissionControl` — ศูนย์กด "ทำเครื่องหมายว่าส่งให้ อปท. แล้ว" ของงวดที่เลือก (อปท. เห็นสถานะอย่างเดียว)
 - หน้าใหม่ **`/compliance`**: อปท. ดูสถานะส่งรายงาน 12 เดือนล่าสุด + รายปี (ส่งแล้ว/ยังไม่ส่ง/ไม่มีงาน) + KPI สรุป + ลิงก์ไป report · เพิ่มลิงก์เข้า compliance บนหน้า oversight
+
+### ลดระดับสิทธิ์เหลือ 2 (แอดมินกลางเป็นผู้ออกรหัสเข้าศูนย์)
+- เหลือ 2 สิทธิ์ที่ออกให้ศูนย์: **สิทธิ์แก้ไข = `center_manager` ("แอดมินศูนย์")** ผู้ปฏิบัติงาน · **สิทธิ์ดู = `lgo_observer` ("ตัวแทน อปท. ประจำศูนย์")** read-only
+- `canEditCenterWork` = `super_admin | center_manager` เท่านั้น (เอา `center_staff` ออก) · `center_staff`/`center_viewer` ยกเลิกการออกใหม่ (คงใน enum เพื่อ backward-compat)
+- `/api/admin/users` `VALID_ROLES` เหลือ 2 · ฟอร์มสร้างผู้ใช้ + dropdown อนุมัติคำขอ เหลือ 2 ตัวเลือก + คำอธิบายสิทธิ์ + ปุ่มคัดลอกล็อกอินส่งให้ผู้รับ
+- เมนูแอดมิน "ผู้ใช้" → **"สร้างรหัสเข้าศูนย์"** · self-signup (`/api/center/register`) ขอสิทธิ์เป็น `center_manager`
+- **ล็อกอินศูนย์เปลี่ยนเป็นเบอร์มือถือ + รหัสผ่าน** (`CenterLoginClient`) แทนอีเมล · ปรับ label/ถ้อยคำ (roleLabel, system-health) ให้ตรงโมเดลใหม่
 - ⚠️ **ต้องรัน migration `20260629020000` ก่อน** · ⏳ ที่เหลือ: เทมเพลต export LPA/ITA/จังหวัดสะอาด + มุมรวมหลายศูนย์ (defer)

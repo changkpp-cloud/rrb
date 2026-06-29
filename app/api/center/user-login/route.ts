@@ -3,31 +3,36 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { verifyPassword, setCenterUserSession } from "@/lib/iam";
 import { getCenterRouteKey } from "@/lib/center-route";
 
+function normalizePhone(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
+}
+
 export async function POST(req: NextRequest) {
-  let body: { email?: unknown; phone?: unknown; password?: unknown };
+  let body: { phone?: unknown; password?: unknown };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ error: "ข้อมูลไม่ถูกต้อง" }, { status: 400 });
   }
 
-  const identifier = String(body.email ?? body.phone ?? "").trim().toLowerCase();
+  const identifier = normalizePhone(String(body.phone ?? "").trim());
   const password = String(body.password ?? "");
 
   if (!identifier || !password) {
-    return NextResponse.json({ error: "กรุณากรอกอีเมล/เบอร์โทรและรหัสผ่าน" }, { status: 400 });
+    return NextResponse.json({ error: "กรุณากรอกเบอร์มือถือและรหัสผ่าน" }, { status: 400 });
   }
 
   const supabase = createAdminClient();
-  const { data: user } = await supabase
+  const { data: users } = await supabase
     .from("app_users")
     .select("*")
-    .or(`email.eq.${identifier},phone.eq.${identifier}`)
     .eq("status", "active")
-    .maybeSingle();
+    .eq("phone", identifier)
+    .limit(1);
+  const user = users?.[0];
 
   if (!user || !verifyPassword(password, user.password_hash)) {
-    return NextResponse.json({ error: "อีเมล/เบอร์โทรหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
+    return NextResponse.json({ error: "เบอร์มือถือหรือรหัสผ่านไม่ถูกต้อง" }, { status: 401 });
   }
 
   const { data: memberships } = await supabase

@@ -139,7 +139,7 @@ export async function getSystemHealth(): Promise<SystemHealth> {
       area: "centers",
       severity: "warning",
       title: "ศูนย์ active ไม่มีรหัสเข้าใช้งาน",
-      detail: "ผู้จัดการศูนย์อาจเข้าแดชบอร์ดไม่ได้ ควรกำหนดรหัสเข้าใช้งานให้ครบ",
+      detail: "แอดมินศูนย์อาจเข้าแดชบอร์ดไม่ได้ ควรกำหนดรหัสเข้าใช้งานให้ครบ",
       count: centerRows.filter((c: any) => c.status === "active" && !c.access_code).length,
       href: "/dashboard/admin/centers",
     });

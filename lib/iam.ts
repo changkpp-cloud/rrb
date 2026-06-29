@@ -5,7 +5,7 @@ import type { Database } from "@/lib/supabase/types";
 
 import type { AppRole } from "@/lib/iam-utils";
 export type { AppRole };
-export { roleLabel, canManageCenterUsers, canManageCenterSettings, canEditCenterWork, isLgoObserver, canExportReports } from "@/lib/iam-utils";
+export { roleLabel, canManageCenterUsers, canManageCenterSettings, canEditCenterWork, canExportReports } from "@/lib/iam-utils";
 
 export type AppUser = Database["public"]["Tables"]["app_users"]["Row"];
 export type CenterMembership = Database["public"]["Tables"]["center_memberships"]["Row"];

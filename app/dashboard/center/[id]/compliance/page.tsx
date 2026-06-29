@@ -120,7 +120,7 @@ export default async function CenterCompliancePage({ params }: { params: Promise
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-4">
         <div className="text-center">
           <h1 className="text-base font-bold text-gold-900">{centerName}</h1>
-          <p className="text-[11px] text-gold-500">สถานะการส่งรายงานให้ อปท. (12 เดือนล่าสุด)</p>
+          <p className="text-[11px] text-gold-500">สถานะการส่งรายงานให้เทศบาล (12 เดือนล่าสุด)</p>
         </div>
 
         <div className="grid grid-cols-2 gap-2.5">

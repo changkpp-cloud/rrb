@@ -65,7 +65,7 @@ async function approveRequest(formData: FormData) {
   "use server";
 
   const requestId = String(formData.get("request_id") ?? "");
-  const role = String(formData.get("role") ?? "center_staff") as AppRole;
+  const role = String(formData.get("role") ?? "center_manager") as AppRole;
   const supabase = createAdminClient();
 
   const { data: request } = await supabase
@@ -140,8 +140,8 @@ export default async function AdminUsersPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h2 className="text-base font-bold text-gold-800">ผู้ใช้และสิทธิ์ในระบบ</h2>
-        <p className="text-[11px] text-gold-500">IAM / RBAC: แยกบัญชีรายคน กำหนดสิทธิ์ต่อศูนย์ และอนุมัติคำขอสมัคร</p>
+        <h2 className="text-base font-bold text-gold-800">สร้างรหัสเข้าศูนย์</h2>
+        <p className="text-[11px] text-gold-500">แอดมินกลางเลือกศูนย์ แล้วสร้างรหัสสำหรับ 2 สิทธิ์: แอดมินศูนย์ หรือ ตัวแทน อปท. ประจำศูนย์</p>
       </div>
 
       {iamMissing && (
@@ -154,8 +154,8 @@ export default async function AdminUsersPage() {
 
       <div className="grid grid-cols-3 gap-2">
         <Stat icon={Clock3} label="รออนุมัติ" value={pendingRequests.length} />
-        <Stat icon={UserRound} label="ผู้ใช้ทั้งหมด" value={users.length} />
-        <Stat icon={ShieldCheck} label="สิทธิ์ศูนย์" value={memberships.length} />
+        <Stat icon={UserRound} label="บัญชีทั้งหมด" value={users.length} />
+        <Stat icon={ShieldCheck} label="รหัสเข้าศูนย์" value={memberships.length} />
       </div>
 
       <CreateCenterUserForm centers={centers} />
@@ -175,10 +175,8 @@ export default async function AdminUsersPage() {
               <form action={approveRequest} className="flex gap-2">
                 <input type="hidden" name="request_id" value={req.id} />
                 <select name="role" className="min-w-0 flex-1 rounded-xl gold-border bg-white px-2 py-2 text-[11px]" defaultValue={req.requested_role}>
-                  <option value="center_manager">Manager</option>
-                  <option value="center_staff">Staff</option>
-                  <option value="center_viewer">Viewer</option>
-                  <option value="lgo_observer">อปท. (ผู้กำกับดูแล)</option>
+                  <option value="center_manager">แอดมินศูนย์</option>
+                  <option value="lgo_observer">ตัวแทน อปท. ประจำศูนย์ (ดูอย่างเดียว)</option>
                 </select>
                 <button className="rounded-xl bg-emerald-600 px-3 py-2 text-[11px] font-semibold text-white">อนุมัติ</button>
               </form>

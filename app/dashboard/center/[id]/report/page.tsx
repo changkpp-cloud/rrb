@@ -140,7 +140,7 @@ export default async function CenterReportPage({
   const { mode, period, start, end, label } = parsePeriod(periodParam);
   const { rows, totals } = await getReportData(id, start, end);
 
-  // สถานะการส่งรายงานงวดนี้ให้ อปท. (compliance)
+  // สถานะการส่งรายงานงวดนี้ให้เทศบาล (compliance)
   const supabase = createAdminClient();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: submissionRow } = await (supabase as any)
@@ -161,7 +161,7 @@ export default async function CenterReportPage({
     <div className="min-h-screen bg-white">
       <div className="print:hidden">
         <IosPageHeader
-          title="รายงานศูนย์ → อปท."
+          title="รายงานศูนย์ → เทศบาล"
           subtitle={access.user ? `${centerName} · ${roleLabel(access.role)}` : centerName}
           backHref={`/dashboard/center/${centerRouteKey}`}
         />
@@ -189,7 +189,7 @@ export default async function CenterReportPage({
             <p className="text-sm text-gold-700 mt-1">ประจำ{label}</p>
             <p className="text-xs text-gold-600 mt-2">{centerName}</p>
             <p className="text-[11px] text-gold-500">พื้นที่: {area}</p>
-            {center.manager_name && <p className="text-[11px] text-gold-500">ผู้จัดการศูนย์: {center.manager_name}</p>}
+            {center.manager_name && <p className="text-[11px] text-gold-500">แอดมินศูนย์: {center.manager_name}</p>}
           </header>
 
           {/* สรุปรวม */}
@@ -247,7 +247,7 @@ export default async function CenterReportPage({
           {/* ช่องลงนาม */}
           <section className="grid grid-cols-2 gap-8 mt-10 text-center text-[11px] text-gold-600">
             <Sign role="ผู้จัดทำรายงาน (ศูนย์บริหาร)" />
-            <Sign role="ผู้รับรองรายงาน (อปท.)" />
+            <Sign role="ผู้รับรองรายงาน (เทศบาล)" />
           </section>
           <p className="text-[10px] text-gold-400 text-center mt-6">
             ค่าดำเนินการคิด {FEE_RATE * 100}% ของยอดร่วมบุญ · ประมาณการลดขยะ {KG_PER_WREATH} กก./พวงหรีด · ออกโดยระบบหรีดร่วมบุญ

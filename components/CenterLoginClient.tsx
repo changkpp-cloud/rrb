@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, Eye, EyeOff, KeyRound, LogIn, Mail, UserRound } from "lucide-react";
+import { Building2, Eye, EyeOff, KeyRound, LogIn, Phone, UserRound } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
 type LoginMode = "access_code" | "user";
@@ -48,7 +48,7 @@ export default function CenterLoginClient() {
       const res = await fetch("/api/center/user-login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: identifier.trim(), password }),
+        body: JSON.stringify({ phone: identifier.trim(), password }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "เข้าสู่ระบบไม่สำเร็จ");
@@ -66,9 +66,10 @@ export default function CenterLoginClient() {
 
   const ROLE_TH: Record<string, string> = {
     super_admin: "ผู้ดูแลระบบ",
-    center_manager: "ผู้จัดการศูนย์",
+    center_manager: "แอดมินศูนย์",
     center_staff: "เจ้าหน้าที่ศูนย์",
     center_viewer: "ผู้ดูรายงาน",
+    lgo_observer: "ตัวแทน อปท.",
   };
 
   return (
@@ -171,16 +172,17 @@ export default function CenterLoginClient() {
               ) : (
                 <>
                   <label className="block space-y-1.5">
-                    <span className="text-xs font-semibold text-gold-700">อีเมลหรือเบอร์โทร</span>
+                    <span className="text-xs font-semibold text-gold-700">เบอร์มือถือ</span>
                     <div className="flex items-center gap-2 px-4 py-3 rounded-xl gold-border bg-white">
-                      <Mail className="w-4 h-4 text-gold-400 shrink-0" />
+                      <Phone className="w-4 h-4 text-gold-400 shrink-0" />
                       <input
                         type="text"
                         value={identifier}
                         onChange={(e) => setIdentifier(e.target.value)}
                         onKeyDown={(e) => e.key === "Enter" && handleUserLogin()}
-                        placeholder="email@example.com"
-                        autoComplete="username"
+                        placeholder="0812345678"
+                        inputMode="tel"
+                        autoComplete="tel"
                         className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
                       />
                     </div>

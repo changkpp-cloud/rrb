@@ -311,19 +311,19 @@ memorial.bank_account_image_url → <Image>
 
 ## ระดับสิทธิ์ (MVP ปัจจุบัน)
 
+**แอดมินกลางเป็นผู้ออกรหัสเข้าศูนย์เท่านั้น** (`/dashboard/admin/users` = เมนู "สร้างรหัสเข้าศูนย์") · ออกได้ **2 สิทธิ์**:
 ```
-Super Admin   → เปิดศูนย์ / ดูทั้งหมด / ตรวจสอบระบบ
-Center Manager → คุมศูนย์ตัวเอง / เปิด-ปิดงาน
-Center Staff  → ทำงานหน้างาน (เปิดงาน/พิมพ์) แต่จัดการผู้ใช้/ตั้งค่าไม่ได้
-Center Viewer → ดูข้อมูลศูนย์ (รวม PII) แต่แก้ไขไม่ได้
-อปท. (lgo_observer) → read-only กำกับดูแล: บ้านคือหน้า /oversight (ภาพรวม+export) **ไม่เห็น PII** (โดน redirect ออกจากหน้า home/operations/transfers/memorial detail → ไป /oversight)
-Host          → ดูงานของตัวเอง / บัญชีรับเงิน
-Donor         → ทำรายการชำระเงิน / ดู e-card / mock-wreath
+Super Admin       → เปิดศูนย์ / ดูทั้งหมด / ตรวจสอบระบบ / ออกรหัสเข้าศูนย์
+─ รหัสเข้าศูนย์ (แอดมินกลางออกให้ ผูกรายศูนย์) ─
+  สิทธิ์แก้ไข = center_manager ("แอดมินศูนย์") → ผู้ปฏิบัติงานศูนย์: เปิด-ปิด-แก้ไขงาน/พิมพ์/ตั้งค่า
+  สิทธิ์ดู    = lgo_observer ("ตัวแทน อปท. ประจำศูนย์") → read-only กำกับดูแล: บ้าน /oversight + report/compliance **ไม่เห็น PII** (โดน redirect ออกจาก home/operations/transfers/memorial detail)
+Host              → ดูงานของตัวเอง / บัญชีรับเงิน
+Donor             → ทำรายการชำระเงิน / ดู e-card / mock-wreath
 ```
-
-- IAM roles (`app_user_role` enum) อยู่ที่ `lib/iam-utils.ts` · capability helpers: `canEditCenterWork` / `canManageCenterUsers` / `canManageCenterSettings` / `isLgoObserver` / `canExportReports`
-- เข้าระบบผ่าน `app_users` + `center_memberships` (role ต่อคนต่อศูนย์) · แอดมินออกบัญชี อปท. ได้ที่ `/dashboard/admin/users`
-- ✅ `/oversight` + `/compliance` (ติดตามการส่งรายงาน) เสร็จแล้ว · ⏳ **เหลือ:** เทมเพลต export เฉพาะหน่วยประเมิน (LPA/ITA/จังหวัดสะอาด) + มุมรวมหลายศูนย์ (กรณี อปท. มีหลายศูนย์)
+- **center_staff / center_viewer = ยกเลิกการออกใหม่แล้ว** (ยังคงไว้ใน enum เพื่อ backward-compat) · `canEditCenterWork` = `super_admin | center_manager` เท่านั้น
+- ล็อกอินศูนย์: **เบอร์มือถือ + รหัสผ่าน** (`/api/center/user-login`) — รหัสผ่านออกโดยแอดมินกลางพร้อมบัญชี
+- IAM อยู่ที่ `lib/iam-utils.ts` · helpers: `canEditCenterWork` / `canManageCenterUsers` / `canManageCenterSettings` / `isLgoObserver` / `canExportReports` · เข้าระบบผ่าน `app_users` + `center_memberships`
+- ✅ `/oversight` + `/compliance` เสร็จแล้ว · ⏳ **เหลือ:** เทมเพลต export เฉพาะหน่วยประเมิน (LPA/ITA/จังหวัดสะอาด) + มุมรวมหลายศูนย์
 - ระบบ login แบบ proper (JWT) ยังไม่ implement — ใช้ cookie + password/OTP แบบง่ายก่อน
 
 ---

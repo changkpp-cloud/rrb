@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { getCenterAccess, isLgoObserver, roleLabel } from "@/lib/iam";
+import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import { systemFee, netToHost } from "@/lib/fee";
 import { AlertTriangle, Banknote, CheckCircle2, ChevronRight, Clock, Users } from "lucide-react";
@@ -85,8 +85,6 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าเก็บค่าดำเนินการมีบัญชีเจ้าภาพ (PII) → ส่งไปหน้ากำกับดูแล
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
 
   const centerName = center.name ?? "ศูนย์บริหาร";
   const rows = await getTransfers(id);

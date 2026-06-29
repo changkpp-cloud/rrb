@@ -20,8 +20,8 @@ import { FEE_RATE, systemFee } from "@/lib/fee";
 
 export const revalidate = 0;
 
-// แดชบอร์ดกำกับดูแลสำหรับ อปท. (lgo_observer) — read-only, ภาพรวม/สถิติ "ไม่มี PII"
-// เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง: อปท. ดูเพื่อกำกับดูแล/แถลงผลงาน/ส่งหน่วยประเมินเท่านั้น
+// แดชบอร์ดกำกับดูแลสำหรับตัวแทนเทศบาล (lgo_observer) — read-only, ภาพรวม/สถิติ
+// เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง: เทศบาลดูเพื่อกำกับดูแล/แถลงผลงาน/ส่งหน่วยประเมินเท่านั้น
 const KG_PER_WREATH = 2;
 
 type MemorialRow = { id: string; ceremony_date: string; funeral_status: string };
@@ -93,7 +93,7 @@ export default async function CenterOversightPage({ params }: { params: Promise<
 
   return (
     <div className="min-h-screen bg-white">
-      <IosPageHeader title="กำกับดูแล (อปท.)" subtitle={roleLabel(access.role)} />
+      <IosPageHeader title="กำกับดูแล (เทศบาล)" subtitle={roleLabel(access.role)} />
 
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-4">
         {/* หัวศูนย์ */}
@@ -107,7 +107,7 @@ export default async function CenterOversightPage({ params }: { params: Promise<
           <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
           <p className="text-[11px] text-emerald-700 leading-relaxed">
             <span className="font-bold">เพื่อความโปร่งใส:</span> เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง
-            ไม่ผ่านบัญชี อปท. หรือศูนย์ · มุมมองนี้สำหรับ <span className="font-semibold">กำกับดูแล/แถลงผลงาน</span> เท่านั้น
+            ไม่ผ่านบัญชีเทศบาลหรือศูนย์ · มุมมองนี้สำหรับ <span className="font-semibold">กำกับดูแล/แถลงผลงาน</span> เท่านั้น
             (ดูได้ ส่งออกได้ แต่แก้ไขข้อมูลไม่ได้)
           </p>
         </div>
@@ -159,7 +159,7 @@ export default async function CenterOversightPage({ params }: { params: Promise<
             <FileText className="w-5 h-5 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-bold">รายงานรายเดือน/รายปี + ส่งออก (PDF / CSV)</p>
-              <p className="text-[10px] text-white/80">เลือกช่วงเวลา ดึงเอกสารส่ง อปท. / หน่วยประเมิน (LPA · ITA · จังหวัดสะอาด)</p>
+              <p className="text-[10px] text-white/80">เลือกช่วงเวลา ดึงเอกสารส่งเทศบาล / หน่วยประเมิน (LPA · ITA · จังหวัดสะอาด)</p>
             </div>
           </Link>
           <Link
@@ -169,7 +169,7 @@ export default async function CenterOversightPage({ params }: { params: Promise<
             <ClipboardCheck className="w-5 h-5 text-gold-500 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-bold text-gold-800">ติดตามการส่งรายงานของศูนย์</p>
-              <p className="text-[10px] text-gold-500">ศูนย์ส่งรายงานรายเดือน/รายปีให้ อปท. ครบ-ตรงเวลาหรือไม่</p>
+              <p className="text-[10px] text-gold-500">ศูนย์ส่งรายงานรายเดือน/รายปีให้เทศบาลครบ-ตรงเวลาหรือไม่</p>
             </div>
           </Link>
           <div className="grid grid-cols-2 gap-2">

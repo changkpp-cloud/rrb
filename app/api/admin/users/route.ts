@@ -4,7 +4,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { hashPassword } from "@/lib/iam";
 import type { AppRole } from "@/lib/iam-utils";
 
-const VALID_ROLES: AppRole[] = ["center_manager", "center_staff", "center_viewer", "lgo_observer"];
+const VALID_ROLES: AppRole[] = ["center_manager", "lgo_observer"];
+
+function normalizePhone(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
+}
 
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();
@@ -19,16 +23,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const {
-    email,
-    display_name,
-    password,
-    center_id,
-    role,
-    phone,
-  } = body as Record<string, string>;
+  const { display_name, password, center_id, role, phone } = body as Record<string, string>;
+  const normalizedPhone = normalizePhone(phone ?? "");
 
-  if (!email?.trim() || !display_name?.trim() || !password || !center_id || !role) {
+  if (!normalizedPhone || !display_name?.trim() || !password || !center_id || !role) {
     return NextResponse.json({ error: "กรุณากรอกข้อมูลให้ครบทุกช่อง" }, { status: 400 });
   }
   if (password.length < 8) {
@@ -51,34 +49,51 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "ไม่พบศูนย์ที่เลือก" }, { status: 400 });
   }
 
-  const { data: existing } = await supabase
+  const { data: existingRows } = await supabase
     .from("app_users")
     .select("id, status")
-    .eq("email", email.trim().toLowerCase())
-    .maybeSingle();
+    .eq("phone", normalizedPhone)
+    .limit(1);
+  const existing = existingRows?.[0];
 
-  if (existing && existing.status === "active") {
-    return NextResponse.json({ error: "อีเมลนี้มีในระบบแล้ว" }, { status: 409 });
+  if (existing?.status === "active") {
+    const { data: membership } = await supabase
+      .from("center_memberships")
+      .select("id")
+      .eq("center_id", center_id)
+      .eq("user_id", existing.id)
+      .eq("status", "active")
+      .maybeSingle();
+
+    if (membership) {
+      return NextResponse.json({ error: "เบอร์มือถือนี้มีสิทธิ์เข้าศูนย์นี้แล้ว" }, { status: 409 });
+    }
   }
 
   const now = new Date().toISOString();
 
-  const { data: user, error: userError } = await supabase
-    .from("app_users")
-    .upsert(
-      {
-        email: email.trim().toLowerCase(),
-        display_name: display_name.trim(),
-        phone: phone?.trim() || null,
-        password_hash: hashPassword(password),
-        auth_provider: "password",
-        status: "active",
-        approved_at: now,
-      },
-      { onConflict: "email" },
-    )
-    .select("id")
-    .single();
+  const userPayload = {
+    email: null,
+    display_name: display_name.trim(),
+    phone: normalizedPhone,
+    password_hash: hashPassword(password),
+    auth_provider: "password" as const,
+    status: "active" as const,
+    approved_at: now,
+  };
+
+  const { data: user, error: userError } = existing
+    ? await supabase
+        .from("app_users")
+        .update(userPayload)
+        .eq("id", existing.id)
+        .select("id")
+        .single()
+    : await supabase
+        .from("app_users")
+        .insert(userPayload)
+        .select("id")
+        .single();
 
   if (userError || !user) {
     return NextResponse.json({ error: "ไม่สามารถสร้างผู้ใช้ได้" }, { status: 500 });

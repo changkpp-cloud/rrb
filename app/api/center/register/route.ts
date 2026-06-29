@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     email,
     display_name: displayName,
     phone: phone || null,
-    requested_role: "center_staff",
+    requested_role: "center_manager",
     auth_provider: "password",
     password_hash: hashPassword(password),
     status: "pending",

@@ -16,7 +16,7 @@ import CenterMemorialScrollNav from "@/components/CenterMemorialScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { getCenterAccess, isLgoObserver } from "@/lib/iam";
+import { canEditCenterWork, getCenterAccess } from "@/lib/iam";
 import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
@@ -72,8 +72,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าจัดการงานมี PII (บัญชี/เบอร์/เอกสารเจ้าภาพ) → ส่งไปหน้ากำกับดูแล
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
+  const canEdit = canEditCenterWork(access.role);
 
   const memorial = await getMemorialById(memId);
   if (!memorial) return null;
@@ -101,7 +100,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         backLabel="หน้าศูนย์"
         rightSlot={
           <div className="flex items-center gap-1.5">
-            <HeaderIcon href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`} label="แก้ไขข้อมูลงาน" icon={Pencil} />
+            {canEdit && <HeaderIcon href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`} label="แก้ไขข้อมูลงาน" icon={Pencil} />}
             <HeaderIcon href={`/${memorial.slug}`} label="เปิดหน้างาน" icon={ExternalLink} external />
           </div>
         }
@@ -130,13 +129,17 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             publicUrl={`${getSiteUrl()}/${memorial.slug}?openExternalBrowser=1`}
             slug={memorial.slug}
           />
-          <Link
-            href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`}
-            className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
-          >
-            <Pencil className="h-4 w-4" />
-            แก้ไขวัด / วันเวลา / กำหนดการสวด
-          </Link>
+          {canEdit ? (
+            <Link
+              href={`/dashboard/center/${centerRouteKey}/memorial/${memId}/edit`}
+              className="flex items-center justify-center gap-2 rounded-2xl border border-gold-300 bg-gold-50 px-4 py-3 text-sm font-semibold text-gold-800 transition-colors hover:bg-gold-100"
+            >
+              <Pencil className="h-4 w-4" />
+              แก้ไขวัด / วันเวลา / กำหนดการสวด
+            </Link>
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ดูข้อมูลงานได้อย่างเดียว ไม่สามารถแก้ไขรายละเอียดงานได้" />
+          )}
         </section>
 
         <section id="slips" className="scroll-mt-36 space-y-3">
@@ -174,7 +177,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
           {confirmed.length === 0 ? (
             <Empty icon={Printer} text="ยังไม่มีป้ายชื่อ" />
           ) : (
-            <DonationList donations={[...printError, ...printQueue, ...printed, ...posted]} mode="nameplate" />
+            <DonationList donations={[...printError, ...printQueue, ...printed, ...posted]} mode="nameplate" canEdit={canEdit} />
           )}
         </section>
 
@@ -185,22 +188,34 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
         <section id="persons" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Camera} title="บุคคลสำหรับภาพจำลอง" subtitle="จัดการบุคคลที่จะปรากฏในภาพจำลอง AI สำหรับผู้ร่วมบุญ" />
-          <MemorialPersonManager memorialId={memorial.id} />
+          {canEdit ? (
+            <MemorialPersonManager memorialId={memorial.id} />
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ไม่สามารถเพิ่มหรือแก้ไขบุคคลสำหรับภาพจำลอง AI ได้" />
+          )}
         </section>
 
         <section id="host-verify" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={CheckCircle2} title="เอกสารและบัญชีเจ้าภาพ" subtitle="ศูนย์เพิ่ม/แก้ใบมรณะบัตร บัตรประชาชน และบัญชีรับเงินได้ แล้วยืนยันสิทธิ์เจ้าภาพ" />
-          <CenterMemorialDocsForm memorial={memorial} />
-          <HostVerificationReview memorial={memorial} />
+          {canEdit ? (
+            <>
+              <CenterMemorialDocsForm memorial={memorial} />
+              <HostVerificationReview memorial={memorial} />
+            </>
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ดูข้อมูลเอกสารและบัญชีเจ้าภาพได้ แต่ไม่สามารถอัปโหลดหรือยืนยันเอกสารได้" />
+          )}
         </section>
 
         <section id="finance" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Banknote} title="การเงิน" subtitle={`เงินเข้าบัญชีเจ้าภาพโดยตรง · ค่าดำเนินการ ${systemFeeTotal.toLocaleString()} บาท เก็บคืนวันคืนบอร์ด`} />
-          <HostPhoneVerify
-            memorialId={memorial.id}
-            initialPhone={memorial.host_phone ?? null}
-            initialVerified={Boolean(memorial.host_phone_verified)}
-          />
+          {canEdit && (
+            <HostPhoneVerify
+              memorialId={memorial.id}
+              initialPhone={memorial.host_phone ?? null}
+              initialVerified={Boolean(memorial.host_phone_verified)}
+            />
+          )}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
             <InfoRow label="ยอดร่วมบุญรวม (เข้าเจ้าภาพโดยตรง)" value={`${total.toLocaleString()} บาท`} strong />
             <InfoRow label={`ค่าดำเนินการ ${FEE_RATE * 100}% (เจ้าภาพจ่ายคืนศูนย์)`} value={`${systemFeeTotal.toLocaleString()} บาท`} />
@@ -209,13 +224,17 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
             <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />
             <InfoRow label="ชื่อบัญชี" value={memorial.host_bank_account_name || "-"} />
           </div>
-          <TransferConfirmButton
-            memorialId={memorial.id}
-            transferConfirmedAt={memorial.transfer_confirmed_at ?? null}
-            transferConfirmedBy={memorial.transfer_confirmed_by ?? null}
-            hostBankAccount={memorial.host_bank_account_number ?? null}
-            isClosed={memorial.funeral_status === "closed"}
-          />
+          {canEdit ? (
+            <TransferConfirmButton
+              memorialId={memorial.id}
+              transferConfirmedAt={memorial.transfer_confirmed_at ?? null}
+              transferConfirmedBy={memorial.transfer_confirmed_by ?? null}
+              hostBankAccount={memorial.host_bank_account_number ?? null}
+              isClosed={memorial.funeral_status === "closed"}
+            />
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ดูข้อมูลการเงินได้ แต่ไม่สามารถยืนยันการเก็บคืนหรือเปลี่ยนสถานะการเงินได้" />
+          )}
         </section>
 
         <section id="close" className="scroll-mt-36 space-y-3">
@@ -226,15 +245,19 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
               <p className="text-[10px] text-amber-700 mt-0.5">{printError.length} ป้ายพิมพ์ไม่สำเร็จ — ควรกด "พิมพ์ซ้ำ" ในส่วนป้ายชื่อก่อนปิดงาน</p>
             </div>
           ) : null}
-          <CloseMemorialButton
-            memorialId={memorial.id}
-            totalAmount={total}
-            hostBankName={memorial.host_bank_name ?? null}
-            hostBankAccount={memorial.host_bank_account_number ?? null}
-            hostBankAccountName={memorial.host_bank_account_name ?? null}
-            systemFee={systemFeeTotal}
-            isClosed={memorial.funeral_status === "closed"}
-          />
+          {canEdit ? (
+            <CloseMemorialButton
+              memorialId={memorial.id}
+              totalAmount={total}
+              hostBankName={memorial.host_bank_name ?? null}
+              hostBankAccount={memorial.host_bank_account_number ?? null}
+              hostBankAccountName={memorial.host_bank_account_name ?? null}
+              systemFee={systemFeeTotal}
+              isClosed={memorial.funeral_status === "closed"}
+            />
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ดูสถานะปิดงานได้ แต่ไม่สามารถปิดงานหรือเปลี่ยนสถานะงานได้" />
+          )}
         </section>
 
         <div className="h-4" />
@@ -311,7 +334,15 @@ function Empty({ icon: Icon, text }: { icon: React.ElementType; text: string }) 
   );
 }
 
-function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor" | "nameplate" | "warning" }) {
+function ReadOnlyNotice({ text }: { text: string }) {
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[11px] font-semibold leading-relaxed text-emerald-700">
+      {text}
+    </div>
+  );
+}
+
+function DonationList({ canEdit = true, donations, mode }: { canEdit?: boolean; donations: Donation[]; mode: "donor" | "nameplate" | "warning" }) {
   return (
     <div className="space-y-2">
       {donations.map((d, i) => (
@@ -346,7 +377,7 @@ function DonationList({ donations, mode }: { donations: Donation[]; mode: "donor
               </a>
             </div>
           )}
-          {mode === "nameplate" && <NameplateActions donationId={d.id} />}
+          {mode === "nameplate" && canEdit && <NameplateActions donationId={d.id} />}
           {mode === "warning" && d.slip_duplicate_warning && (
             <div className="mt-2 ml-10 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-[10px] font-medium text-amber-700">
               สลิปนี้ซ้ำกับรายการก่อนหน้า ระบบปล่อยผ่านให้พิมพ์ป้ายแล้ว เก็บไว้ตรวจย้อนหลังเท่านั้น

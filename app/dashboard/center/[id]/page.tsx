@@ -20,7 +20,7 @@ import CenterLogoutButton from "@/components/center/CenterLogoutButton";
 import CreateMemorialClient from "./create/CreateMemorialClient";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { canManageCenterSettings, getCenterAccess, isLgoObserver, roleLabel } from "@/lib/iam";
+import { canEditCenterWork, canManageCenterSettings, getCenterAccess, roleLabel } from "@/lib/iam";
 import type { Center, Memorial } from "@/lib/supabase/types";
 import { formatThaiDate } from "@/lib/memorial";
 
@@ -122,8 +122,6 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าหลักมีฟอร์มเปิดงาน/ลิงก์เข้าข้อมูล PII → ส่งไปหน้ากำกับดูแล
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
 
   const memorials = await getMemorials(id);
   const donationStats = await getDonationStats(memorials.map((m) => m.id));
@@ -139,6 +137,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const totalDonors = summaries.reduce((sum, row) => sum + row.confirmed, 0);
   const slipWarningCount = summaries.reduce((sum, row) => sum + row.slipWarning, 0);
   const pendingPrintCount = summaries.reduce((sum, row) => sum + row.nameplatePending + row.nameplateQueued, 0);
+  const canEditWork = canEditCenterWork(access.role);
   const canEditSettings = canManageCenterSettings(access.role);
 
   return (
@@ -155,16 +154,22 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
 
         <section id="open" className="scroll-mt-24 space-y-3">
           <SectionHeader icon={Plus} title="1. เปิดงานใหม่" subtitle="สร้างงานใหม่และเริ่มรับร่วมทำบุญในศูนย์นี้" />
-          <Link
-            href={`/dashboard/center/${centerRouteKey}/create`}
-            className="hidden"
-            aria-hidden="true"
-            tabIndex={-1}
-          >
-            <Plus className="w-5 h-5" />
-            เปิดงานศพใหม่
-          </Link>
-          <CreateMemorialClient centerId={id} embedded />
+          {canEditWork ? (
+            <>
+              <Link
+                href={`/dashboard/center/${centerRouteKey}/create`}
+                className="hidden"
+                aria-hidden="true"
+                tabIndex={-1}
+              >
+                <Plus className="w-5 h-5" />
+                เปิดงานศพใหม่
+              </Link>
+              <CreateMemorialClient centerId={id} embedded />
+            </>
+          ) : (
+            <ReadOnlyNotice text="สิทธิ์นี้ดูข้อมูลศูนย์ได้อย่างเดียว ไม่สามารถเปิดงานใหม่หรือแก้ไขรายการของศูนย์ได้" />
+          )}
         </section>
           }
 
@@ -201,7 +206,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
             className="flex items-center justify-center gap-2 rounded-xl gold-gradient px-4 py-3 text-sm font-bold text-white shadow-md active:scale-[0.98] transition-all"
           >
             <BarChart3 className="h-4 w-4" />
-            รายงานสรุปส่ง อปท. (รายเดือน/รายปี)
+            รายงานสรุปส่งเทศบาล (รายเดือน/รายปี)
           </Link>
           <Link href={`/dashboard/center/${centerRouteKey}/closed`} className="block text-center text-xs font-semibold text-gold-700 underline underline-offset-4">
             ดูงานศพที่ปิดแล้วทั้งหมด
@@ -217,7 +222,7 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
           ) : (
             <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
               <p className="rounded-xl bg-white/70 px-3 py-2 text-[11px] font-semibold text-gold-700">
-                สิทธิ์นี้ดูข้อมูลได้เท่านั้น หากต้องแก้ไขข้อมูลศูนย์ให้ใช้บัญชีผู้จัดการศูนย์
+                สิทธิ์นี้ดูข้อมูลได้เท่านั้น หากต้องแก้ไขข้อมูลศูนย์ให้ใช้บัญชีแอดมินศูนย์
               </p>
               <InfoRow label="ชื่อศูนย์" value={center.name} />
               <InfoRow label="ผู้จัดการ" value={center.manager_name || "-"} />
@@ -312,6 +317,14 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="flex justify-between gap-3">
       <span className="text-gold-400 shrink-0">{label}</span>
       <span className="text-right">{value}</span>
+    </div>
+  );
+}
+
+function ReadOnlyNotice({ text }: { text: string }) {
+  return (
+    <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-[11px] font-semibold leading-relaxed text-emerald-700">
+      {text}
     </div>
   );
 }
