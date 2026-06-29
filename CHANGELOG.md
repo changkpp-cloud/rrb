@@ -215,3 +215,8 @@
 - **ออกบัญชี อปท. ได้:** เพิ่ม `lgo_observer` ใน `VALID_ROLES` (`/api/admin/users`) + dropdown `CreateCenterUserForm` + ปุ่มอนุมัติคำขอใน `admin/users` → แอดมินสร้างบัญชี อปท. ผูกศูนย์ในเขตได้
 - **กั้น PII (read-only):** หน้า home / operations / transfers / memorial detail → ถ้า role = อปท. `redirect` ไปหน้า `report` (create/edit ถูกกั้นด้วย `canEditCenterWork` อยู่แล้ว) · อปท. เห็น report + active/closed lists เท่านั้นใน PR1
 - ⚠️ **ต้องรัน migration `20260629010000` ก่อน** (เพิ่มค่า enum) · ⏳ PR ถัดไป: หน้า `/oversight` (บ้าน อปท.) + `compliance` ติดตามรายงานศูนย์ + export สำหรับ LPA/ITA/จังหวัดสะอาด
+
+### แดชบอร์ด อปท. (PR2 — หน้า /oversight)
+- เพิ่มหน้า **`/dashboard/center/[id]/oversight`** = บ้านของ อปท. (read-only, ไม่มี PII): หัวศูนย์/พื้นที่ + แถบโปร่งใส (เงินเข้าเจ้าภาพตรง ไม่ผ่าน อปท.) + KPI สะสม (งาน/ผู้ร่วมบุญ/ยอดร่วมบุญ/ถึงเจ้าภาพ/ค่าดำเนินการ/ลดขยะ) + สรุป 4 มิติปีปัจจุบัน (ผู้บริหาร/การเงินโปร่งใส/สิ่งแวดล้อม/สวัสดิการ) + ปุ่มไปรายงาน(export PDF/CSV) + ลิงก์รายการงาน + logout
+- aggregate per-memorial เหมือนหน้า report (confirmed donations, `systemFee`, ลดขยะ 2 กก./พวง) — query เฉพาะ count/sum **ไม่ดึง host_bank/phone/donor_name/เอกสาร**
+- เปลี่ยนปลายทาง redirect ของ อปท. จาก `report` → `oversight` ทั้ง 4 หน้า (home/operations/transfers/memorial detail) → อปท. login แล้วเด้งเข้า /oversight อัตโนมัติ

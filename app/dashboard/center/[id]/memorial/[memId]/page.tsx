@@ -72,8 +72,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าจัดการงานมี PII (บัญชี/เบอร์/เอกสารเจ้าภาพ) → ส่งไปหน้ารายงาน
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/report`);
+  // อปท. (ผู้กำกับดูแล) = read-only — หน้าจัดการงานมี PII (บัญชี/เบอร์/เอกสารเจ้าภาพ) → ส่งไปหน้ากำกับดูแล
+  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
 
   const memorial = await getMemorialById(memId);
   if (!memorial) return null;

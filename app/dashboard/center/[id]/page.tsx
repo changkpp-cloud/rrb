@@ -122,8 +122,8 @@ export default async function CenterDashboardPage({ params }: { params: Promise<
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าหลักมีฟอร์มเปิดงาน/ลิงก์เข้าข้อมูล PII → ส่งไปหน้ารายงาน
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/report`);
+  // อปท. (ผู้กำกับดูแล) = read-only — หน้าหลักมีฟอร์มเปิดงาน/ลิงก์เข้าข้อมูล PII → ส่งไปหน้ากำกับดูแล
+  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
 
   const memorials = await getMemorials(id);
   const donationStats = await getDonationStats(memorials.map((m) => m.id));

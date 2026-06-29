@@ -85,8 +85,8 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
-  // อปท. (ผู้กำกับดูแล) = read-only — หน้าเก็บค่าดำเนินการมีบัญชีเจ้าภาพ (PII) → ส่งไปหน้ารายงาน
-  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/report`);
+  // อปท. (ผู้กำกับดูแล) = read-only — หน้าเก็บค่าดำเนินการมีบัญชีเจ้าภาพ (PII) → ส่งไปหน้ากำกับดูแล
+  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/oversight`);
 
   const centerName = center.name ?? "ศูนย์บริหาร";
   const rows = await getTransfers(id);
