@@ -9,6 +9,7 @@ import HostVerificationGate from "./HostVerificationGate";
 import MemorialPersonManager from "./host/MemorialPersonManager";
 import PrinterStatusAlert from "./PrinterStatusAlert";
 import type { Memorial, Donation } from "@/lib/supabase/types";
+import { systemFee, netToHost } from "@/lib/fee";
 
 interface Props {
   memorial: Memorial;
@@ -47,8 +48,8 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
 
   const confirmed    = donations.filter(d => d.status === "confirmed");
   const totalAmount  = confirmed.reduce((s, d) => s + d.amount, 0);
-  const serviceFee   = confirmed.length * 100;
-  const netAmount    = Math.max(0, totalAmount - serviceFee);
+  const serviceFee   = systemFee(totalAmount);
+  const netAmount    = netToHost(totalAmount);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const printErrors  = confirmed.filter(d => (d.nameplate_status as any) === "error");
   const slipWarnings = donations.filter(d => d.slip_duplicate_warning);
@@ -312,7 +313,7 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
                   <span className="font-bold text-gold-800">{totalAmount.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gold-600">ค่าดำเนินการ ({confirmed.length} ราย × 100 ฿)</span>
+                  <span className="text-gold-600">ค่าดำเนินการ (5% ของยอดร่วมบุญ)</span>
                   <span className="font-bold text-red-500">-{serviceFee.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm pt-1 border-t border-gold-100">

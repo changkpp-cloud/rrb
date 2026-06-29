@@ -179,3 +179,9 @@
 
 ## 2026-06-26
 - หน้าแรก rrb.center ตัดส่วน hero / benefits / how-it-works / ESG / quick-links ออกทั้งหมด เหลือเฉพาะส่วน `งานศพที่เปิดอยู่ขณะนี้` + header (โลโก้ + ปุ่มเข้าใช้งานสำหรับเจ้าหน้าที่)
+
+## 2026-06-29
+- **แก้สูตรค่าดำเนินการให้ตรงแก่นโครงการ: จากเดิม 100 บาท/รายการ (คงที่) → 5% ของยอดร่วมบุญ (เจ้าภาพได้สุทธิ 95%)**
+- เพิ่มสูตรกลาง `lib/fee.ts` (`FEE_RATE = 0.05`, `systemFee()`, `netToHost()`) — รับประกัน fee + net = total
+- แก้ทุกจุดให้ import จาก `@/lib/fee` แทน hardcode: host summary, HostDashboardClient, center memorial page, transfers, report, admin/hosts
+- ปรับ label UI ทุกจุดจาก "(N ราย × 100 ฿)" → "(5% ของยอดร่วมบุญ)" และอัปเดต CLAUDE.md + docs/brain/04

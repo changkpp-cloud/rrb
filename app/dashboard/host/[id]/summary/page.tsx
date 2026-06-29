@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Users, ImageDown, Share2 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import type { Donation } from "@/lib/supabase/types";
+import { systemFee, netToHost } from "@/lib/fee";
 
 export default function HostSummaryPage() {
   const params = useParams<{ id: string }>();
@@ -33,8 +34,8 @@ export default function HostSummaryPage() {
   }, [id]);
 
   const total = donations.reduce((s, d) => s + d.amount, 0);
-  const fee = donations.length * 100;
-  const net = Math.max(0, total - fee);
+  const fee = systemFee(total);
+  const net = netToHost(total);
 
   async function handleSaveImage() {
     if (!contentRef.current) return;
@@ -120,7 +121,7 @@ export default function HostSummaryPage() {
                   <span className="font-bold text-gold-800">{total.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gold-600">ค่าดำเนินการ ({donations.length} ราย × 100 ฿)</span>
+                  <span className="text-gold-600">ค่าดำเนินการ (5% ของยอดร่วมบุญ)</span>
                   <span className="font-bold text-red-500">-{fee.toLocaleString()} ฿</span>
                 </div>
                 <div className="border-t border-gold-200 pt-2 flex justify-between text-sm">

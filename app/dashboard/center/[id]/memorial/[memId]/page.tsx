@@ -28,8 +28,7 @@ import TransferConfirmButton from "@/components/TransferConfirmButton";
 import NameplateActions from "@/components/NameplateActions";
 import PrinterStatusAlert from "@/components/PrinterStatusAlert";
 import { getSiteUrl } from "@/lib/site-url";
-
-const SYSTEM_FEE = 100;
+import { systemFee, netToHost, FEE_RATE } from "@/lib/fee";
 
 export const revalidate = 30;
 
@@ -87,8 +86,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const posted = confirmed.filter((d) => d.nameplate_status === "posted");
   const printError = confirmed.filter((d) => (d.nameplate_status as string) === "error");
   const total = confirmed.reduce((s, d) => s + d.amount, 0);
-  const systemFeeTotal = confirmed.length * SYSTEM_FEE;
-  const netAmount = Math.max(total - systemFeeTotal, 0);
+  const systemFeeTotal = systemFee(total);
+  const netAmount = netToHost(total);
 
   return (
     <div className="min-h-screen bg-white">
@@ -196,7 +195,7 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
           <SectionHeader icon={Banknote} title="การเงิน" subtitle={`ยอดสุทธิประมาณ ${netAmount.toLocaleString()} บาท หลังหักค่าดำเนินการ ${systemFeeTotal.toLocaleString()} บาท`} />
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
             <InfoRow label="ยอดร่วมบุญรับแล้ว" value={`${total.toLocaleString()} บาท`} strong />
-            <InfoRow label={`ค่าดำเนินการระบบ (${confirmed.length} ราย × ${SYSTEM_FEE})`} value={`-${systemFeeTotal.toLocaleString()} บาท`} />
+            <InfoRow label={`ค่าดำเนินการระบบ (${FEE_RATE * 100}% ของยอดร่วมบุญ)`} value={`-${systemFeeTotal.toLocaleString()} บาท`} />
             <InfoRow label="ยอดสุทธิโอนเจ้าภาพ" value={`${netAmount.toLocaleString()} บาท`} strong />
             <InfoRow label="ธนาคารเจ้าภาพ" value={memorial.host_bank_name || "-"} />
             <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />

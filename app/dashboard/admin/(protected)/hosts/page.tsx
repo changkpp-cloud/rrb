@@ -2,10 +2,9 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
 import { Banknote, User, ChevronRight } from "lucide-react";
+import { netToHost } from "@/lib/fee";
 
 export const revalidate = 60;
-
-const SYSTEM_FEE = 100;
 
 async function getHostsData() {
   const supabase = createAdminClient();
@@ -35,8 +34,8 @@ async function getHostsData() {
 
   return memorials.map(m => {
     const agg = donMap[m.id] ?? { amount: 0, count: 0 };
-    // ค่าดำเนินการ 100 บาท/รายการ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
-    const netAmount = Math.max(0, agg.amount - agg.count * SYSTEM_FEE);
+    // ค่าดำเนินการ 5% ของยอดร่วมบุญ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
+    const netAmount = netToHost(agg.amount);
     return { ...m, totalAmount: agg.amount, donorCount: agg.count, netAmount };
   });
 }
@@ -121,7 +120,7 @@ export default async function AdminHostsPage() {
                 <Banknote className="w-3.5 h-3.5 text-gold-500" />
                 <p className="text-xs font-bold text-gold-700">{h.netAmount.toLocaleString()} บาท</p>
                 <span className="text-[10px] text-gold-400">
-                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} ({h.donorCount} ราย × 100)
+                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} (หัก 5%)
                 </span>
               </div>
             </Link>

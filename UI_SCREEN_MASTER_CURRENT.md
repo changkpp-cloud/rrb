@@ -106,7 +106,7 @@
 **Data Displayed**
 - QR จาก `center.phone` (PromptPay) หรือ `memorial.bank_account_image_url` (fallback)
 - `memorial.bank_name`, `memorial.bank_account_number`, `memorial.bank_account_name`
-- ค่าบริการ 100 บาท/ใบ (SYSTEM_FEE)
+- ค่าดำเนินการ 5% ของยอดร่วมบุญ (lib/fee.ts)
 
 **Design Notes**
 - Component: `PaymentPageClient.tsx`
@@ -705,7 +705,7 @@ Login ด้วย center_code (UPPERCASE) รับ cookie `center_session`
 - Nameplate: pending / queued / printed / posted
 
 **Design Notes**
-- `SYSTEM_FEE = 100` บาท/ใบ
+- ค่าดำเนินการ 5% ของยอดร่วมบุญ (`lib/fee.ts`, `FEE_RATE = 0.05`)
 - `VerifyDonationButton` client component
 - `CloseMemorialButton` 2-step confirm + shows host bank transfer info
 

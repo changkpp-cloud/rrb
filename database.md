@@ -242,7 +242,7 @@ CREATE TABLE reports (
   -- สรุปการเงิน
   total_amount      NUMERIC(10,2) NOT NULL DEFAULT 0,     -- ยอดรวมทั้งหมด
   donor_count       INT NOT NULL DEFAULT 0,               -- จำนวนผู้ร่วมบุญ
-  service_fee       NUMERIC(10,2) NOT NULL DEFAULT 0,     -- ค่าดำเนินการ (donor_count × 100)
+  service_fee       NUMERIC(10,2) NOT NULL DEFAULT 0,     -- ค่าดำเนินการ (total_amount × 5%)
   net_amount        NUMERIC(10,2) NOT NULL DEFAULT 0,     -- ยอดสุทธิที่เจ้าภาพรับ
 
   -- ผลลัพธ์ด้านสิ่งแวดล้อม (Zero Waste)
@@ -255,8 +255,8 @@ CREATE TABLE reports (
 ```
 
 **สูตรคำนวณ:**
-- `service_fee` = `donor_count × 100`
-- `net_amount` = `total_amount − service_fee`
+- `service_fee` = `ROUND(total_amount × 0.05)`
+- `net_amount` = `total_amount − service_fee` (≈ 95%)
 - `wreaths_reduced` = `donor_count`
 - `waste_reduced_kg` = `donor_count × 5`
 
@@ -438,14 +438,14 @@ Login ด้วย host_code (/dashboard/host)
 ## Service Fee Logic
 
 ```
-ค่าดำเนินการ = จำนวนผู้ร่วมบุญ × 100 บาท
-ยอดสุทธิ = ยอดรวม − ค่าดำเนินการ
+ค่าดำเนินการ = ยอดรวม × 5%
+ยอดสุทธิ = ยอดรวม − ค่าดำเนินการ (= 95%)
 
 ตัวอย่าง:
   ผู้ร่วมบุญ 50 คน, ยอดเฉลี่ย 500 บาท/คน
   ยอดรวม = 25,000 บาท
-  ค่าดำเนินการ = 50 × 100 = 5,000 บาท
-  เจ้าภาพรับ = 20,000 บาท
+  ค่าดำเนินการ = 25,000 × 5% = 1,250 บาท
+  เจ้าภาพรับ = 23,750 บาท
 ```
 
 ---

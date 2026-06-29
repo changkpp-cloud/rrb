@@ -6,10 +6,10 @@ import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import CenterReportActions from "./CenterReportActions";
 import CenterReportPeriodSelector from "./CenterReportPeriodSelector";
+import { FEE_RATE, systemFee } from "@/lib/fee";
 
 export const revalidate = 0;
 
-const SYSTEM_FEE = 100;
 const KG_PER_WREATH = 2;
 const THAI_MONTHS = [
   "มกราคม", "กุมภาพันธ์", "มีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน",
@@ -75,7 +75,7 @@ async function getReportData(centerId: string, start: string, end: string) {
 
   const rows = memorials.map((m) => {
     const agg = byMemorial.get(m.id) ?? { donors: 0, amount: 0 };
-    const fee = agg.donors * SYSTEM_FEE;
+    const fee = systemFee(agg.amount);
     return {
       id: m.id,
       name: m.name,
@@ -228,7 +228,7 @@ export default async function CenterReportPage({
             <Sign role="ผู้รับรองรายงาน (อปท.)" />
           </section>
           <p className="text-[10px] text-gold-400 text-center mt-6">
-            ค่าดำเนินการคิด {SYSTEM_FEE} บาท/รายการ · ประมาณการลดขยะ {KG_PER_WREATH} กก./พวงหรีด · ออกโดยระบบหรีดร่วมบุญ
+            ค่าดำเนินการคิด {FEE_RATE * 100}% ของยอดร่วมบุญ · ประมาณการลดขยะ {KG_PER_WREATH} กก./พวงหรีด · ออกโดยระบบหรีดร่วมบุญ
           </p>
         </article>
 

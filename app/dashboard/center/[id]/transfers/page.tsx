@@ -5,11 +5,10 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
+import { netToHost } from "@/lib/fee";
 import { AlertTriangle, Banknote, CheckCircle2, ChevronRight, Clock, Users } from "lucide-react";
 
 export const revalidate = 30;
-
-const SYSTEM_FEE = 100;
 
 type MemorialRow = {
   id: string;
@@ -65,7 +64,7 @@ async function getTransfers(centerId: string) {
       const amount = confirmed.reduce((sum, d) => sum + (d.amount ?? 0), 0);
       const failedPrints = confirmed.filter((d) => d.nameplate_status === "error").length;
       const ceremonyReached = new Date(m.ceremony_date) <= today;
-      const netAmount = Math.max(amount - confirmed.length * SYSTEM_FEE, 0);
+      const netAmount = netToHost(amount);
       const hasHostBank = Boolean(m.host_bank_account_number);
       // พร้อมโอน = งาน active, ถึงวันฌาปนกิจ, มีผู้ร่วมบุญ, มีบัญชีเจ้าภาพ (ไม่ผูกกับการติดบอร์ด — พิมพ์แล้วถือว่าจบ)
       const ready = m.funeral_status === "active" && ceremonyReached && confirmed.length > 0 && hasHostBank;
