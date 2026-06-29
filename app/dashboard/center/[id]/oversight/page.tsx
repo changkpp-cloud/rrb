@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import {
   BarChart3,
   Banknote,
+  ClipboardCheck,
   FileText,
   Leaf,
   HeartHandshake,
@@ -159,6 +160,16 @@ export default async function CenterOversightPage({ params }: { params: Promise<
             <div className="flex-1">
               <p className="text-sm font-bold">รายงานรายเดือน/รายปี + ส่งออก (PDF / CSV)</p>
               <p className="text-[10px] text-white/80">เลือกช่วงเวลา ดึงเอกสารส่ง อปท. / หน่วยประเมิน (LPA · ITA · จังหวัดสะอาด)</p>
+            </div>
+          </Link>
+          <Link
+            href={`/dashboard/center/${centerRouteKey}/compliance`}
+            className="flex items-center gap-3 rounded-2xl bg-cream-50 gold-border px-4 py-3.5 active:scale-[0.98] transition-transform"
+          >
+            <ClipboardCheck className="w-5 h-5 text-gold-500 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-bold text-gold-800">ติดตามการส่งรายงานของศูนย์</p>
+              <p className="text-[10px] text-gold-500">ศูนย์ส่งรายงานรายเดือน/รายปีให้ อปท. ครบ-ตรงเวลาหรือไม่</p>
             </div>
           </Link>
           <div className="grid grid-cols-2 gap-2">

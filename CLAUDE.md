@@ -92,6 +92,7 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 ### ตารางอื่นๆ
 `nameplates`, `print_jobs`, `equipment`, `reports`, `audit_logs`, `slip_submissions`
 `host_otp_requests` — OTP ยืนยันเบอร์เจ้าภาพ **ก่อนเปิดงาน** (ผูก center_id + phone, ยังไม่มี memorial) · cols: code, expires_at, verified_at
+`center_report_submissions` — ศูนย์ทำเครื่องหมาย "ส่งรายงานงวดนี้ให้ อปท. แล้ว" (compliance tracker) · UNIQUE(center_id, period_type, period_key)
 
 ---
 
@@ -136,7 +137,8 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 /dashboard/center/[id]/active|closed|close-reports → รายการงานตามสถานะ
 /dashboard/center/[id]/transfers → โอนเงินเจ้าภาพ (+ confirm-transfer)
 /dashboard/center/[id]/report → รายงานสรุปศูนย์ รายเดือน/รายปี ส่ง อปท. (พิมพ์ PDF + CSV) — อิงวันฌาปนกิจ
-/dashboard/center/[id]/oversight → **บ้านของ อปท. (lgo_observer)** — read-only ภาพรวม KPI/การเงินโปร่งใส/สิ่งแวดล้อม/สวัสดิการ + ลิงก์ไป report/รายการงาน (ไม่มี PII) · role อื่นเข้าดู preview ได้
+/dashboard/center/[id]/oversight → **บ้านของ อปท. (lgo_observer)** — read-only ภาพรวม KPI/การเงินโปร่งใส/สิ่งแวดล้อม/สวัสดิการ + ลิงก์ไป report/compliance/รายการงาน (ไม่มี PII) · role อื่นเข้าดู preview ได้
+/dashboard/center/[id]/compliance → ติดตามสถานะการส่งรายงานศูนย์ → อปท. (12 เดือน + รายปี: ส่งแล้ว/ยังไม่ส่ง/ไม่มีงาน) · ศูนย์กดทำเครื่องหมายส่งบนหน้า report
 ```
 **ศูนย์ไม่ตรวจ/อนุมัติสลิปแล้ว** — donation auto-confirm; operations เห็นแค่ "สลิปซ้ำย้อนหลัง" เป็นหลักฐาน ไม่ใช่คิวอนุมัติ
 
@@ -180,6 +182,7 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 | POST | `/api/memorials/[id]/close` | ปิดงาน → funeral_status = "closed" |
 | POST | `/api/host-otp/send` | **ก่อนเปิดงาน:** ส่ง OTP ไปเบอร์เจ้าภาพ (center auth, ผูก center_id+phone) |
 | POST | `/api/host-otp/verify` | **ก่อนเปิดงาน:** ยืนยัน OTP → mark verified_at |
+| POST | `/api/centers/[id]/report-submissions` | ศูนย์ทำเครื่องหมาย/ยกเลิก "ส่งรายงานงวดนี้ให้ อปท." (canEditCenterWork) |
 | POST | `/api/memorials/[id]/otp/send`\|`verify` | ยืนยันเบอร์เจ้าภาพซ้ำบนหน้าจัดการงาน (post-create) |
 | POST | `/api/upload-slip` | Upload สลิป (รับเฉพาะ JPG/PNG) ก่อนสร้าง donation |
 | POST | `/api/generate-wreath` | DALL-E 3 generate background (ต้อง OPENAI_API_KEY) |
@@ -320,7 +323,7 @@ Donor         → ทำรายการชำระเงิน / ดู e-ca
 
 - IAM roles (`app_user_role` enum) อยู่ที่ `lib/iam-utils.ts` · capability helpers: `canEditCenterWork` / `canManageCenterUsers` / `canManageCenterSettings` / `isLgoObserver` / `canExportReports`
 - เข้าระบบผ่าน `app_users` + `center_memberships` (role ต่อคนต่อศูนย์) · แอดมินออกบัญชี อปท. ได้ที่ `/dashboard/admin/users`
-- ✅ หน้า `/oversight` (บ้าน อปท.) เสร็จแล้ว · ⏳ **PR ต่อไป:** `compliance` ติดตามสถานะรายงานศูนย์ (+ ตาราง `center_report_submissions`) + เทมเพลต export LPA/ITA/จังหวัดสะอาด + มุมรวมหลายศูนย์
+- ✅ `/oversight` + `/compliance` (ติดตามการส่งรายงาน) เสร็จแล้ว · ⏳ **เหลือ:** เทมเพลต export เฉพาะหน่วยประเมิน (LPA/ITA/จังหวัดสะอาด) + มุมรวมหลายศูนย์ (กรณี อปท. มีหลายศูนย์)
 - ระบบ login แบบ proper (JWT) ยังไม่ implement — ใช้ cookie + password/OTP แบบง่ายก่อน
 
 ---

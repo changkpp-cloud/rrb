@@ -220,3 +220,10 @@
 - เพิ่มหน้า **`/dashboard/center/[id]/oversight`** = บ้านของ อปท. (read-only, ไม่มี PII): หัวศูนย์/พื้นที่ + แถบโปร่งใส (เงินเข้าเจ้าภาพตรง ไม่ผ่าน อปท.) + KPI สะสม (งาน/ผู้ร่วมบุญ/ยอดร่วมบุญ/ถึงเจ้าภาพ/ค่าดำเนินการ/ลดขยะ) + สรุป 4 มิติปีปัจจุบัน (ผู้บริหาร/การเงินโปร่งใส/สิ่งแวดล้อม/สวัสดิการ) + ปุ่มไปรายงาน(export PDF/CSV) + ลิงก์รายการงาน + logout
 - aggregate per-memorial เหมือนหน้า report (confirmed donations, `systemFee`, ลดขยะ 2 กก./พวง) — query เฉพาะ count/sum **ไม่ดึง host_bank/phone/donor_name/เอกสาร**
 - เปลี่ยนปลายทาง redirect ของ อปท. จาก `report` → `oversight` ทั้ง 4 หน้า (home/operations/transfers/memorial detail) → อปท. login แล้วเด้งเข้า /oversight อัตโนมัติ
+
+### แดชบอร์ด อปท. (PR3 — compliance ติดตามการส่งรายงาน)
+- ตารางใหม่ `center_report_submissions` (migration `20260629020000`) — บันทึกว่าศูนย์ส่งรายงานงวดไหนให้ อปท. แล้ว · UNIQUE(center_id, period_type, period_key)
+- API `POST /api/centers/[id]/report-submissions` — ศูนย์ (canEditCenterWork) ทำเครื่องหมาย/ยกเลิก · อปท. เปลี่ยนไม่ได้
+- หน้า report: เพิ่ม `ReportSubmissionControl` — ศูนย์กด "ทำเครื่องหมายว่าส่งให้ อปท. แล้ว" ของงวดที่เลือก (อปท. เห็นสถานะอย่างเดียว)
+- หน้าใหม่ **`/compliance`**: อปท. ดูสถานะส่งรายงาน 12 เดือนล่าสุด + รายปี (ส่งแล้ว/ยังไม่ส่ง/ไม่มีงาน) + KPI สรุป + ลิงก์ไป report · เพิ่มลิงก์เข้า compliance บนหน้า oversight
+- ⚠️ **ต้องรัน migration `20260629020000` ก่อน** · ⏳ ที่เหลือ: เทมเพลต export LPA/ITA/จังหวัดสะอาด + มุมรวมหลายศูนย์ (defer)

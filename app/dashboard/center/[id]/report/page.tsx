@@ -2,10 +2,11 @@ import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { getCenterAccess, roleLabel } from "@/lib/iam";
+import { getCenterAccess, canEditCenterWork, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import CenterReportActions from "./CenterReportActions";
 import CenterReportPeriodSelector from "./CenterReportPeriodSelector";
+import ReportSubmissionControl from "./ReportSubmissionControl";
 import { FEE_RATE, systemFee } from "@/lib/fee";
 
 export const revalidate = 0;
@@ -139,6 +140,18 @@ export default async function CenterReportPage({
   const { mode, period, start, end, label } = parsePeriod(periodParam);
   const { rows, totals } = await getReportData(id, start, end);
 
+  // สถานะการส่งรายงานงวดนี้ให้ อปท. (compliance)
+  const supabase = createAdminClient();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: submissionRow } = await (supabase as any)
+    .from("center_report_submissions")
+    .select("submitted_at, submitted_by")
+    .eq("center_id", id)
+    .eq("period_type", mode)
+    .eq("period_key", period)
+    .maybeSingle();
+  const canMark = canEditCenterWork(access.role);
+
   const centerName = center.name ?? "ศูนย์บริหารหรีดร่วมบุญ";
   const area = [center.tambon, center.amphoe, center.province].filter(Boolean).join(" · ") || "-";
   const csv = buildCsv(rows, totals);
@@ -157,6 +170,15 @@ export default async function CenterReportPage({
       <main className="max-w-2xl mx-auto px-4 py-5 space-y-4">
         <div className="print:hidden space-y-3">
           <CenterReportPeriodSelector mode={mode} period={period} />
+          <ReportSubmissionControl
+            centerId={id}
+            periodType={mode}
+            periodKey={period}
+            periodLabel={label}
+            submittedAt={submissionRow?.submitted_at ?? null}
+            submittedBy={submissionRow?.submitted_by ?? null}
+            canMark={canMark}
+          />
           <CenterReportActions csv={csv} filename={csvFilename} />
         </div>
 
