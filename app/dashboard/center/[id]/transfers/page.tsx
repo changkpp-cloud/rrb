@@ -5,7 +5,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
 import { getCenterAccess, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
-import { netToHost } from "@/lib/fee";
+import { systemFee, netToHost } from "@/lib/fee";
 import { AlertTriangle, Banknote, CheckCircle2, ChevronRight, Clock, Users } from "lucide-react";
 
 export const revalidate = 30;
@@ -65,12 +65,13 @@ async function getTransfers(centerId: string) {
       const failedPrints = confirmed.filter((d) => d.nameplate_status === "error").length;
       const ceremonyReached = new Date(m.ceremony_date) <= today;
       const netAmount = netToHost(amount);
+      const feeAmount = systemFee(amount);
       const hasHostBank = Boolean(m.host_bank_account_number);
-      // พร้อมโอน = งาน active, ถึงวันฌาปนกิจ, มีผู้ร่วมบุญ, มีบัญชีเจ้าภาพ (ไม่ผูกกับการติดบอร์ด — พิมพ์แล้วถือว่าจบ)
-      const ready = m.funeral_status === "active" && ceremonyReached && confirmed.length > 0 && hasHostBank;
+      // พร้อมเก็บคืน = งาน active, ถึงวันฌาปนกิจ, มีผู้ร่วมบุญ (เงินเข้าเจ้าภาพแล้ว — รอเก็บค่าดำเนินการคืน + รับคืนบอร์ด)
+      const ready = m.funeral_status === "active" && ceremonyReached && confirmed.length > 0;
       const transferred = Boolean(m.transfer_confirmed_at);
 
-      return { memorial: m, amount, netAmount, confirmed: confirmed.length, failedPrints, ceremonyReached, hasHostBank, ready, transferred };
+      return { memorial: m, amount, netAmount, feeAmount, confirmed: confirmed.length, failedPrints, ceremonyReached, hasHostBank, ready, transferred };
     })
     .filter((row) => row.memorial.funeral_status === "active" || row.amount > 0)
     .sort((a, b) => Number(b.ready) - Number(a.ready) || Number(b.ceremonyReached) - Number(a.ceremonyReached));
@@ -89,31 +90,31 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
   const rows = await getTransfers(id);
   const readyCount = rows.filter((r) => r.ready).length;
   const transferredCount = rows.filter((r) => r.transferred).length;
-  const totalNet = rows.filter((r) => r.memorial.funeral_status === "active").reduce((sum, r) => sum + r.netAmount, 0);
+  const totalFee = rows.filter((r) => r.memorial.funeral_status === "active").reduce((sum, r) => sum + r.feeAmount, 0);
 
   return (
     <div className="min-h-screen">
       <IosPageHeader
-        title="โอนเงินเจ้าภาพ"
+        title="เก็บค่าดำเนินการ / คืนบอร์ด"
         subtitle={access.user ? `${centerName} · ${roleLabel(access.role)} · ${access.user.display_name}` : centerName}
         backHref={`/dashboard/center/${centerRouteKey}`}
       />
 
       <main className="max-w-lg mx-auto px-4 py-5 space-y-4">
         <div className="grid grid-cols-3 gap-3">
-          <Kpi icon={CheckCircle2} label="พร้อมโอน" value={`${readyCount}`} tone="emerald" />
-          <Kpi icon={Banknote} label="โอนแล้ว" value={`${transferredCount}`} tone="emerald" />
-          <Kpi icon={Banknote} label="ยอด active" value={`${totalNet.toLocaleString()}`} tone="amber" />
+          <Kpi icon={CheckCircle2} label="รอเก็บคืน" value={`${readyCount}`} tone="amber" />
+          <Kpi icon={Banknote} label="เก็บคืนแล้ว" value={`${transferredCount}`} tone="emerald" />
+          <Kpi icon={Banknote} label="ค่าดำเนินการค้างรับ" value={`${totalFee.toLocaleString()}`} tone="amber" />
         </div>
 
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3">
           <p className="text-[11px] font-semibold text-amber-800">หลักการทำงาน</p>
-          <p className="text-[10px] text-amber-700 mt-0.5">ตรวจยอดรวมและป้ายให้ครบก่อน แล้วกดเข้าไปปิดงานในหน้ารายละเอียดงาน ระบบไม่โอนเงินอัตโนมัติ</p>
+          <p className="text-[10px] text-amber-700 mt-0.5">เงินร่วมบุญเข้าบัญชีเจ้าภาพโดยตรงแล้ว — วันคืนบอร์ด เก็บค่าดำเนินการ 10% คืนจากเจ้าภาพ แล้วกดปิดงานในหน้ารายละเอียดงาน</p>
         </div>
 
         {rows.length === 0 ? (
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-5 py-10 text-center">
-            <p className="text-sm text-gold-400">ยังไม่มีรายการสำหรับโอนเงินเจ้าภาพ</p>
+            <p className="text-sm text-gold-400">ยังไม่มีรายการสำหรับเก็บค่าดำเนินการคืน</p>
           </div>
         ) : (
           <div className="space-y-2">
@@ -127,8 +128,8 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-semibold text-gold-800 truncate">{row.memorial.name}</p>
-                      {row.transferred && <span className="text-[9px] font-bold text-blue-700 bg-white/70 rounded-full px-2 py-0.5">โอนแล้ว ✓</span>}
-                      {!row.transferred && row.ready && <span className="text-[9px] font-bold text-emerald-700 bg-white/70 rounded-full px-2 py-0.5">พร้อม</span>}
+                      {row.transferred && <span className="text-[9px] font-bold text-blue-700 bg-white/70 rounded-full px-2 py-0.5">เก็บคืนแล้ว ✓</span>}
+                      {!row.transferred && row.ready && <span className="text-[9px] font-bold text-amber-700 bg-white/70 rounded-full px-2 py-0.5">รอเก็บคืน</span>}
                     </div>
                     <p className="text-[10px] text-gold-500">ฌาปนกิจ {formatThaiDate(row.memorial.ceremony_date)}</p>
                     <p className="text-[10px] text-gold-400 truncate">เจ้าภาพ: {row.memorial.host_name || "-"}</p>
@@ -138,7 +139,7 @@ export default async function CenterTransfersPage({ params }: { params: Promise<
 
                 <div className="grid grid-cols-4 gap-2 mt-3 text-center">
                   <Mini icon={Users} label="ราย" value={row.confirmed.toLocaleString()} />
-                  <Mini icon={Banknote} label="สุทธิ" value={row.netAmount.toLocaleString()} />
+                  <Mini icon={Banknote} label="ค่าดำเนินการ" value={row.feeAmount.toLocaleString()} />
                   <Mini icon={AlertTriangle} label="พิมพ์พลาด" value={`${row.failedPrints} ป้าย`} warning={row.failedPrints > 0} />
                   <Mini icon={Clock} label="บัญชี" value={row.hasHostBank ? "มี" : "ไม่มี"} warning={!row.hasHostBank} />
                 </div>

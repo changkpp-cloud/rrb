@@ -68,22 +68,22 @@ export default function CloseMemorialButton({
       {/* Header */}
       <div className="flex items-center gap-2">
         <Banknote className="w-4 h-4 text-gold-500" />
-        <p className="text-xs font-semibold text-gold-700">โอนเงินให้เจ้าภาพ / ปิดงาน</p>
+        <p className="text-xs font-semibold text-gold-700">เก็บค่าดำเนินการคืน + รับคืนบอร์ด / ปิดงาน</p>
       </div>
 
       {/* Summary */}
       <div className="bg-white rounded-xl border border-gold-200 px-4 py-3 space-y-1.5">
-        <Row label="ยอดร่วมบุญทั้งหมด" value={`${totalAmount.toLocaleString()} บาท`} />
-        <Row label="ค่าดำเนินการระบบ" value={`- ${systemFee.toLocaleString()} บาท`} muted />
+        <Row label="ยอดร่วมบุญรวม (เข้าเจ้าภาพแล้ว)" value={`${totalAmount.toLocaleString()} บาท`} />
+        <Row label="ยอดเจ้าภาพได้สุทธิ" value={`${netAmount.toLocaleString()} บาท`} muted />
         <div className="border-t border-gold-100 pt-1.5 mt-1">
-          <Row label="ยอดสุทธิที่โอนให้เจ้าภาพ" value={`${netAmount.toLocaleString()} บาท`} highlight />
+          <Row label="ค่าดำเนินการที่ต้องเก็บคืนจากเจ้าภาพ" value={`${systemFee.toLocaleString()} บาท`} highlight />
         </div>
       </div>
 
       {/* Host bank account */}
       {(hostBankAccount || hostBankName) ? (
         <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 space-y-1">
-          <p className="text-[10px] text-emerald-700 font-semibold mb-1">บัญชีเจ้าภาพที่ต้องโอนเงินให้</p>
+          <p className="text-[10px] text-emerald-700 font-semibold mb-1">บัญชีเจ้าภาพ (รับเงินผู้ร่วมบุญโดยตรงแล้ว)</p>
           {hostBankName && <Row label="ธนาคาร" value={hostBankName} small />}
           {hostBankAccount && <Row label="เลขบัญชี" value={hostBankAccount} small mono />}
           {hostBankAccountName && <Row label="ชื่อบัญชี" value={hostBankAccountName} small />}
@@ -91,7 +91,7 @@ export default function CloseMemorialButton({
       ) : (
         <div className="flex items-center gap-2 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2.5">
           <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0" />
-          <p className="text-[11px] text-amber-700">ยังไม่มีข้อมูลบัญชีเจ้าภาพ — ตรวจสอบก่อนโอนเงิน</p>
+          <p className="text-[11px] text-amber-700">ยังไม่มีข้อมูลบัญชีเจ้าภาพ — ตรวจสอบก่อนปิดงาน</p>
         </div>
       )}
 
@@ -111,8 +111,8 @@ export default function CloseMemorialButton({
             <p className="text-sm font-bold text-red-700">ยืนยันปิดงาน?</p>
           </div>
           <p className="text-[11px] text-red-600 leading-relaxed">
-            หลังปิดแล้วจะ<strong>ไม่สามารถรับสลิปใหม่ได้</strong><br />
-            และสถานะงานจะเปลี่ยนเป็น "ปิดแล้ว" ถาวร
+            ยืนยันเมื่อ<strong>เก็บค่าดำเนินการคืนและรับคืนบอร์ดเรียบร้อยแล้ว</strong><br />
+            หลังปิดแล้วจะ<strong>ไม่สามารถรับสลิปใหม่ได้</strong> และสถานะงานจะเป็น "ปิดแล้ว" ถาวร
           </p>
           <div className="flex gap-2 pt-1">
             <button
@@ -145,7 +145,7 @@ export default function CloseMemorialButton({
           className="w-full py-3.5 rounded-2xl gold-gradient text-white font-semibold text-sm shadow-md hover:opacity-90 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
         >
           <CheckCircle2 className="w-4 h-4" />
-          โอนเงินให้เจ้าภาพแล้ว / ปิดงาน
+          เก็บค่าดำเนินการ + รับคืนบอร์ดแล้ว / ปิดงาน
         </button>
       )}
     </div>

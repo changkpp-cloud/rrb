@@ -67,8 +67,10 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 | funeral_status | "draft"\|"active"\|"closed" | |
 | bank_name/account_number/account_name | text | บัญชีมูลนิธิรับเงิน |
 | bank_account_image_url | text? | QR รูปภาพ (fallback ถ้าไม่มีเบอร์ PromptPay) |
-| host_name/phone/code | text? | เจ้าภาพ |
-| host_bank_name/account_number/account_name | text? | บัญชีเจ้าภาพ (รับโอนหลังปิดงาน) |
+| host_name/phone/code | text? | เจ้าภาพ (phone = normalize เหลือเลขล้วน) |
+| host_bank_name/account_number/account_name | text? | **บัญชีเจ้าภาพ — เงินผู้ร่วมบุญเข้าตรงนี้โดยตรง** กรอกตอนเปิดงาน |
+| host_phone_verified | bool | ยืนยันเบอร์เจ้าภาพด้วย OTP แล้ว (ตั้งตอนเปิดงาน) |
+| host_otp_code / host_otp_expires_at | text?/ts? | OTP สำหรับยืนยันซ้ำบนหน้าจัดการงาน |
 | host_relationship | text? | ความสัมพันธ์กับผู้วายชนม์ |
 | death_certificate_url / host_id_card_url | text? | เอกสารยืนยัน |
 | is_active | bool | legacy field |
@@ -88,7 +90,8 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 | nameplate_status | "pending"\|"queued"\|"printed"\|"posted" | |
 
 ### ตารางอื่นๆ
-`nameplates`, `print_jobs`, `equipment`, `reports`, `audit_logs`
+`nameplates`, `print_jobs`, `equipment`, `reports`, `audit_logs`, `slip_submissions`
+`host_otp_requests` — OTP ยืนยันเบอร์เจ้าภาพ **ก่อนเปิดงาน** (ผูก center_id + phone, ยังไม่มี memorial) · cols: code, expires_at, verified_at
 
 ---
 
@@ -127,7 +130,7 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 ```
 /dashboard/center          → login ศูนย์ (มี /register, /change-password)
 /dashboard/center/[id]     → รายการงานศพ + ปุ่มเปิดงานใหม่
-/dashboard/center/[id]/create → ฟอร์มเปิดงานศพ
+/dashboard/center/[id]/create → ฟอร์มเปิดงานศพ (กรอกบัญชีรับเงินเจ้าภาพ + ยืนยันเบอร์เจ้าภาพด้วย OTP ก่อนเปิดงาน)
 /dashboard/center/[id]/memorial/[memId] → จัดการงาน (+ /edit) + ปิดงาน
 /dashboard/center/[id]/operations → งานวันนี้: KPI + คิวป้ายรอพิมพ์/ติดบอร์ด + แจ้งเตือนสลิปซ้ำย้อนหลัง
 /dashboard/center/[id]/active|closed|close-reports → รายการงานตามสถานะ
@@ -171,10 +174,13 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 | PATCH | `/api/donations/[id]` | เปลี่ยน status (confirmed/rejected) |
 | POST | `/api/memorial` | สร้าง memorial ใหม่ |
 | GET | `/api/memorial/host` | Host login ด้วย host_code |
-| POST | `/api/memorials/create` | สร้าง memorial (center dashboard) |
+| POST | `/api/memorials/create` | สร้าง memorial (center dashboard) — เช็ก OTP เบอร์เจ้าภาพ → ตั้ง host_phone_verified |
 | PATCH | `/api/memorials/[id]` | อัปเดต host bank info + เอกสาร |
 | POST | `/api/memorials/[id]/close` | ปิดงาน → funeral_status = "closed" |
-| POST | `/api/upload-slip` | Upload สลิปก่อนสร้าง donation |
+| POST | `/api/host-otp/send` | **ก่อนเปิดงาน:** ส่ง OTP ไปเบอร์เจ้าภาพ (center auth, ผูก center_id+phone) |
+| POST | `/api/host-otp/verify` | **ก่อนเปิดงาน:** ยืนยัน OTP → mark verified_at |
+| POST | `/api/memorials/[id]/otp/send`\|`verify` | ยืนยันเบอร์เจ้าภาพซ้ำบนหน้าจัดการงาน (post-create) |
+| POST | `/api/upload-slip` | Upload สลิป (รับเฉพาะ JPG/PNG) ก่อนสร้าง donation |
 | POST | `/api/generate-wreath` | DALL-E 3 generate background (ต้อง OPENAI_API_KEY) |
 
 ---
@@ -202,10 +208,13 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 - **ป้ายชื่อ:** auto-print → `queued` = "ส่งพิมพ์แล้ว" (ถือว่าจบ) · `error` = พิมพ์ไม่สำเร็จ → ปุ่ม "พิมพ์ซ้ำ" (`POST /api/donations/[id]/nameplate`). **ไม่ใช้สถานะ `posted`/ติดบอร์ด เป็นเงื่อนไขปิดงาน/โอนเงิน** (พิมพ์แล้วถือว่าจบ)
 - **เครื่องพิมพ์ออฟไลน์:** PrintNode ค้างคิวแล้วพิมพ์ต่อเองเมื่อเครื่องกลับมา · `GET /api/printer-status?memorialId=` + `PrinterStatusAlert` เตือน "ตรวจสอบเครื่องพิมพ์" บนแดชบอร์ด**ศูนย์+เจ้าภาพ** (ต้องตั้ง `PRINTNODE_API_KEY` ถึงจะรู้สถานะ online/offline)
 
-**กฎค่าดำเนินการ (สำคัญ — เรื่องเงิน):**
-- **ค่าดำเนินการ = 10% ของยอดร่วมบุญรวม (เข้าศูนย์) → เจ้าภาพได้สุทธิ 90%** (ตามแก่นโครงการ: เงินถึงเจ้าภาพโดยตรง, ส่วนค่าดำเนินการเป็นค่าวัสดุ/อุปกรณ์/กองทุนจิตอาสา · เทศบาลไม่รับเงิน)
+**กฎเงิน + ค่าดำเนินการ (สำคัญมาก — เรื่องเงิน):**
+- **เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง** (ไม่ผ่านศูนย์) — QR พร้อมเพย์หน้าโอนสร้างจาก **เบอร์เจ้าภาพที่ยืนยัน OTP แล้ว** (`memorial.host_phone` เมื่อ `host_phone_verified`); ถ้ายังไม่ยืนยัน → ไม่โชว์ QR พร้อมเพย์
+- **ค่าดำเนินการ = 10% ของยอดร่วมบุญรวม → เก็บคืนจากเจ้าภาพวัน "คืนบอร์ด"** (เจ้าภาพได้เงินเต็มเข้าบัญชีก่อน แล้วจ่าย 10% คืนศูนย์ตอนคืนอุปกรณ์/บอร์ด · เทศบาลไม่รับเงิน)
+- หน้า `transfers` = **"เก็บค่าดำเนินการ / คืนบอร์ด"** (ไม่ใช่ "โอนเงินเจ้าภาพ" แล้ว) · `transfer_confirmed_at` = ยืนยัน "เก็บค่าดำเนินการคืน + รับคืนบอร์ด" แล้ว
 - สูตรกลางอยู่ที่ `lib/fee.ts` — `systemFee(total)` = `Math.round(total * 0.1)`, `netToHost(total)` = `total − systemFee(total)` (รับประกัน fee + net = total)
-- **ทุกที่ต้อง import จาก `@/lib/fee` เท่านั้น — ห้าม hardcode % หรือ 100/ราย ซ้ำ** ใช้อยู่ทั้งฝั่งเจ้าภาพ (HostDashboardClient, host summary) และฝั่งศูนย์/แอดมิน (memorial page → CloseMemorialButton, transfers, report, admin/hosts)
+- **ทุกที่ต้อง import จาก `@/lib/fee` เท่านั้น — ห้าม hardcode %** ใช้อยู่ทั้งฝั่งเจ้าภาพ (HostDashboardClient, host summary) และฝั่งศูนย์/แอดมิน (memorial page → CloseMemorialButton, transfers, report, admin/hosts)
+- **OTP เปิดงาน:** ศูนย์กรอกบัญชีเจ้าภาพ + ยืนยันเบอร์ด้วย OTP ตอนเปิดงาน (`/api/host-otp/*` → `host_otp_requests`) ⚠️ ยัง **MOCK** ส่งรหัสกลับมาโชว์ ยังไม่ส่ง SMS จริง — เมื่อมี SMS provider ให้เพิ่ม `sendSms()` แล้วลบ `devCode` ออกจาก response
 
 ---
 
@@ -284,14 +293,15 @@ funeral_status: "active" as const
 ## PromptPay QR Logic
 
 ```
-center.phone → generatePayload(phone) → QRCodeSVG
+memorial.host_phone (เฉพาะเมื่อ host_phone_verified) → generatePayload(phone) → QRCodeSVG
   ↓ fallback
 memorial.bank_account_image_url → <Image>
   ↓ fallback
 <QRPlaceholder> (SVG)
 ```
 
-เบอร์เก็บที่ `centers.phone` — ใช้ร่วมกันทุกงานในศูนย์นั้น
+**เงินเข้าบัญชีเจ้าภาพโดยตรง** → QR สร้างจาก `memorial.host_phone` ที่ **ยืนยัน OTP แล้ว** (`host_phone_verified`) เท่านั้น
+(เดิมใช้ `centers.phone` — เลิกแล้ว เพราะเงินไม่ผ่านศูนย์)
 
 ---
 

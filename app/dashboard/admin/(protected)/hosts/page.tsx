@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { formatThaiDate } from "@/lib/memorial";
 import { Banknote, User, ChevronRight } from "lucide-react";
-import { netToHost } from "@/lib/fee";
+import { systemFee, netToHost } from "@/lib/fee";
 
 export const revalidate = 60;
 
@@ -34,9 +34,10 @@ async function getHostsData() {
 
   return memorials.map(m => {
     const agg = donMap[m.id] ?? { amount: 0, count: 0 };
-    // ค่าดำเนินการ 10% ของยอดร่วมบุญ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
+    // เงินเข้าเจ้าภาพโดยตรง 100% · ค่าดำเนินการ 10% เก็บคืนวันคืนบอร์ด
     const netAmount = netToHost(agg.amount);
-    return { ...m, totalAmount: agg.amount, donorCount: agg.count, netAmount };
+    const feeAmount = systemFee(agg.amount);
+    return { ...m, totalAmount: agg.amount, donorCount: agg.count, netAmount, feeAmount };
   });
 }
 
@@ -49,25 +50,25 @@ const STATUS_COLOR: Record<string, string> = {
 
 export default async function AdminHostsPage() {
   const hosts = await getHostsData();
-  const totalPending = hosts.filter(h => h.funeral_status === "active").reduce((s, h) => s + h.netAmount, 0);
-  const totalPaid = hosts.filter(h => h.funeral_status === "closed").reduce((s, h) => s + h.netAmount, 0);
+  const feePending = hosts.filter(h => h.funeral_status === "active").reduce((s, h) => s + h.feeAmount, 0);
+  const feeCollected = hosts.filter(h => h.funeral_status === "closed").reduce((s, h) => s + h.feeAmount, 0);
 
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="text-base font-bold text-gold-800">เจ้าภาพและยอดนำส่ง</h2>
-        <p className="text-[11px] text-gold-500">{hosts.length} งานที่มีข้อมูลเจ้าภาพ</p>
+        <h2 className="text-base font-bold text-gold-800">เจ้าภาพและค่าดำเนินการ</h2>
+        <p className="text-[11px] text-gold-500">{hosts.length} งานที่มีข้อมูลเจ้าภาพ · เงินเข้าเจ้าภาพโดยตรง</p>
       </div>
 
       {/* Summary */}
       <div className="grid grid-cols-2 gap-3">
         <div className="bg-amber-50 border border-amber-200 rounded-2xl px-4 py-3 text-center">
-          <p className="text-lg font-bold text-amber-600">{totalPending.toLocaleString()}</p>
-          <p className="text-[11px] text-amber-700">บาท · รอนำส่ง (สุทธิ)</p>
+          <p className="text-lg font-bold text-amber-600">{feePending.toLocaleString()}</p>
+          <p className="text-[11px] text-amber-700">บาท · ค่าดำเนินการค้างรับ</p>
         </div>
         <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-center">
-          <p className="text-lg font-bold text-emerald-600">{totalPaid.toLocaleString()}</p>
-          <p className="text-[11px] text-emerald-700">บาท · นำส่งแล้ว (สุทธิ)</p>
+          <p className="text-lg font-bold text-emerald-600">{feeCollected.toLocaleString()}</p>
+          <p className="text-[11px] text-emerald-700">บาท · ค่าดำเนินการรับแล้ว</p>
         </div>
       </div>
 
@@ -118,9 +119,9 @@ export default async function AdminHostsPage() {
               {/* Amount */}
               <div className="flex items-center gap-1 mt-1.5 pt-1.5 border-t border-gold-100">
                 <Banknote className="w-3.5 h-3.5 text-gold-500" />
-                <p className="text-xs font-bold text-gold-700">{h.netAmount.toLocaleString()} บาท</p>
+                <p className="text-xs font-bold text-gold-700">{h.totalAmount.toLocaleString()} บาท</p>
                 <span className="text-[10px] text-gold-400">
-                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} (หัก 10%)
+                  เข้าเจ้าภาพโดยตรง · ค่าดำเนินการ {h.feeAmount.toLocaleString()} (10%)
                 </span>
               </div>
             </Link>

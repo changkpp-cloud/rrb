@@ -4,6 +4,7 @@ import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 import { centerSlugPrefix, sanitizeSlugPart } from "@/lib/center-slug";
 import { serializePrayerDetails } from "@/lib/prayer-details";
+import { normalizePhone, OTP_VERIFY_WINDOW_MS } from "@/lib/otp";
 
 const CHARS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -132,8 +133,28 @@ export async function POST(req: NextRequest) {
     const ceremonyPostalCode      = toNum(form.get("ceremony_postal_code"));
 
     const hostName         = (form.get("host_name") as string) || null;
-    const hostPhone        = (form.get("host_phone") as string) || null;
+    const hostPhoneRaw     = (form.get("host_phone") as string) || null;
+    const hostPhone        = hostPhoneRaw ? normalizePhone(hostPhoneRaw) : null;
     const hostRelationship = (form.get("host_relationship") as string) || null;
+
+    // ยืนยันเบอร์เจ้าภาพด้วย OTP ก่อนเปิดงาน (เงินเข้าบัญชีเจ้าภาพโดยตรง → ต้องเป็นเบอร์ตัวจริงที่อยู่หน้าเคาน์เตอร์)
+    // เช็กว่ามีคำขอ OTP ของ (ศูนย์ + เบอร์) ที่ยืนยันแล้วภายในกรอบเวลา
+    let hostPhoneVerified = false;
+    if (hostPhone) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: otpRow } = await (supabase as any).from("host_otp_requests")
+        .select("verified_at")
+        .eq("center_id", centerId)
+        .eq("phone", hostPhone)
+        .not("verified_at", "is", null)
+        .order("verified_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      hostPhoneVerified = Boolean(
+        otpRow?.verified_at &&
+        Date.now() - new Date(otpRow.verified_at).getTime() < OTP_VERIFY_WINDOW_MS,
+      );
+    }
 
     const bankName          = (form.get("bank_name") as string) || "";
     const bankAccountNumber = (form.get("bank_account_number") as string) || "";
@@ -205,6 +226,7 @@ export async function POST(req: NextRequest) {
       prayer_location: serializePrayerDetails(prayerText, prayerSchedule),
       host_name: hostName,
       host_phone: hostPhone,
+      host_phone_verified: hostPhoneVerified,
       host_code: hostCode,
       host_relationship: hostRelationship,
       funeral_status: "active" as const,

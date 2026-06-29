@@ -638,6 +638,9 @@ export type Database = {
           host_code: string | null
           host_expires_at: string | null
           host_verified: boolean | null
+          host_phone_verified: boolean | null
+          host_otp_code: string | null
+          host_otp_expires_at: string | null
           printer_id: string | null
           transfer_confirmed_at: string | null
           transfer_confirmed_by: string | null
@@ -676,6 +679,9 @@ export type Database = {
           host_code?: string | null
           host_expires_at?: string | null
           host_verified?: boolean | null
+          host_phone_verified?: boolean | null
+          host_otp_code?: string | null
+          host_otp_expires_at?: string | null
           printer_id?: string | null
           transfer_confirmed_at?: string | null
           transfer_confirmed_by?: string | null
@@ -714,6 +720,9 @@ export type Database = {
           host_code?: string | null
           host_expires_at?: string | null
           host_verified?: boolean | null
+          host_phone_verified?: boolean | null
+          host_otp_code?: string | null
+          host_otp_expires_at?: string | null
           printer_id?: string | null
           transfer_confirmed_at?: string | null
           transfer_confirmed_by?: string | null

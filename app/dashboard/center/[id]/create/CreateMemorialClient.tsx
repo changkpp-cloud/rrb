@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Upload, Copy, Check, ExternalLink } from "lucide-react";
+import { Upload, Copy, Check, ExternalLink, Send, ShieldCheck, Loader2 } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 import LotusIcon from "@/components/LotusIcon";
 import ThaiDateInput from "@/components/ThaiDateInput";
@@ -11,6 +11,7 @@ import ThaiAddressSelect, { type ThaiAddressValue } from "@/components/ThaiAddre
 import { romanizeThaiFirstName } from "@/lib/thai-romanize";
 import { getSiteUrl } from "@/lib/site-url";
 import { compressImage } from "@/lib/compress-image";
+import { normalizePhone, isValidThaiMobile } from "@/lib/otp";
 
 interface CenterBank {
   bank_name?: string | null;
@@ -263,6 +264,73 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   const [hostPhone, setHostPhone]               = useState("");
   const [hostRelationship, setHostRelationship] = useState("");
 
+  // บัญชีรับเงินเจ้าภาพ (เงินผู้ร่วมบุญเข้าบัญชีนี้โดยตรง)
+  const [hostBankName, setHostBankName]                   = useState("");
+  const [hostBankAccountNumber, setHostBankAccountNumber] = useState("");
+  const [hostBankAccountName, setHostBankAccountName]     = useState("");
+
+  // ยืนยันเบอร์เจ้าภาพด้วย OTP (ก่อนเปิดงาน — ผู้มาแจ้งต้องบอกรหัสที่ส่งไปเบอร์ตัวเองกับ จนท.)
+  const [otpSent, setOtpSent]         = useState(false);
+  const [otpCode, setOtpCode]         = useState("");
+  const [otpDevCode, setOtpDevCode]   = useState<string | null>(null);
+  const [otpLoading, setOtpLoading]   = useState(false);
+  const [otpError, setOtpError]       = useState("");
+  const [phoneVerified, setPhoneVerified] = useState(false);
+  const [verifiedPhone, setVerifiedPhone] = useState("");
+
+  const phoneValid = isValidThaiMobile(hostPhone);
+
+  async function sendOtp() {
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/host-otp/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ center_id: centerId, phone: hostPhone }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "ส่งรหัสไม่สำเร็จ");
+      setOtpDevCode(data.devCode ?? null);
+      setOtpSent(true);
+      setPhoneVerified(false);
+      setOtpCode("");
+    } catch (e) {
+      setOtpError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
+    }
+    setOtpLoading(false);
+  }
+
+  async function verifyOtp() {
+    setOtpLoading(true);
+    setOtpError("");
+    try {
+      const res = await fetch("/api/host-otp/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ center_id: centerId, phone: hostPhone, code: otpCode }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "ยืนยันไม่สำเร็จ");
+      setPhoneVerified(true);
+      setVerifiedPhone(normalizePhone(hostPhone));
+      setOtpSent(false);
+      setOtpCode("");
+      setOtpDevCode(null);
+    } catch (e) {
+      setOtpError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
+    }
+    setOtpLoading(false);
+  }
+
+  // แก้เบอร์หลังยืนยันแล้ว → ต้องยืนยันใหม่ (เบอร์ที่ยืนยันไว้ไม่ตรงกับช่องปัจจุบัน)
+  useEffect(() => {
+    if (phoneVerified && normalizePhone(hostPhone) !== verifiedPhone) {
+      setPhoneVerified(false);
+      setOtpSent(false);
+    }
+  }, [hostPhone, phoneVerified, verifiedPhone]);
+
   // Auto-fill slug จากชื่อจริง (จนกว่าผู้ใช้จะแก้เอง)
   useEffect(() => {
     if (!slugEdited) setSlugPart(romanizeThaiFirstName(name));
@@ -281,6 +349,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!photoFile) { setError("กรุณาอัปโหลดรูปถ่ายผู้วายชนม์"); return; }
+    if (!phoneVerified) { setError("กรุณายืนยันเบอร์เจ้าภาพด้วย OTP ก่อนเปิดงาน"); return; }
     if (!consent) { setError("กรุณายืนยันว่าได้รับอนุญาตจากเจ้าภาพ"); return; }
 
     setSubmitting(true);
@@ -309,6 +378,9 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     if (hostName)        form.append("host_name", hostName);
     if (hostPhone)       form.append("host_phone", hostPhone);
     if (hostRelationship) form.append("host_relationship", hostRelationship);
+    if (hostBankName)          form.append("host_bank_name", hostBankName);
+    if (hostBankAccountNumber) form.append("host_bank_account_number", hostBankAccountNumber);
+    if (hostBankAccountName)   form.append("host_bank_account_name", hostBankAccountName);
     form.append("consent_confirmed", "true");
     form.append("bank_name", centerBank?.bank_name || "");
     form.append("bank_account_number", centerBank?.bank_account_number || "");
@@ -338,6 +410,10 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
     !ceremonyAddr.subdistrictCode && "ที่ตั้งงาน (จังหวัด/อำเภอ/ตำบล)",
     !hostName && "ชื่อเจ้าภาพ",
     !hostPhone && "เบอร์เจ้าภาพ",
+    !phoneVerified && "ยืนยันเบอร์เจ้าภาพด้วย OTP",
+    !hostBankName && "ธนาคารเจ้าภาพ",
+    !hostBankAccountNumber && "เลขบัญชีเจ้าภาพ",
+    !hostBankAccountName && "ชื่อบัญชีเจ้าภาพ",
     !consent && "ยืนยันการยินยอมของเจ้าภาพ",
   ].filter(Boolean) as string[];
   const canSubmit = missingFields.length === 0;
@@ -364,8 +440,8 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
         <form onSubmit={handleSubmit} className={embedded ? "space-y-4" : "max-w-lg mx-auto px-4 py-5 space-y-4"}>
 
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl px-4 py-3 text-xs text-emerald-700 leading-relaxed">
-            <p className="font-semibold mb-0.5">กรอกข้อมูลงานศพ → เปิดงานได้ทันที</p>
-            <p className="text-emerald-600">เจ้าภาพจะยืนยันตัวตนและบัญชีรับเงินเองผ่าน Dashboard เจ้าภาพ</p>
+            <p className="font-semibold mb-0.5">กรอกข้อมูลงานศพ → ยืนยันเบอร์เจ้าภาพด้วย OTP → เปิดงาน</p>
+            <p className="text-emerald-600">เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง — กรอกบัญชีรับเงินและยืนยันเบอร์เจ้าภาพให้ครบก่อนเปิดงาน</p>
           </div>
 
           {/* ── ผู้วายชนม์ ─────────────────────────────────────────────── */}
@@ -494,7 +570,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="เบอร์โทรศัพท์" required>
+                <Field label="เบอร์โทรศัพท์ (รับ OTP)" required>
                   <input type="tel" value={hostPhone} onChange={e => setHostPhone(e.target.value)} required
                     placeholder="081-234-5678" className={inputClass} />
                 </Field>
@@ -502,6 +578,91 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
                   <input type="text" value={hostRelationship} onChange={e => setHostRelationship(e.target.value)}
                     placeholder="เช่น บุตร / ภรรยา" className={inputClass} />
                 </Field>
+              </div>
+
+              {/* ── ยืนยันเบอร์เจ้าภาพด้วย OTP ── */}
+              <div className="bg-white rounded-xl border border-gold-200 px-3 py-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="w-4 h-4 text-gold-500" />
+                  <p className="text-xs font-semibold text-gold-700">ยืนยันเบอร์เจ้าภาพ (OTP)</p>
+                  {phoneVerified && (
+                    <span className="ml-auto inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                      <Check className="w-3 h-3" /> ยืนยันแล้ว
+                    </span>
+                  )}
+                </div>
+
+                {!phoneVerified && (
+                  <>
+                    <p className="text-[10px] text-gold-500 leading-relaxed">
+                      กดส่งรหัสไปเบอร์ผู้มาแจ้งเปิดงาน → ให้ผู้แจ้งบอกรหัส 6 หลักกับเจ้าหน้าที่เพื่อยืนยันว่าเป็นเบอร์ตัวจริง
+                    </p>
+                    <button
+                      type="button"
+                      onClick={sendOtp}
+                      disabled={otpLoading || !phoneValid}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl gold-gradient text-white text-xs font-semibold disabled:opacity-50"
+                    >
+                      {otpLoading && !otpSent ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {otpSent ? "ส่งรหัสใหม่" : "ส่งรหัส OTP"}
+                    </button>
+                    {!phoneValid && hostPhone.length > 0 && (
+                      <p className="text-[10px] text-red-500">เบอร์ต้องเป็น 0 ตามด้วยเลข 9 หลัก</p>
+                    )}
+                  </>
+                )}
+
+                {otpSent && !phoneVerified && (
+                  <div className="space-y-2 pt-1">
+                    {otpDevCode && (
+                      <p className="text-[10px] text-amber-700 bg-amber-50 rounded-lg px-2 py-1.5">
+                        ⚠️ โหมดทดสอบ (ยังไม่ส่ง SMS จริง) — รหัส OTP คือ <span className="font-bold tracking-widest">{otpDevCode}</span>
+                      </p>
+                    )}
+                    <div className="flex gap-2">
+                      <input
+                        type="text" inputMode="numeric" maxLength={6}
+                        value={otpCode}
+                        onChange={e => setOtpCode(e.target.value.replace(/\D/g, ""))}
+                        placeholder="______"
+                        className="flex-1 px-3 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-lg font-bold text-center tracking-[0.4em]"
+                      />
+                      <button
+                        type="button"
+                        onClick={verifyOtp}
+                        disabled={otpLoading || otpCode.length !== 6}
+                        className="shrink-0 flex items-center gap-1.5 px-4 rounded-xl bg-emerald-600 text-white text-sm font-semibold disabled:opacity-50"
+                      >
+                        {otpLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+                        ยืนยัน
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {otpError && <p className="text-[11px] text-red-600 bg-red-50 rounded-lg px-2 py-1.5">{otpError}</p>}
+              </div>
+
+              {/* ── บัญชีรับเงินเจ้าภาพ ── */}
+              <div className="border-t border-gold-100 pt-3 space-y-3">
+                <p className="text-[11px] font-semibold text-gold-600 uppercase tracking-wide">
+                  บัญชีรับเงินเจ้าภาพ — เงินผู้ร่วมบุญเข้าบัญชีนี้โดยตรง
+                </p>
+                <Field label="ธนาคาร" required>
+                  <input type="text" value={hostBankName} onChange={e => setHostBankName(e.target.value)} required
+                    placeholder="เช่น ธนาคารกสิกรไทย" className={inputClass} />
+                </Field>
+                <div className="grid grid-cols-2 gap-3">
+                  <Field label="เลขบัญชี" required>
+                    <input type="text" inputMode="numeric" value={hostBankAccountNumber}
+                      onChange={e => setHostBankAccountNumber(e.target.value.replace(/[^\d-]/g, ""))} required
+                      placeholder="xxx-x-xxxxx-x" className={inputClass} />
+                  </Field>
+                  <Field label="ชื่อบัญชี" required>
+                    <input type="text" value={hostBankAccountName} onChange={e => setHostBankAccountName(e.target.value)} required
+                      placeholder="ชื่อเจ้าของบัญชี" className={inputClass} />
+                  </Field>
+                </div>
               </div>
 
               <label className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl px-3 py-3 cursor-pointer">
@@ -542,7 +703,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
           </button>
 
           <p className="text-center text-[10px] text-gold-400 pb-2">
-            หลังเปิดงาน เจ้าภาพจะยืนยันตัวตนและบัญชีรับเงินผ่าน Dashboard เจ้าภาพ
+            เงินผู้ร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง · ค่าดำเนินการเก็บคืนวันคืนบอร์ด
           </p>
         </form>
       </main>

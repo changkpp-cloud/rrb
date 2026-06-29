@@ -183,18 +183,21 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
               <p className="text-xs font-bold text-gold-600 uppercase tracking-wider">สรุปยอดเงิน</p>
               <div className="grid grid-cols-3 gap-3 text-center">
                 <div>
-                  <p className="text-xl font-bold text-gold-800">{totalAmount.toLocaleString()}</p>
-                  <p className="text-[9px] text-gold-500">ยอดรวม (฿)</p>
+                  <p className="text-xl font-bold text-emerald-700">{totalAmount.toLocaleString()}</p>
+                  <p className="text-[9px] text-gold-500">เข้าบัญชีคุณแล้ว (฿)</p>
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-red-500">-{serviceFee.toLocaleString()}</p>
-                  <p className="text-[9px] text-gold-500">ค่าดำเนินการ (฿)</p>
+                  <p className="text-xl font-bold text-red-500">{serviceFee.toLocaleString()}</p>
+                  <p className="text-[9px] text-gold-500">ค่าดำเนินการจ่ายคืน (฿)</p>
                 </div>
                 <div>
-                  <p className="text-xl font-bold text-emerald-700">{netAmount.toLocaleString()}</p>
-                  <p className="text-[9px] text-gold-500">สุทธิเจ้าภาพ (฿)</p>
+                  <p className="text-xl font-bold text-gold-800">{netAmount.toLocaleString()}</p>
+                  <p className="text-[9px] text-gold-500">คงเหลือสุทธิ (฿)</p>
                 </div>
               </div>
+              <p className="text-[10px] text-gold-500 text-center bg-white/60 rounded-lg py-1.5">
+                เงินร่วมบุญเข้าบัญชีคุณโดยตรงทั้งหมด · จ่ายค่าดำเนินการ 10% คืนศูนย์วันคืนบอร์ด
+              </p>
               <div className="pt-1 border-t border-gold-200 flex items-center justify-between text-xs text-gold-600">
                 <span><span className="font-semibold">{confirmed.length}</span> รายร่วมบุญ</span>
                 <span><span className="font-semibold">{donations.length}</span> รายทั้งหมด</span>
@@ -309,16 +312,16 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
               </div>
               <div className="mt-3 pt-3 border-t border-gold-200 space-y-1.5">
                 <div className="flex justify-between text-xs">
-                  <span className="text-gold-600">ยอดร่วมบุญรวม</span>
-                  <span className="font-bold text-gold-800">{totalAmount.toLocaleString()} ฿</span>
+                  <span className="text-gold-600">ยอดร่วมบุญรวม (เข้าบัญชีคุณแล้ว)</span>
+                  <span className="font-bold text-emerald-700">{totalAmount.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gold-600">ค่าดำเนินการ (10% ของยอดร่วมบุญ)</span>
-                  <span className="font-bold text-red-500">-{serviceFee.toLocaleString()} ฿</span>
+                  <span className="text-gold-600">ค่าดำเนินการจ่ายคืนศูนย์ (10%)</span>
+                  <span className="font-bold text-red-500">{serviceFee.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm pt-1 border-t border-gold-100">
-                  <span className="font-bold text-gold-700">สุทธิเจ้าภาพรับ</span>
-                  <span className="font-bold text-emerald-700">{netAmount.toLocaleString()} ฿</span>
+                  <span className="font-bold text-gold-700">คงเหลือสุทธิ</span>
+                  <span className="font-bold text-gold-800">{netAmount.toLocaleString()} ฿</span>
                 </div>
               </div>
             </div>

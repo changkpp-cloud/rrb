@@ -117,18 +117,21 @@ export default function HostSummaryPage() {
               <p className="text-xs font-bold text-gold-600 uppercase tracking-wider mb-3">สรุปยอดเงิน</p>
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="text-gold-600">ยอดร่วมบุญรวม</span>
-                  <span className="font-bold text-gold-800">{total.toLocaleString()} ฿</span>
+                  <span className="text-gold-600">ยอดร่วมบุญรวม (เข้าบัญชีแล้ว)</span>
+                  <span className="font-bold text-emerald-700">{total.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gold-600">ค่าดำเนินการ (10% ของยอดร่วมบุญ)</span>
-                  <span className="font-bold text-red-500">-{fee.toLocaleString()} ฿</span>
+                  <span className="text-gold-600">ค่าดำเนินการจ่ายคืนศูนย์ (10%)</span>
+                  <span className="font-bold text-red-500">{fee.toLocaleString()} ฿</span>
                 </div>
                 <div className="border-t border-gold-200 pt-2 flex justify-between text-sm">
-                  <span className="font-bold text-gold-700">สุทธิเจ้าภาพรับ</span>
-                  <span className="font-bold text-emerald-700 text-base">{net.toLocaleString()} ฿</span>
+                  <span className="font-bold text-gold-700">คงเหลือสุทธิ</span>
+                  <span className="font-bold text-gold-800 text-base">{net.toLocaleString()} ฿</span>
                 </div>
               </div>
+              <p className="text-[10px] text-gold-500 text-center mt-3 bg-white/60 rounded-lg py-1.5">
+                เงินร่วมบุญเข้าบัญชีเจ้าภาพโดยตรง · จ่ายค่าดำเนินการ 10% คืนศูนย์วันคืนบอร์ด
+              </p>
             </div>
 
             {/* Donor table */}

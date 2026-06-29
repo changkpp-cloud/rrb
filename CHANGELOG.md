@@ -197,3 +197,13 @@
 - **บั๊กเดิม:** `ALLOWED_SLIP_TYPES` รับ webp/pdf ด้วย และไฟล์ HEIC จาก iPhone ที่ `compressImage` decode ไม่ได้ (Android/เดสก์ท็อป) จะถูกอัปทั้งดิบ → API ตอบ 415 พร้อมข้อความรวมๆ "อัปโหลดไม่สำเร็จ" ทำให้ผู้ใช้ลองซ้ำเท่าไรก็ไม่ผ่าน
 - **แก้:** `app/api/upload-slip/route.ts` + `app/api/donations/route.ts` → จำกัด `ALLOWED_SLIP_TYPES = {image/jpeg, image/png}` (ตอบ 415 พร้อม flag `not_a_slip`)
 - **ฝั่งหน้าเว็บ** `components/PaymentPageClient.tsx`: ตรวจชนิดไฟล์ทันทีหลังเลือก (หลัง compressImage แปลง HEIC→JPEG ให้แล้ว) ถ้าไม่ใช่ JPG/PNG แจ้ง "ไฟล์นี้ไม่ใช่รูปสลิป..." เลยไม่ต้องรอ submit + แยกข้อความ error กรณี 415 ให้ชัด
+
+## 2026-06-29
+### เวิร์คโฟลว์เงินใหม่: เงินเข้าบัญชีเจ้าภาพโดยตรง + กรอกบัญชี/ยืนยัน OTP ตอนเปิดงาน
+- **เปลี่ยนแก่นเรื่องเงิน:** เงินผู้ร่วมบุญไม่ผ่านศูนย์อีกต่อไป — เข้า **บัญชีเจ้าภาพโดยตรง** · QR พร้อมเพย์หน้าโอนสร้างจาก `memorial.host_phone` ที่ **ยืนยัน OTP แล้ว** (`host_phone_verified`) เท่านั้น (`app/[slug]/payment/page.tsx`)
+- **ค่าดำเนินการ 10% เก็บคืนจากเจ้าภาพวันคืนบอร์ด** (เดิมหักก่อนโอน) — หน้า `transfers` เปลี่ยนเป็น "เก็บค่าดำเนินการ / คืนบอร์ด", `TransferConfirmButton` = "เก็บค่าดำเนินการคืน + รับคืนบอร์ดแล้ว", KPI เปลี่ยนเป็น "ค่าดำเนินการค้างรับ"
+- **ฟอร์มเปิดงาน (`CreateMemorialClient.tsx`)** เพิ่ม: ช่องบัญชีรับเงินเจ้าภาพ (ธนาคาร/เลขบัญชี/ชื่อบัญชี — บังคับ) + กล่องยืนยันเบอร์เจ้าภาพด้วย OTP (ส่งรหัส/กรอกรหัส 6 หลัก) · บล็อกปุ่มเปิดงานจนกว่าจะยืนยันเบอร์สำเร็จ
+- **OTP ก่อนเปิดงาน** (ยังไม่มี memorial → ผูก center_id+phone): ตาราง `host_otp_requests` (migration `20260629000000`), API `/api/host-otp/send` + `/verify` (center auth), util `lib/otp.ts` (+ `OTP_VERIFY_WINDOW_MS` 30 นาที) · `create` API เช็กแถวที่ verified ภายในกรอบเวลา → ตั้ง `host_phone_verified` + normalize เบอร์ก่อนเก็บ
+- หน้าจัดการงาน `memorial/[memId]` ฝัง `HostPhoneVerify` (ยืนยันเบอร์ซ้ำ post-create) + ปรับถ้อยคำการเงินเป็น "เงินเข้าบัญชีเจ้าภาพโดยตรง · ค่าดำเนินการเก็บคืนวันคืนบอร์ด"
+- ⚠️ **OTP ยัง MOCK** — ส่ง `devCode` กลับมาโชว์บนจอ ยังไม่ส่ง SMS จริง (เมื่อมี SMS provider เพิ่ม `sendSms()` แล้วลบ devCode)
+- ⚠️ **ต้องรัน migration `20260629000000_add_host_phone_otp.sql` ใน Supabase ก่อนใช้งาน** (สร้างตาราง host_otp_requests + เพิ่มคอลัมน์ memorials)

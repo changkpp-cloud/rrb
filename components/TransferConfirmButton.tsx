@@ -42,7 +42,7 @@ export default function TransferConfirmButton({
       <div className="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3">
         <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />
         <div>
-          <p className="text-sm font-bold text-emerald-800">ยืนยันการโอนเงินแล้ว</p>
+          <p className="text-sm font-bold text-emerald-800">เก็บค่าดำเนินการคืน + รับคืนบอร์ดแล้ว</p>
           <p className="text-xs text-emerald-600 mt-0.5">
             {formatThaiDateTime(confirmedAt)}
             {confirmedBy && ` · โดย ${confirmedBy}`}
@@ -54,7 +54,7 @@ export default function TransferConfirmButton({
 
   if (!isClosed) {
     return (
-      <p className="text-[11px] text-gold-400 text-center">ปิดงานก่อนแล้วจึงยืนยันการโอนเงินได้</p>
+      <p className="text-[11px] text-gold-400 text-center">ปิดงานก่อนแล้วจึงยืนยันการเก็บค่าดำเนินการคืนได้</p>
     );
   }
 
@@ -85,9 +85,9 @@ export default function TransferConfirmButton({
   if (showConfirm) {
     return (
       <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-4 space-y-3">
-        <p className="text-sm font-bold text-amber-800">ยืนยันการโอนเงิน?</p>
+        <p className="text-sm font-bold text-amber-800">ยืนยันเก็บค่าดำเนินการคืน?</p>
         <p className="text-xs text-amber-700 leading-relaxed">
-          กดยืนยันเมื่อโอนเงินสุทธิให้เจ้าภาพเรียบร้อยแล้ว<br />
+          กดยืนยันเมื่อเก็บค่าดำเนินการ 10% คืนจากเจ้าภาพ และรับคืนบอร์ดเรียบร้อยแล้ว<br />
           การยืนยันนี้ไม่สามารถยกเลิกได้
         </p>
         {error && <p className="text-xs text-red-500 text-center">{error}</p>}
@@ -117,7 +117,7 @@ export default function TransferConfirmButton({
       className="w-full flex items-center justify-center gap-2 rounded-2xl bg-gold-800 px-4 py-3 text-sm font-semibold text-white hover:bg-gold-700 active:scale-[0.98] transition-all"
     >
       <SendHorizonal className="w-4 h-4" />
-      ยืนยันว่าโอนเงินให้เจ้าภาพแล้ว
+      ยืนยันเก็บค่าดำเนินการคืน + รับคืนบอร์ดแล้ว
     </button>
   );
 }

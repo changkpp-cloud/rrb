@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from "next/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
+import { generateOtp, normalizePhone, isValidThaiMobile, OTP_TTL_MS } from "@/lib/otp";
+
+// ส่ง OTP ยืนยันเบอร์เจ้าภาพ "ก่อนเปิดงาน" — ตอนกรอกฟอร์มยังไม่มี memorial → ผูกกับ (ศูนย์ + เบอร์)
+// ⚠️ MOCK: ยังไม่ส่ง SMS จริง — บันทึกรหัสใน DB แล้วส่ง devCode กลับให้เจ้าหน้าที่แจ้ง/ดู log
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}));
+  const centerId = String((body as { center_id?: string }).center_id ?? "");
+  const phone = normalizePhone((body as { phone?: string }).phone ?? "");
+  if (!centerId) return NextResponse.json({ error: "ไม่พบศูนย์ที่เปิดงาน" }, { status: 400 });
+  if (!isValidThaiMobile(phone)) {
+    return NextResponse.json({ error: "เบอร์มือถือไม่ถูกต้อง (ต้องเป็น 0 ตามด้วย 9 หลัก)" }, { status: 400 });
+  }
+
+  const access = await getCenterAccess(centerId);
+  if (!access.allowed || !canEditCenterWork(access.role)) {
+    return NextResponse.json({ error: "ไม่มีสิทธิ์เปิดงานในศูนย์นี้" }, { status: 403 });
+  }
+
+  const code = generateOtp();
+  const expiresAt = new Date(Date.now() + OTP_TTL_MS).toISOString();
+
+  const supabase = createAdminClient();
+  // host_otp_requests ยังไม่มีใน generated types — cast client ตามแพทเทิร์น repo
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any).from("host_otp_requests").insert({
+    center_id: centerId,
+    phone,
+    code,
+    expires_at: expiresAt,
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  // eslint-disable-next-line no-console
+  console.log(`[OTP] center=${centerId} phone=${phone} code=${code} (mock — ยังไม่ส่ง SMS จริง)`);
+
+  return NextResponse.json({
+    success: true,
+    expiresAt,
+    // MOCK เท่านั้น: ส่งรหัสกลับให้ UI แสดง — เมื่อมี SMS provider จริงให้ลบบรรทัดนี้
+    devCode: code,
+  });
+}
