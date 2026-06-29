@@ -121,7 +121,7 @@ export default function HostSummaryPage() {
                   <span className="font-bold text-gold-800">{total.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-gold-600">ค่าดำเนินการ (5% ของยอดร่วมบุญ)</span>
+                  <span className="text-gold-600">ค่าดำเนินการ (10% ของยอดร่วมบุญ)</span>
                   <span className="font-bold text-red-500">-{fee.toLocaleString()} ฿</span>
                 </div>
                 <div className="border-t border-gold-200 pt-2 flex justify-between text-sm">

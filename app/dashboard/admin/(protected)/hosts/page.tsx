@@ -34,7 +34,7 @@ async function getHostsData() {
 
   return memorials.map(m => {
     const agg = donMap[m.id] ?? { amount: 0, count: 0 };
-    // ค่าดำเนินการ 5% ของยอดร่วมบุญ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
+    // ค่าดำเนินการ 10% ของยอดร่วมบุญ → ยอดนำส่งเจ้าภาพ = สุทธิหลังหัก
     const netAmount = netToHost(agg.amount);
     return { ...m, totalAmount: agg.amount, donorCount: agg.count, netAmount };
   });
@@ -120,7 +120,7 @@ export default async function AdminHostsPage() {
                 <Banknote className="w-3.5 h-3.5 text-gold-500" />
                 <p className="text-xs font-bold text-gold-700">{h.netAmount.toLocaleString()} บาท</p>
                 <span className="text-[10px] text-gold-400">
-                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} (หัก 5%)
+                  นำส่งเจ้าภาพ · จากร่วมบุญ {h.totalAmount.toLocaleString()} (หัก 10%)
                 </span>
               </div>
             </Link>

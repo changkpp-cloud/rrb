@@ -185,3 +185,8 @@
 - เพิ่มสูตรกลาง `lib/fee.ts` (`FEE_RATE = 0.05`, `systemFee()`, `netToHost()`) — รับประกัน fee + net = total
 - แก้ทุกจุดให้ import จาก `@/lib/fee` แทน hardcode: host summary, HostDashboardClient, center memorial page, transfers, report, admin/hosts
 - ปรับ label UI ทุกจุดจาก "(N ราย × 100 ฿)" → "(5% ของยอดร่วมบุญ)" และอัปเดต CLAUDE.md + docs/brain/04
+
+## 2026-06-29
+- **ปรับอัตราค่าดำเนินการ: 5% → 10% ของยอดร่วมบุญ (เข้าศูนย์ 10% / เจ้าภาพได้สุทธิ 90%)**
+- แก้ที่สูตรกลาง `lib/fee.ts` (`FEE_RATE = 0.1`) จุดเดียว — ทุกหน้าอัปเดตตาม
+- ปรับ label UI ที่ hardcode (host summary, HostDashboardClient, admin/hosts) + อัปเดตเอกสารทั้งหมด (CLAUDE.md, docs/brain, database.md, เอกสารสรุป, ตัวอย่างตัวเลข)

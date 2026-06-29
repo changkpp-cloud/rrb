@@ -313,7 +313,7 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
                   <span className="font-bold text-gold-800">{totalAmount.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-xs">
-                  <span className="text-gold-600">ค่าดำเนินการ (5% ของยอดร่วมบุญ)</span>
+                  <span className="text-gold-600">ค่าดำเนินการ (10% ของยอดร่วมบุญ)</span>
                   <span className="font-bold text-red-500">-{serviceFee.toLocaleString()} ฿</span>
                 </div>
                 <div className="flex justify-between text-sm pt-1 border-t border-gold-100">

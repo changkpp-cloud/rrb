@@ -750,7 +750,7 @@ app_users (1)
 | 4 | **PAYMENT_WEBHOOK_SECRET not set** | Payment webhook rejects all requests | `app/api/webhooks/payment/route.ts` |
 | 5 | **Duplicate slip is warning-only** | No hard block on duplicate slips | `POST /api/upload-slip` |
 | 6 | **No reopen for closed memorials** | Once closed, funeral_status cannot be reversed | `app/api/memorials/[id]/close/route.ts` |
-| 7 | **System fee is 5% of total donations** | Single source of truth `lib/fee.ts` (`FEE_RATE = 0.05`); host nets 95% | `lib/fee.ts` |
+| 7 | **System fee is 10% of total donations** | Single source of truth `lib/fee.ts` (`FEE_RATE = 0.1`); host nets 90% | `lib/fee.ts` |
 | 8 | **`nameplate_status = "error"` bypasses DB CHECK** | Requires DB migration to add "error" to CHECK constraint | `supabase/setup-fresh.sql` |
 | 9 | **Transfer confirmation cannot be undone** | Returns 409 if already confirmed | `POST /api/memorials/[id]/confirm-transfer` |
 | 10 | **Host session tied to memorialId in token** | Compromise of one token only exposes one event | Acceptable by design |

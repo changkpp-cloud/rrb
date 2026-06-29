@@ -203,8 +203,8 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 - **เครื่องพิมพ์ออฟไลน์:** PrintNode ค้างคิวแล้วพิมพ์ต่อเองเมื่อเครื่องกลับมา · `GET /api/printer-status?memorialId=` + `PrinterStatusAlert` เตือน "ตรวจสอบเครื่องพิมพ์" บนแดชบอร์ด**ศูนย์+เจ้าภาพ** (ต้องตั้ง `PRINTNODE_API_KEY` ถึงจะรู้สถานะ online/offline)
 
 **กฎค่าดำเนินการ (สำคัญ — เรื่องเงิน):**
-- **ค่าดำเนินการ = 5% ของยอดร่วมบุญรวม → เจ้าภาพได้สุทธิ 95%** (ตามแก่นโครงการ: 95% ถึงเจ้าภาพโดยตรง, 5% เป็นค่าวัสดุ/อุปกรณ์/กองทุนจิตอาสา · เทศบาลไม่รับเงิน)
-- สูตรกลางอยู่ที่ `lib/fee.ts` — `systemFee(total)` = `Math.round(total * 0.05)`, `netToHost(total)` = `total − systemFee(total)` (รับประกัน fee + net = total)
+- **ค่าดำเนินการ = 10% ของยอดร่วมบุญรวม (เข้าศูนย์) → เจ้าภาพได้สุทธิ 90%** (ตามแก่นโครงการ: เงินถึงเจ้าภาพโดยตรง, ส่วนค่าดำเนินการเป็นค่าวัสดุ/อุปกรณ์/กองทุนจิตอาสา · เทศบาลไม่รับเงิน)
+- สูตรกลางอยู่ที่ `lib/fee.ts` — `systemFee(total)` = `Math.round(total * 0.1)`, `netToHost(total)` = `total − systemFee(total)` (รับประกัน fee + net = total)
 - **ทุกที่ต้อง import จาก `@/lib/fee` เท่านั้น — ห้าม hardcode % หรือ 100/ราย ซ้ำ** ใช้อยู่ทั้งฝั่งเจ้าภาพ (HostDashboardClient, host summary) และฝั่งศูนย์/แอดมิน (memorial page → CloseMemorialButton, transfers, report, admin/hosts)
 
 ---
