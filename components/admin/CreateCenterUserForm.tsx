@@ -7,7 +7,7 @@ import type { AppRole } from "@/lib/iam-utils";
 
 type Center = { id: string; name: string };
 
-const ROLES: AppRole[] = ["center_manager", "center_staff", "center_viewer"];
+const ROLES: AppRole[] = ["center_manager", "center_staff", "center_viewer", "lgo_observer"];
 
 type FormState = {
   display_name: string;

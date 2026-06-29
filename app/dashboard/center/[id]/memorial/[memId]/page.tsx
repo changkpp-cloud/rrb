@@ -16,7 +16,7 @@ import CenterMemorialScrollNav from "@/components/CenterMemorialScrollNav";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { getCenterAccess } from "@/lib/iam";
+import { getCenterAccess, isLgoObserver } from "@/lib/iam";
 import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
@@ -72,6 +72,8 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
+  // อปท. (ผู้กำกับดูแล) = read-only — หน้าจัดการงานมี PII (บัญชี/เบอร์/เอกสารเจ้าภาพ) → ส่งไปหน้ารายงาน
+  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/report`);
 
   const memorial = await getMemorialById(memId);
   if (!memorial) return null;

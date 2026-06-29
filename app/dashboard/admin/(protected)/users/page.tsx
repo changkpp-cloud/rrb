@@ -178,6 +178,7 @@ export default async function AdminUsersPage() {
                   <option value="center_manager">Manager</option>
                   <option value="center_staff">Staff</option>
                   <option value="center_viewer">Viewer</option>
+                  <option value="lgo_observer">อปท. (ผู้กำกับดูแล)</option>
                 </select>
                 <button className="rounded-xl bg-emerald-600 px-3 py-2 text-[11px] font-semibold text-white">อนุมัติ</button>
               </form>

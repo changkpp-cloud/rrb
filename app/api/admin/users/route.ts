@@ -4,7 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { hashPassword } from "@/lib/iam";
 import type { AppRole } from "@/lib/iam-utils";
 
-const VALID_ROLES: AppRole[] = ["center_manager", "center_staff", "center_viewer"];
+const VALID_ROLES: AppRole[] = ["center_manager", "center_staff", "center_viewer", "lgo_observer"];
 
 export async function POST(req: NextRequest) {
   const cookieStore = await cookies();

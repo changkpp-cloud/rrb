@@ -207,3 +207,11 @@
 - หน้าจัดการงาน `memorial/[memId]` ฝัง `HostPhoneVerify` (ยืนยันเบอร์ซ้ำ post-create) + ปรับถ้อยคำการเงินเป็น "เงินเข้าบัญชีเจ้าภาพโดยตรง · ค่าดำเนินการเก็บคืนวันคืนบอร์ด"
 - ⚠️ **OTP ยัง MOCK** — ส่ง `devCode` กลับมาโชว์บนจอ ยังไม่ส่ง SMS จริง (เมื่อมี SMS provider เพิ่ม `sendSms()` แล้วลบ devCode)
 - ⚠️ **ต้องรัน migration `20260629000000_add_host_phone_otp.sql` ใน Supabase ก่อนใช้งาน** (สร้างตาราง host_otp_requests + เพิ่มคอลัมน์ memorials)
+
+## 2026-06-29
+### แดชบอร์ด อปท. (PR1 — backend/สิทธิ์): เพิ่ม role `lgo_observer` read-only
+- เพิ่ม role **`lgo_observer` = "อปท. (ผู้กำกับดูแล)"** ใน enum `app_user_role` (migration `20260629010000_add_lgo_observer_role.sql`) + `lib/supabase/types.ts`
+- `lib/iam-utils.ts`: เพิ่ม role + `roleLabel` + helper `isLgoObserver()` / `canExportReports()` · `canEditCenterWork`/`canManageCenter*` คืน false สำหรับ อปท. (อยู่แล้ว)
+- **ออกบัญชี อปท. ได้:** เพิ่ม `lgo_observer` ใน `VALID_ROLES` (`/api/admin/users`) + dropdown `CreateCenterUserForm` + ปุ่มอนุมัติคำขอใน `admin/users` → แอดมินสร้างบัญชี อปท. ผูกศูนย์ในเขตได้
+- **กั้น PII (read-only):** หน้า home / operations / transfers / memorial detail → ถ้า role = อปท. `redirect` ไปหน้า `report` (create/edit ถูกกั้นด้วย `canEditCenterWork` อยู่แล้ว) · อปท. เห็น report + active/closed lists เท่านั้นใน PR1
+- ⚠️ **ต้องรัน migration `20260629010000` ก่อน** (เพิ่มค่า enum) · ⏳ PR ถัดไป: หน้า `/oversight` (บ้าน อปท.) + `compliance` ติดตามรายงานศูนย์ + export สำหรับ LPA/ITA/จังหวัดสะอาด

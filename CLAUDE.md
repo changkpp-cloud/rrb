@@ -309,12 +309,18 @@ memorial.bank_account_image_url → <Image>
 
 ```
 Super Admin   → เปิดศูนย์ / ดูทั้งหมด / ตรวจสอบระบบ
-Center Manager → คุมศูนย์ตัวเอง / เปิด-ปิดงาน / ตรวจสลิป
+Center Manager → คุมศูนย์ตัวเอง / เปิด-ปิดงาน
+Center Staff  → ทำงานหน้างาน (เปิดงาน/พิมพ์) แต่จัดการผู้ใช้/ตั้งค่าไม่ได้
+Center Viewer → ดูข้อมูลศูนย์ (รวม PII) แต่แก้ไขไม่ได้
+อปท. (lgo_observer) → read-only กำกับดูแล: ดูรายงาน/ภาพรวม + ส่งออกได้ **ไม่เห็น PII** (โดน redirect ออกจากหน้า home/operations/transfers/memorial detail → ไปหน้า report)
 Host          → ดูงานของตัวเอง / บัญชีรับเงิน
 Donor         → ทำรายการชำระเงิน / ดู e-card / mock-wreath
 ```
 
-ระบบ login แบบ proper (JWT / OTP) ยังไม่ได้ implement — ใช้ cookie + password แบบง่ายก่อน
+- IAM roles (`app_user_role` enum) อยู่ที่ `lib/iam-utils.ts` · capability helpers: `canEditCenterWork` / `canManageCenterUsers` / `canManageCenterSettings` / `isLgoObserver` / `canExportReports`
+- เข้าระบบผ่าน `app_users` + `center_memberships` (role ต่อคนต่อศูนย์) · แอดมินออกบัญชี อปท. ได้ที่ `/dashboard/admin/users`
+- ⏳ **PR ต่อไป (อปท.):** หน้า `/oversight` (บ้านของ อปท. แทน report ชั่วคราว) + `compliance` ติดตามสถานะรายงานศูนย์ + มุมรวมหลายศูนย์
+- ระบบ login แบบ proper (JWT) ยังไม่ implement — ใช้ cookie + password/OTP แบบง่ายก่อน
 
 ---
 

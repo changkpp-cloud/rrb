@@ -1063,6 +1063,7 @@ export type Database = {
         | "center_manager"
         | "center_staff"
         | "center_viewer"
+        | "lgo_observer"
       app_user_status: "pending" | "active" | "suspended" | "rejected"
       auth_provider: "password" | "email" | "line" | "facebook" | "google"
       donation_status: "pending" | "confirmed" | "rejected"
@@ -1198,6 +1199,7 @@ export const Constants = {
         "center_manager",
         "center_staff",
         "center_viewer",
+        "lgo_observer",
       ],
       app_user_status: ["pending", "active", "suspended", "rejected"],
       auth_provider: ["password", "email", "line", "facebook", "google"],

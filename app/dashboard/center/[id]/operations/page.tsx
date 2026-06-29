@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import IosPageHeader from "@/components/IosPageHeader";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterByRouteKey, getCenterRouteKey } from "@/lib/center-route";
-import { getCenterAccess, roleLabel } from "@/lib/iam";
+import { getCenterAccess, isLgoObserver, roleLabel } from "@/lib/iam";
 import { formatThaiDate } from "@/lib/memorial";
 import {
   AlertTriangle,
@@ -114,6 +114,8 @@ export default async function CenterOperationsPage({ params }: { params: Promise
   const centerRouteKey = getCenterRouteKey(center);
   const access = await getCenterAccess(id);
   if (!access.allowed) redirect("/dashboard/center");
+  // อปท. (ผู้กำกับดูแล) = read-only — งานวันนี้มีข้อมูลผู้ร่วมบุญ/สลิป → ส่งไปหน้ารายงาน
+  if (isLgoObserver(access.role)) redirect(`/dashboard/center/${centerRouteKey}/report`);
 
   const centerName = center.name ?? "ศูนย์บริหาร";
   const data = await getOperations(id);
