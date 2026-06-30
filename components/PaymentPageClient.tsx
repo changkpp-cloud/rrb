@@ -275,16 +275,16 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     <p className="text-[10px] text-gold-500 font-medium">ธนาคาร</p>
                     <p className="text-sm font-semibold text-gold-700">{memorial.host_bank_name || ""}</p>
                   </div>
-                  {promptpayPhone && (
-                    <div>
-                      <p className="text-[10px] text-gold-500 font-medium">เลขพร้อมเพย์</p>
-                      <p className="text-base font-bold text-gold-800 tracking-widest">{promptpayPhone}</p>
-                    </div>
-                  )}
                   {bankAccountNumber && (
                     <div>
                       <p className="text-[10px] text-gold-500 font-medium">เลขบัญชี</p>
                       <p className="text-base font-bold text-gold-800 tracking-widest">{bankAccountNumber}</p>
+                    </div>
+                  )}
+                  {promptpayPhone && (
+                    <div>
+                      <p className="text-[10px] text-gold-500 font-medium">เลขพร้อมเพย์</p>
+                      <p className="text-base font-bold text-gold-800 tracking-widest">{promptpayPhone}</p>
                     </div>
                   )}
                 </div>
@@ -298,16 +298,16 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     {savedQR ? "บันทึกแล้ว" : "บันทึก QR"}
                   </button>
                 )}
-                {promptpayPhone && (
-                  <button type="button" onClick={() => copyValue(promptpayPhone, "promptpay")} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
-                    {copiedField === "promptpay" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                    {copiedField === "promptpay" ? "คัดลอกแล้ว" : "คัดลอกเลขพร้อมเพย์"}
-                  </button>
-                )}
                 {bankAccountNumber && (
                   <button type="button" onClick={() => copyValue(bankAccountNumber, "account")} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
                     {copiedField === "account" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
                     {copiedField === "account" ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
+                  </button>
+                )}
+                {promptpayPhone && (
+                  <button type="button" onClick={() => copyValue(promptpayPhone, "promptpay")} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
+                    {copiedField === "promptpay" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedField === "promptpay" ? "คัดลอกแล้ว" : "คัดลอกเลขพร้อมเพย์"}
                   </button>
                 )}
               </div>
