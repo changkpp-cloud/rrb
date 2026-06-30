@@ -35,6 +35,10 @@ SUPABASE_SERVICE_ROLE_KEY=
 ADMIN_PASSWORD=          # default: ESG2025
 OPENAI_API_KEY=          # สำหรับ generate-wreath DALL-E 3
 NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rrb.center ยังใช้งานได้คู่กัน — ลิงก์เก่าเปิดได้)
+# SMS OTP (ThaiBulkSMS) — ตั้งครบ 3 ตัวถึงจะส่ง SMS จริง · ไม่ตั้ง = โหมดทดสอบ (โชว์รหัสบนจอ)
+THAIBULKSMS_API_KEY=
+THAIBULKSMS_API_SECRET=
+THAIBULKSMS_SENDER=      # ชื่อผู้ส่งที่จดทะเบียนกับ ThaiBulkSMS แล้ว (เช่น RuamBoon)
 ```
 
 ---
@@ -218,7 +222,7 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 - หน้า `transfers` = **"เก็บค่าดำเนินการ / คืนบอร์ด"** (ไม่ใช่ "โอนเงินเจ้าภาพ" แล้ว) · `transfer_confirmed_at` = ยืนยัน "เก็บค่าดำเนินการคืน + รับคืนบอร์ด" แล้ว
 - สูตรกลางอยู่ที่ `lib/fee.ts` — `systemFee(total)` = `Math.round(total * 0.1)`, `netToHost(total)` = `total − systemFee(total)` (รับประกัน fee + net = total)
 - **ทุกที่ต้อง import จาก `@/lib/fee` เท่านั้น — ห้าม hardcode %** ใช้อยู่ทั้งฝั่งเจ้าภาพ (HostDashboardClient, host summary) และฝั่งศูนย์/แอดมิน (memorial page → CloseMemorialButton, transfers, report, admin/hosts)
-- **OTP เปิดงาน:** ศูนย์กรอกบัญชีเจ้าภาพ + ยืนยันเบอร์ด้วย OTP ตอนเปิดงาน (`/api/host-otp/*` → `host_otp_requests`) ⚠️ ยัง **MOCK** ส่งรหัสกลับมาโชว์ ยังไม่ส่ง SMS จริง — เมื่อมี SMS provider ให้เพิ่ม `sendSms()` แล้วลบ `devCode` ออกจาก response
+- **OTP เปิดงาน:** ศูนย์กรอกบัญชีเจ้าภาพ + ยืนยันเบอร์ด้วย OTP ตอนเปิดงาน (`/api/host-otp/*` → `host_otp_requests`) · **ส่ง SMS จริงผ่าน ThaiBulkSMS** (`lib/sms.ts` → `sendOtpSms`) เมื่อตั้ง env `THAIBULKSMS_*` ครบ · ถ้าไม่ตั้ง → fallback โหมดทดสอบ (คืน `devCode` ให้โชว์บนจอ) · เมื่อส่ง SMS จริงสำเร็จจะไม่คืน `devCode`
 
 ---
 

@@ -259,3 +259,11 @@
 - `HostPhoneVerify` (หน้าจัดการงาน → การเงิน): เพิ่มช่องแก้ ชื่อธนาคาร/เลขบัญชี/ชื่อบัญชี + เบอร์เจ้าภาพ · มี badge "แก้ไขแล้ว — ต้องยืนยัน OTP" เมื่อค่าเปลี่ยน
 - `/api/memorials/[id]/otp/verify`: รับ host_bank_name/account_number/account_name แล้ว **commit พร้อมตอนยืนยัน OTP สำเร็จ** (ตั้ง host_phone_verified=true ไปด้วย) → แก้บัญชี/เบอร์ต้องผ่าน OTP ทุกครั้ง (ตามนโยบายเรื่องเงิน)
 - หน้าจัดการงาน: ผู้มีสิทธิ์แก้ → ใช้ฟอร์ม OTP แก้บัญชีได้ · สิทธิ์ดูอย่างเดียว (อปท.) → เห็นบัญชีแบบอ่านอย่างเดียวเหมือนเดิม
+
+### ต่อ SMS OTP จริงผ่าน ThaiBulkSMS — 2026-06-30
+- เพิ่ม `lib/sms.ts`: `sendSms()` / `sendOtpSms()` ยิง ThaiBulkSMS API v2 (POST https://api-v2.thaibulksms.com/sms, Basic auth, form params msisdn/message/sender/sms_type) + `isSmsConfigured()`
+- wire เข้า `/api/host-otp/send` (ก่อนเปิดงาน) และ `/api/memorials/[id]/otp/send` (post-create/แก้บัญชี):
+  - ตั้ง env `THAIBULKSMS_API_KEY` + `THAIBULKSMS_API_SECRET` + `THAIBULKSMS_SENDER` ครบ → ส่ง SMS จริง, ไม่คืน devCode · ส่งไม่สำเร็จตอบ 502 พร้อม error
+  - ไม่ตั้ง → fallback โหมดทดสอบเดิม (คืน devCode โชว์บนจอ + log) ไม่พัง
+- UI ไม่ต้องแก้ — กล่อง "โหมดทดสอบ" ผูกกับ devCode อยู่แล้ว (โหมดจริงไม่มี devCode → กล่องไม่ขึ้น)
+- เอกสาร: เพิ่ม env ใน CLAUDE.md + ปรับ note OTP จาก MOCK → ส่งจริงผ่าน ThaiBulkSMS
