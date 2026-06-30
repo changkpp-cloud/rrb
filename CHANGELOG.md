@@ -247,3 +247,9 @@
 - `lib/ai-photo-jobs.ts` `uploadGeneratedImage`: ย้ายที่เก็บภาพที่สร้าง `donations` (private) → **`memorials` (public)** + ถอด data URL (base64) ตรง ๆ แทน `fetch(dataUrl)` + กันไฟล์ 0 ไบต์ (รูปอ้างอิงยังอ่านจาก donations ผ่าน service role ตามเดิมของ main)
 - ถอดระบบจำกัด "ฟรี 1 ภาพ/รายการ" ออกทั้งระบบ: เอา credit check (429) ออกจาก `auth-token`/`generate` · เลิกเขียน `ai_photo_credits` ใน `generate`/`save`/`ai-photo-jobs` · `jobs` คืนงานเดิมเฉพาะ pending/processing · client ลบ UI/ข้อความ credit + ปุ่มเป็น "สร้างภาพใหม่อีกครั้ง"
 - ลบไฟล์ตาย `components/ai-photo/AiPhotoSection.tsx` + `app/api/ai-photo/credits/route.ts`
+
+### หน้า AI photo: เจนสำเร็จแล้วโชว์เฉพาะรูป — ซ่อนฟอร์มทั้งหมด — 2026-06-30
+- เมื่อ `images.length > 0` (เจนสำเร็จ) `AiPhotoSectionV2` early-return เป็นมุมมองสะอาด: หัวข้อ "ภาพที่ระลึก" + `AiPhotoResult` (รูป + ปุ่มบันทึก/แชร์) เท่านั้น
+- ซ่อน: กรอบแนบรูปผู้มอบ, ตัวเลือกเพศ/ช่วงอายุ, consent, ปุ่มสร้างภาพ, กล่องสถานะ activeJob, ข้อความ processing
+- เมนู E-Card + เมนูหลักด้านบน อยู่นอก component (ECardClient) จึงคงอยู่ครบตามต้องการ
+- ลบบล็อก Result เดิมท้ายฟอร์ม (กลายเป็น dead code เพราะ early-return)

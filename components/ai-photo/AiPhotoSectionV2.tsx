@@ -351,6 +351,25 @@ export default function AiPhotoSectionV2({
     }
   }
 
+  // เมื่อเจนภาพสำเร็จแล้ว → แสดงเฉพาะรูปที่เจนได้ (+ ปุ่มบันทึก/แชร์)
+  // ซ่อนฟอร์มแนบรูป/ตัวเลือกเพศ-อายุ/consent/ปุ่มสร้าง/กล่องสถานะทั้งหมด
+  if (images.length > 0 && !generating) {
+    return (
+      <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-4">
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+          <span className="text-sm font-semibold text-gold-700">ภาพที่ระลึก</span>
+        </div>
+        <AiPhotoResult
+          images={images}
+          selectedIdx={Math.min(selectedIdx, images.length - 1)}
+          onSelect={setSelectedIdx}
+          donorName={donorName}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-5">
       {/* Header */}
@@ -468,22 +487,12 @@ export default function AiPhotoSectionV2({
           disabled={!donorFile || !consent || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {generating ? "กำลังสร้างภาพ AI..." : images.length > 0 ? "สร้างภาพใหม่อีกครั้ง" : "สร้างภาพที่ระลึก"}
+          {generating ? "กำลังสร้างภาพ AI..." : "สร้างภาพที่ระลึก"}
         </button>
         {generating && (
           <p className="text-[10px] text-gold-500 text-center animate-pulse">AI กำลังประมวลผล อาจใช้เวลา 30–90 วินาที สามารถเปลี่ยนไปหน้าอื่นในแอพได้ เมื่อเสร็จระบบจะแจ้งเตือนถ้าเบราว์เซอร์อนุญาต</p>
         )}
       </div>
-
-      {/* Result */}
-      {images.length > 0 && (
-        <AiPhotoResult
-          images={images}
-          selectedIdx={selectedIdx}
-          onSelect={setSelectedIdx}
-          donorName={donorName}
-        />
-      )}
 
       <div
         aria-hidden="true"
