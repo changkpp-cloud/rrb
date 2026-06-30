@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess } from "@/lib/iam";
+import { logAudit, getClientIp } from "@/lib/audit";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: memorialId } = await params;
@@ -54,6 +55,18 @@ export async function POST(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  await logAudit({
+    action: "confirm_transfer",
+    recordId: memorialId,
+    userId: confirmedBy,
+    newValue: {
+      transfer_confirmed_by: confirmedBy,
+      host_bank_account_number: memorial.host_bank_account_number,
+      role: access.role,
+    },
+    ipAddress: getClientIp(req),
+  });
 
   return NextResponse.json({ ok: true, confirmedBy });
 }

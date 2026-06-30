@@ -305,3 +305,11 @@
 - (B) เลิกส่ง SMS หาเจ้าภาพทุกครั้งที่มีผู้ร่วมบุญ — เงินมีแจ้งเตือนจากแอปธนาคารอยู่แล้ว + รายชื่อดูในแดชบอร์ดได้ (เลี่ยงรบกวน + ประหยัดค่า SMS) · ลบ `notifyHost`/`msgNewDonation`
 - (C) เพิ่ม `notifyNameplateError` — เมื่อ auto-print ป้ายชื่อ "ไม่สำเร็จ" (printResult ไม่ ok หรือ exception) ส่ง SMS หา **เบอร์ศูนย์** (`centers.phone`) ให้ตรวจเครื่องพิมพ์แล้วกด "พิมพ์ซ้ำ" — actionable ตรงคนที่ต้องลงมือ
 - ทั้งหมด best-effort + no-op เมื่อยังไม่ตั้งค่า SMS (ThaiBulkSMS)
+
+### Audit log เรื่องเงิน + หน้าดูบันทึกกิจกรรม — 2026-06-30
+- เพิ่ม `lib/audit.ts` (`logAudit` + `getClientIp`) — เขียน audit_logs แบบ best-effort ไม่บล็อก flow
+- เสียบ audit เข้า 3 จุดเรื่องเงิน (บันทึก action/ผู้ทำ/role/ค่าเก่า-ใหม่/IP):
+  - `verify_host_bank` — แก้บัญชี/ยืนยันเบอร์เจ้าภาพ (otp/verify)
+  - `close_memorial` — ปิดงาน
+  - `confirm_transfer` — ยืนยันเก็บค่าดำเนินการ/คืนบอร์ด
+- เปลี่ยนหน้า `/dashboard/admin/audit` จาก redirect → **ตัวดู Audit Log จริง** (อ่าน audit_logs 200 รายการล่าสุด แปล action เป็นไทย แสดงผู้ทำ/เวลา/ค่าเก่า-ใหม่/IP)

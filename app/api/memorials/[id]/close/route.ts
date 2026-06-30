@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
+import { logAudit, getClientIp } from "@/lib/audit";
 
 export async function POST(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -39,5 +40,15 @@ export async function POST(
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logAudit({
+    action: "close_memorial",
+    recordId: id,
+    userId: access.user?.display_name ?? access.role ?? null,
+    oldValue: { funeral_status: memorial.funeral_status },
+    newValue: { funeral_status: "closed", host_expires_at: hostExpiresAt, role: access.role },
+    ipAddress: getClientIp(req),
+  });
+
   return NextResponse.json({ success: true, host_expires_at: hostExpiresAt });
 }
