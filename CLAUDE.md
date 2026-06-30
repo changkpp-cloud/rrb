@@ -183,7 +183,7 @@ NEXT_PUBLIC_SITE_URL=https://ruamboon.online   # โดเมนหลัก (rr
 | POST | `/api/host-otp/send` | **ก่อนเปิดงาน:** ส่ง OTP ไปเบอร์เจ้าภาพ (center auth, ผูก center_id+phone) |
 | POST | `/api/host-otp/verify` | **ก่อนเปิดงาน:** ยืนยัน OTP → mark verified_at |
 | POST | `/api/centers/[id]/report-submissions` | ศูนย์ทำเครื่องหมาย/ยกเลิก "ส่งรายงานงวดนี้ให้ อปท." (canEditCenterWork) |
-| POST | `/api/memorials/[id]/otp/send`\|`verify` | ยืนยันเบอร์เจ้าภาพซ้ำบนหน้าจัดการงาน (post-create) |
+| POST | `/api/memorials/[id]/otp/send`\|`verify` | ยืนยันเบอร์เจ้าภาพซ้ำ **+ แก้บัญชีรับเงินเจ้าภาพ (commit ค่าใหม่พร้อม OTP)** บนหน้าจัดการงาน (post-create) — แก้บัญชี/เบอร์ต้องผ่าน OTP ทุกครั้ง |
 | POST | `/api/upload-slip` | Upload สลิป (รับเฉพาะ JPG/PNG) ก่อนสร้าง donation |
 | POST | `/api/generate-wreath` | DALL-E 3 generate background (ต้อง OPENAI_API_KEY) |
 

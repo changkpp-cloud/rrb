@@ -198,20 +198,26 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
 
         <section id="finance" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Banknote} title="การเงิน" subtitle={`เงินเข้าบัญชีเจ้าภาพโดยตรง · ค่าดำเนินการ ${systemFeeTotal.toLocaleString()} บาท เก็บคืนวันคืนบอร์ด`} />
-          {canEdit && (
+          {canEdit ? (
             <HostPhoneVerify
               memorialId={memorial.id}
               initialPhone={memorial.host_phone ?? null}
               initialVerified={Boolean(memorial.host_phone_verified)}
+              initialBankName={memorial.host_bank_name ?? null}
+              initialBankAccountNumber={memorial.host_bank_account_number ?? null}
+              initialBankAccountName={memorial.host_bank_account_name ?? null}
             />
+          ) : (
+            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
+              <InfoRow label="ธนาคารเจ้าภาพ" value={memorial.host_bank_name || "-"} />
+              <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />
+              <InfoRow label="ชื่อบัญชี" value={memorial.host_bank_account_name || "-"} />
+            </div>
           )}
           <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-3 space-y-2 text-xs text-gold-600">
             <InfoRow label="ยอดร่วมบุญรวม (เข้าเจ้าภาพโดยตรง)" value={`${total.toLocaleString()} บาท`} strong />
             <InfoRow label={`ค่าดำเนินการ ${FEE_RATE * 100}% (เจ้าภาพจ่ายคืนศูนย์)`} value={`${systemFeeTotal.toLocaleString()} บาท`} />
             <InfoRow label="ยอดเจ้าภาพได้สุทธิ (หลังจ่ายคืน)" value={`${netAmount.toLocaleString()} บาท`} strong />
-            <InfoRow label="ธนาคารเจ้าภาพ" value={memorial.host_bank_name || "-"} />
-            <InfoRow label="เลขบัญชี" value={memorial.host_bank_account_number || "-"} />
-            <InfoRow label="ชื่อบัญชี" value={memorial.host_bank_account_name || "-"} />
           </div>
           {canEdit ? (
             <TransferConfirmButton
