@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
+import { Camera, Check, CheckCircle2, Copy, Link as LinkIcon, Loader2, Share2, Sparkles, XCircle } from "lucide-react";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
 import { compressImage } from "@/lib/compress-image";
@@ -88,6 +88,7 @@ export default function AiPhotoSectionV2({
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState("");
   const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
+  const [linkCopied, setLinkCopied] = useState(false);
   const donorRef = useRef<HTMLInputElement>(null);
   const draftKey = useMemo(
     () =>
@@ -351,6 +352,36 @@ export default function AiPhotoSectionV2({
     }
   }
 
+  // ลิงก์รับรูปภายหลัง — เจนรูปใช้เวลา ผู้ใช้แชร์ลิงก์นี้แล้วกดเข้าทีหลังเพื่อรับรูปที่เจนเสร็จ
+  async function copyJobLink() {
+    if (!activeJob?.jobUrl) return;
+    try {
+      await navigator.clipboard.writeText(activeJob.jobUrl);
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2500);
+    } catch {
+      /* คัดลอกไม่ได้ — ผู้ใช้กดค้างคัดลอกเองจากกล่องลิงก์ */
+    }
+  }
+
+  async function shareJobLink() {
+    if (!activeJob?.jobUrl) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: "ภาพที่ระลึกหรีดร่วมบุญ",
+          text: "กดลิงก์นี้เพื่อรับภาพที่ระลึกเมื่อระบบสร้างเสร็จ 🌸",
+          url: activeJob.jobUrl,
+        });
+        return;
+      } catch {
+        /* ผู้ใช้ยกเลิกแชร์ */
+        return;
+      }
+    }
+    copyJobLink();
+  }
+
   // เมื่อเจนภาพสำเร็จแล้ว → แสดงเฉพาะรูปที่เจนได้ (+ ปุ่มบันทึก/แชร์)
   // ซ่อนฟอร์มแนบรูป/ตัวเลือกเพศ-อายุ/consent/ปุ่มสร้าง/กล่องสถานะทั้งหมด
   if (images.length > 0 && !generating) {
@@ -452,32 +483,40 @@ export default function AiPhotoSectionV2({
 
 
 
-      {activeJob && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-3 space-y-2">
+      {activeJob && activeJob.status !== "completed" && (
+        <div className="rounded-xl border border-gold-200 bg-cream-50 px-3 py-3 space-y-2.5">
           <div className="flex items-start gap-2">
-            {activeJob.status === "completed" ? (
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-            ) : (
-              <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-emerald-600" />
-            )}
+            <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-gold-500" />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-emerald-800">
-                {activeJob.status === "completed"
-                  ? "ภาพมอบหรีดพร้อมแล้ว"
-                  : "เริ่มสร้างภาพบนระบบแล้ว"}
-              </p>
-              <p className="mt-0.5 text-[10px] leading-relaxed text-emerald-700">
-                {activeJob.status === "completed"
-                  ? "ภาพพร้อมแล้ว สามารถบันทึกหรือแชร์ภาพจากส่วนผลลัพธ์ด้านล่างได้"
-                  : "ระบบกำลังประมวลผลภาพ กรุณารอสักครู่ หน้านี้จะแสดงผลภาพเมื่อเจนเสร็จ"}
+              <p className="text-xs font-bold text-gold-800">กำลังสร้างภาพ (ราว 30–90 วินาที)</p>
+              <p className="mt-0.5 text-[10px] leading-relaxed text-gold-600">
+                เจนรูปใช้เวลาสักครู่ — <span className="font-semibold">แชร์หรือคัดลอกลิงก์นี้เก็บไว้</span> แล้วกดเข้าลิงก์ภายหลังเพื่อรับรูปที่เจนเสร็จ ไม่ต้องเปิดหน้านี้ค้างไว้
               </p>
             </div>
           </div>
-          {activeJob.status !== "completed" && (
-            <p className="text-[10px] text-emerald-700">
-              หน้านี้จะอัปเดตสถานะอัตโนมัติ แต่ไม่จำเป็นต้องเปิดค้างไว้
-            </p>
-          )}
+
+          <div className="flex items-center gap-1.5 rounded-lg border border-gold-200 bg-white px-2.5 py-2">
+            <LinkIcon className="w-3.5 h-3.5 text-gold-400 shrink-0" />
+            <p className="flex-1 min-w-0 truncate text-[10px] text-gold-600">{activeJob.jobUrl}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={shareJobLink}
+              className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl gold-gradient text-white text-xs font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all"
+            >
+              <Share2 className="w-4 h-4" /> แชร์ลิงก์รับรูป
+            </button>
+            <button
+              type="button"
+              onClick={copyJobLink}
+              className="flex items-center justify-center gap-1.5 py-2.5 rounded-xl border-2 border-gold-200 bg-white text-gold-700 text-xs font-semibold active:scale-[0.98] transition-all"
+            >
+              {linkCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+              {linkCopied ? "คัดลอกแล้ว" : "คัดลอกลิงก์"}
+            </button>
+          </div>
         </div>
       )}
 
