@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Building2, CheckCircle2, KeyRound, Mail, Phone, User } from "lucide-react";
+import { Building2, CheckCircle2, KeyRound, Phone, User } from "lucide-react";
 import IosPageHeader from "@/components/IosPageHeader";
 
 type Center = { id: string; name: string; province: string | null };
@@ -14,7 +14,6 @@ interface Props {
 type FormState = {
   centerId: string;
   displayName: string;
-  email: string;
   password: string;
   confirmPassword: string;
   phone: string;
@@ -23,7 +22,6 @@ type FormState = {
 const empty = (): FormState => ({
   centerId: "",
   displayName: "",
-  email: "",
   password: "",
   confirmPassword: "",
   phone: "",
@@ -44,7 +42,7 @@ export default function CenterRegisterClient({ centers }: Props) {
   function validate(): string {
     if (!form.centerId) return "กรุณาเลือกศูนย์/อปท.";
     if (!form.displayName.trim()) return "กรุณากรอกชื่อ-นามสกุล";
-    if (!form.email.trim()) return "กรุณากรอกอีเมล";
+    if (!form.phone.trim()) return "กรุณากรอกเบอร์มือถือ";
     if (form.password.length < 8) return "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร";
     if (form.password !== form.confirmPassword) return "รหัสผ่านและยืนยันรหัสผ่านไม่ตรงกัน";
     return "";
@@ -63,9 +61,8 @@ export default function CenterRegisterClient({ centers }: Props) {
         body: JSON.stringify({
           center_id: form.centerId,
           display_name: form.displayName.trim(),
-          email: form.email.trim().toLowerCase(),
           password: form.password,
-          phone: form.phone.trim() || undefined,
+          phone: form.phone.trim(),
         }),
       });
       const data = await res.json();
@@ -146,25 +143,13 @@ export default function CenterRegisterClient({ centers }: Props) {
               </Field>
 
               {/* Phone */}
-              <Field label="เบอร์โทรศัพท์" icon={<Phone className="w-4 h-4 text-gold-400 shrink-0" />}>
+              <Field label="เบอร์มือถือ *" icon={<Phone className="w-4 h-4 text-gold-400 shrink-0" />}>
                 <input
                   type="tel"
                   value={form.phone}
                   onChange={set("phone")}
-                  placeholder="0812345678 (ไม่บังคับ)"
+                  placeholder="0812345678"
                   autoComplete="tel"
-                  className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
-                />
-              </Field>
-
-              {/* Email */}
-              <Field label="อีเมล *" icon={<Mail className="w-4 h-4 text-gold-400 shrink-0" />}>
-                <input
-                  type="email"
-                  value={form.email}
-                  onChange={set("email")}
-                  placeholder="email@example.com"
-                  autoComplete="email"
                   className="flex-1 bg-transparent text-gold-800 placeholder-gold-300 focus:outline-none text-sm"
                 />
               </Field>

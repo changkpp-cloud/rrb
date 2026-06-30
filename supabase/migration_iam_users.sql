@@ -50,7 +50,7 @@ create table if not exists public.center_memberships (
 create table if not exists public.center_user_requests (
   id uuid primary key default uuid_generate_v4(),
   center_id uuid not null references public.centers(id) on delete cascade,
-  email text not null,
+  email text,
   display_name text not null,
   phone text,
   requested_role public.app_user_role not null default 'center_staff',

@@ -73,7 +73,6 @@ export async function POST(req: NextRequest) {
   const now = new Date().toISOString();
 
   const userPayload = {
-    email: null,
     display_name: display_name.trim(),
     phone: normalizedPhone,
     password_hash: hashPassword(password),

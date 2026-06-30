@@ -323,7 +323,7 @@ CREATE INDEX IF NOT EXISTS center_memberships_user_idx   ON public.center_member
 CREATE TABLE IF NOT EXISTS public.center_user_requests (
   id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   center_id        UUID NOT NULL REFERENCES public.centers(id) ON DELETE CASCADE,
-  email            TEXT NOT NULL,
+  email            TEXT,
   display_name     TEXT NOT NULL,
   phone            TEXT,
   requested_role   public.app_user_role NOT NULL DEFAULT 'center_staff',

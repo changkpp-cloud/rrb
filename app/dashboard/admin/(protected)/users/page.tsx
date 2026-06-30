@@ -10,7 +10,6 @@ type Center = { id: string; name: string };
 type RequestRow = {
   id: string;
   center_id: string;
-  email: string;
   display_name: string;
   phone: string | null;
   requested_role: AppRole;
@@ -21,7 +20,6 @@ type RequestRow = {
 };
 type UserRow = {
   id: string;
-  email: string | null;
   display_name: string;
   phone: string | null;
   status: string;
@@ -76,19 +74,19 @@ async function approveRequest(formData: FormData) {
     .maybeSingle();
 
   if (!request) return;
+  if (!request.phone) return;
 
   const { data: existingUser } = await supabase
     .from("app_users")
     .select("*")
-    .eq("email", request.email)
-    .maybeSingle();
+    .eq("phone", request.phone)
+    .limit(1);
 
-  let userId = existingUser?.id;
+  let userId = existingUser?.[0]?.id;
   if (!userId) {
     const { data: newUser } = await supabase
       .from("app_users")
       .insert({
-        email: request.email,
         display_name: request.display_name,
         phone: request.phone,
         auth_provider: request.auth_provider,
@@ -168,7 +166,7 @@ export default async function AdminUsersPage() {
           <div key={req.id} className="rounded-2xl bg-cream-50 gold-border card-shadow px-4 py-3 space-y-3">
             <div>
               <p className="text-sm font-bold text-gold-800">{req.display_name}</p>
-              <p className="text-[11px] text-gold-500">{req.email} · {req.phone || "ไม่มีเบอร์"}</p>
+              <p className="text-[11px] text-gold-500">{req.phone || "ไม่มีเบอร์มือถือ"}</p>
               <p className="text-[11px] text-gold-600">{centerName.get(req.center_id) ?? "ไม่พบศูนย์"} · ขอสิทธิ์ {roleLabel(req.requested_role)}</p>
             </div>
             <div className="grid grid-cols-2 gap-2">

@@ -2,17 +2,20 @@ import { NextRequest, NextResponse } from "next/server";
 import { hashPassword } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
 
+function normalizePhone(phone: string) {
+  return phone.replace(/[^\d+]/g, "");
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json();
   const centerId = String(body.center_id ?? "").trim();
-  const email = String(body.email ?? "").trim().toLowerCase();
   const displayName = String(body.display_name ?? "").trim();
-  const phone = String(body.phone ?? "").trim();
+  const phone = normalizePhone(String(body.phone ?? "").trim());
   const password = String(body.password ?? "");
 
-  if (!centerId || !email || !displayName || password.length < 8) {
+  if (!centerId || !phone || !displayName || password.length < 8) {
     return NextResponse.json(
-      { error: "กรุณากรอกศูนย์ อีเมล ชื่อ และรหัสผ่านอย่างน้อย 8 ตัวอักษร" },
+      { error: "กรุณากรอกศูนย์ เบอร์มือถือ ชื่อ และรหัสผ่านอย่างน้อย 8 ตัวอักษร" },
       { status: 400 }
     );
   }
@@ -30,16 +33,16 @@ export async function POST(req: NextRequest) {
   const { data: existingUser } = await supabase
     .from("app_users")
     .select("id")
-    .eq("email", email)
-    .maybeSingle();
+    .eq("phone", phone)
+    .limit(1);
 
-  if (existingUser) {
-    return NextResponse.json({ error: "อีเมลนี้มีบัญชีในระบบแล้ว กรุณาให้แอดมินเพิ่มสิทธิ์ศูนย์" }, { status: 409 });
+  if (existingUser?.[0]) {
+    return NextResponse.json({ error: "เบอร์มือถือนี้มีบัญชีในระบบแล้ว กรุณาให้แอดมินเพิ่มสิทธิ์ศูนย์" }, { status: 409 });
   }
 
   const { data: existingRequest } = await (supabase.from("center_user_requests") as any)
     .select("id")
-    .eq("email", email)
+    .eq("phone", phone)
     .eq("center_id", centerId)
     .eq("status", "pending")
     .maybeSingle();
@@ -50,9 +53,8 @@ export async function POST(req: NextRequest) {
 
   const { error } = await (supabase.from("center_user_requests") as any).insert({
     center_id: centerId,
-    email,
     display_name: displayName,
-    phone: phone || null,
+    phone,
     requested_role: "center_manager",
     auth_provider: "password",
     password_hash: hashPassword(password),
