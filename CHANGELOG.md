@@ -300,3 +300,8 @@
 - `lib/notify.ts`: เอา LINE Notify ออก (LINE ปิดบริการ มี.ค. 2025) + เลิกใช้ Twilio → รวมส่ง SMS ผ่าน ThaiBulkSMS (`lib/sms.ts`) เจ้าเดียวกับ OTP
 - แก้ข้อความ `msgNewDonation`: เดิม "รอตรวจสลิป" (ผิด เพราะ auto-confirm) → "เข้าบัญชีเจ้าภาพโดยตรง · ป้ายชื่อกำลังพิมพ์"
 - ลบ `msgDonationConfirmed` ที่ไม่ถูกใช้ (ไม่มีขั้นตอน confirm แยกแล้ว) · notifyHost best-effort no-op เมื่อยังไม่ตั้งค่า SMS
+
+### นโยบายแจ้งเตือนใหม่: ไม่กวนเจ้าภาพรายคน + แจ้งศูนย์เมื่อป้ายพิมพ์ไม่สำเร็จ — 2026-06-30
+- (B) เลิกส่ง SMS หาเจ้าภาพทุกครั้งที่มีผู้ร่วมบุญ — เงินมีแจ้งเตือนจากแอปธนาคารอยู่แล้ว + รายชื่อดูในแดชบอร์ดได้ (เลี่ยงรบกวน + ประหยัดค่า SMS) · ลบ `notifyHost`/`msgNewDonation`
+- (C) เพิ่ม `notifyNameplateError` — เมื่อ auto-print ป้ายชื่อ "ไม่สำเร็จ" (printResult ไม่ ok หรือ exception) ส่ง SMS หา **เบอร์ศูนย์** (`centers.phone`) ให้ตรวจเครื่องพิมพ์แล้วกด "พิมพ์ซ้ำ" — actionable ตรงคนที่ต้องลงมือ
+- ทั้งหมด best-effort + no-op เมื่อยังไม่ตั้งค่า SMS (ThaiBulkSMS)
