@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
 import { generateOtp, normalizePhone, isValidThaiMobile, OTP_TTL_MS } from "@/lib/otp";
+import { isSmsConfigured, sendOtpSms } from "@/lib/sms";
 
 // ส่ง OTP ยืนยันเบอร์เจ้าภาพ "ก่อนเปิดงาน" — ตอนกรอกฟอร์มยังไม่มี memorial → ผูกกับ (ศูนย์ + เบอร์)
-// ⚠️ MOCK: ยังไม่ส่ง SMS จริง — บันทึกรหัสใน DB แล้วส่ง devCode กลับให้เจ้าหน้าที่แจ้ง/ดู log
+// ส่ง SMS จริงผ่าน ThaiBulkSMS ถ้าตั้ง env ครบ · ถ้าไม่ตั้ง → โหมดทดสอบ (คืน devCode ให้โชว์บนจอ)
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}));
   const centerId = String((body as { center_id?: string }).center_id ?? "");
@@ -33,13 +34,24 @@ export async function POST(req: NextRequest) {
   });
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
-  // eslint-disable-next-line no-console
-  console.log(`[OTP] center=${centerId} phone=${phone} code=${code} (mock — ยังไม่ส่ง SMS จริง)`);
+  const configured = isSmsConfigured();
+  if (configured) {
+    const sms = await sendOtpSms(phone, code);
+    if (!sms.sent) {
+      return NextResponse.json(
+        { error: `ส่งรหัส OTP ไม่สำเร็จ: ${sms.reason === "error" ? sms.error : "ระบบ SMS ยังไม่พร้อม"}` },
+        { status: 502 },
+      );
+    }
+  } else {
+    // eslint-disable-next-line no-console
+    console.log(`[OTP] center=${centerId} phone=${phone} code=${code} (โหมดทดสอบ — ยังไม่ตั้งค่า SMS)`);
+  }
 
   return NextResponse.json({
     success: true,
     expiresAt,
-    // MOCK เท่านั้น: ส่งรหัสกลับให้ UI แสดง — เมื่อมี SMS provider จริงให้ลบบรรทัดนี้
-    devCode: code,
+    // โหมดทดสอบเท่านั้น: ส่งรหัสกลับให้ UI แสดง · เมื่อตั้งค่า SMS จริงแล้วจะไม่ส่ง devCode
+    ...(configured ? {} : { devCode: code }),
   });
 }
