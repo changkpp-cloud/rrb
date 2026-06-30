@@ -87,8 +87,6 @@ export default function AiPhotoSectionV2({
   const [images, setImages] = useState<string[]>([]);
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [error, setError] = useState("");
-  const [creditUsed, setCreditUsed] = useState(false);
-  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null);
   const [activeJob, setActiveJob] = useState<AiPhotoJobState | null>(null);
   const donorRef = useRef<HTMLInputElement>(null);
   const draftKey = useMemo(
@@ -115,8 +113,6 @@ export default function AiPhotoSectionV2({
           donorGender?: string;
           donorAgeRange?: string;
           consent?: boolean;
-          creditUsed?: boolean;
-          existingImageUrl?: string | null;
           activeJob?: AiPhotoJobState | null;
         };
 
@@ -126,8 +122,6 @@ export default function AiPhotoSectionV2({
         if (typeof draft.donorGender === "string") setDonorGender(draft.donorGender);
         if (typeof draft.donorAgeRange === "string") setDonorAgeRange(draft.donorAgeRange);
         if (typeof draft.consent === "boolean") setConsent(draft.consent);
-        if (typeof draft.creditUsed === "boolean") setCreditUsed(draft.creditUsed);
-        if (typeof draft.existingImageUrl === "string") setExistingImageUrl(draft.existingImageUrl);
         if (draft.activeJob) setActiveJob(draft.activeJob);
       }
     } catch {}
@@ -148,13 +142,11 @@ export default function AiPhotoSectionV2({
           donorGender,
           donorAgeRange,
           consent,
-          creditUsed,
-          existingImageUrl,
           activeJob,
         })
       );
     } catch {}
-  }, [draftKey, donorPreview, images, selectedIdx, donorGender, donorAgeRange, consent, creditUsed, existingImageUrl, activeJob]);
+  }, [draftKey, donorPreview, images, selectedIdx, donorGender, donorAgeRange, consent, activeJob]);
 
   async function handleDonorChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -223,13 +215,6 @@ export default function AiPhotoSectionV2({
       if (!tokenText) throw new Error("ไม่ได้รับ token");
       const tokenData = JSON.parse(tokenText);
 
-      if (tokenRes.status === 429) {
-        const url = typeof tokenData.existingImageUrl === "string" ? tokenData.existingImageUrl : null;
-        setCreditUsed(true); setExistingImageUrl(url);
-        if (url) setImages([url]);
-        setError("คุณใช้สิทธิ์สร้างภาพที่ระลึกฟรีแล้ว 1 รูป");
-        setGenerating(false); return;
-      }
       if (!tokenRes.ok) throw new Error(tokenData.error ?? "เกิดข้อผิดพลาด");
 
       const { token, serviceUrl, prompt: builtPrompt } = tokenData as {
@@ -269,7 +254,6 @@ export default function AiPhotoSectionV2({
       }).catch(() => {});
 
       setImages(imgs); setSelectedIdx(0);
-      if (donationId) { setCreditUsed(true); setExistingImageUrl(imgs[0]); }
       notifyAiPhotoComplete();
     } catch (e) {
       setError(e instanceof Error ? e.message : "เกิดข้อผิดพลาด");
@@ -301,10 +285,6 @@ export default function AiPhotoSectionV2({
           if (nextJob.status === "completed" && nextJob.imageUrl) {
             setImages([nextJob.imageUrl]);
             setSelectedIdx(0);
-            if (donationId) {
-              setCreditUsed(true);
-              setExistingImageUrl(nextJob.imageUrl);
-            }
             notifyAiPhotoComplete();
             setGenerating(false);
             return;
@@ -328,7 +308,7 @@ export default function AiPhotoSectionV2({
       cancelled = true;
       if (timer) clearTimeout(timer);
     };
-  }, [activeJob, donationId]);
+  }, [activeJob]);
 
   async function handleGenerateJob() {
     if (!donorFile) { setError("Please attach a donor photo first."); return; }
@@ -363,41 +343,12 @@ export default function AiPhotoSectionV2({
       if (nextJob.status === "completed" && nextJob.imageUrl) {
         setImages([nextJob.imageUrl]);
         setSelectedIdx(0);
-        if (donationId) {
-          setCreditUsed(true);
-          setExistingImageUrl(nextJob.imageUrl);
-        }
         setGenerating(false);
       }
     } catch (e) {
       console.warn("AI photo server job failed; falling back to direct generation.", e);
       await handleGenerate();
     }
-  }
-
-  // ── Credit used + existing image ──
-  if (creditUsed && (images.length > 0 || existingImageUrl)) {
-    const displayImages = images.length > 0 ? images : existingImageUrl ? [existingImageUrl] : [];
-    return (
-      <div className="bg-cream-50 rounded-2xl gold-border card-shadow p-4 space-y-4">
-        <div className="flex items-center gap-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-          <span className="text-sm font-semibold text-gold-700">ภาพที่ระลึก</span>
-        </div>
-        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2">
-          <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-          <p className="text-xs text-emerald-700 font-medium">สร้างภาพที่ระลึกเรียบร้อยแล้ว</p>
-        </div>
-        {displayImages.length > 0 && (
-          <AiPhotoResult
-            images={displayImages}
-            selectedIdx={Math.min(selectedIdx, displayImages.length - 1)}
-            onSelect={setSelectedIdx}
-            donorName={donorName}
-          />
-        )}
-      </div>
-    );
   }
 
   return (
@@ -513,14 +464,11 @@ export default function AiPhotoSectionV2({
 
       {/* Generate button */}
       <div className="space-y-1">
-        {donationId && (
-          <p className="text-[10px] text-gold-500 text-center">สร้างภาพที่ระลึกได้ฟรี 1 ภาพสำหรับรายการร่วมบุญนี้</p>
-        )}
         <button type="button" onClick={handleGenerateJob}
           disabled={!donorFile || !consent || generating || compressing}
           className="w-full flex items-center justify-center gap-2 py-3.5 rounded-2xl gold-gradient text-white text-sm font-semibold shadow-md hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-50">
           {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
-          {generating ? "กำลังสร้างภาพ AI..." : "สร้างภาพที่ระลึก"}
+          {generating ? "กำลังสร้างภาพ AI..." : images.length > 0 ? "สร้างภาพใหม่อีกครั้ง" : "สร้างภาพที่ระลึก"}
         </button>
         {generating && (
           <p className="text-[10px] text-gold-500 text-center animate-pulse">AI กำลังประมวลผล อาจใช้เวลา 30–90 วินาที สามารถเปลี่ยนไปหน้าอื่นในแอพได้ เมื่อเสร็จระบบจะแจ้งเตือนถ้าเบราว์เซอร์อนุญาต</p>
@@ -528,7 +476,7 @@ export default function AiPhotoSectionV2({
       </div>
 
       {/* Result */}
-      {images.length > 0 && !creditUsed && (
+      {images.length > 0 && (
         <AiPhotoResult
           images={images}
           selectedIdx={selectedIdx}

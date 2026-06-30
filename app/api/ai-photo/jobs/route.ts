@@ -52,11 +52,13 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
+  // ดึงเฉพาะงานที่ "กำลังทำอยู่" (pending/processing) กลับมาใช้ซ้ำ เพื่อกันยิงซ้ำตอนรอผล
+  // ไม่นับงานที่ completed แล้ว → ผู้ใช้สร้างภาพใหม่ได้ไม่จำกัด
   if (donationId) {
     const { data: existingJob, error: existingJobError } = await supabase.from("ai_photo_requests")
       .select("id, status, generated_image_url")
       .eq("donation_id", donationId)
-      .in("status", ["pending", "processing", "completed"])
+      .in("status", ["pending", "processing"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();

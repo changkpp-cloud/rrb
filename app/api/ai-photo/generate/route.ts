@@ -65,36 +65,7 @@ async function handleAiPhotoGenerate(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  if (donationId) {
-    const { data: credit } = await supabase.from("ai_photo_credits")
-      .select("free_quota, used_count")
-      .eq("donation_id", donationId)
-      .single();
-
-    const c = credit as { free_quota: number; used_count: number } | null;
-    if (c && c.used_count >= c.free_quota) {
-      const { data: prev } = await supabase.from("ai_photo_requests")
-        .select("generated_image_url")
-        .eq("donation_id", donationId)
-        .eq("status", "completed")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      const existingImageUrl =
-        (prev as { generated_image_url?: string } | null)?.generated_image_url ??
-        null;
-
-      return NextResponse.json(
-        {
-          error: "คุณใช้สิทธิ์สร้างภาพที่ระลึกฟรีแล้ว 1 รูป",
-          used: true,
-          existingImageUrl,
-        },
-        { status: 429 }
-      );
-    }
-  }
+  // ไม่จำกัดจำนวนภาพต่อรายการร่วมบุญแล้ว — สร้างได้ไม่จำกัด
 
   const template = getAiPhotoTemplate(templateKey);
   let promptOverride: string | undefined;
@@ -153,28 +124,6 @@ async function handleAiPhotoGenerate(req: NextRequest) {
     // Logging should never block the user from receiving the generated image.
   }
 
-  if (donationId && generatedImageUrl) {
-    const { data: existing } = await supabase.from("ai_photo_credits")
-      .select("used_count")
-      .eq("donation_id", donationId)
-      .single();
-
-    if (existing) {
-      await supabase.from("ai_photo_credits")
-        .update({
-          used_count: (existing as { used_count: number }).used_count + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("donation_id", donationId);
-    } else {
-      await supabase.from("ai_photo_credits").insert({
-        donation_id: donationId,
-        free_quota: 1,
-        used_count: 1,
-      });
-    }
-  }
-
   if (!generatedImageUrl) {
     return NextResponse.json(
       { error: errorMessage ?? "สร้างภาพไม่สำเร็จ กรุณาลองใหม่" },
@@ -185,6 +134,5 @@ async function handleAiPhotoGenerate(req: NextRequest) {
   return NextResponse.json({
     imageUrl: generatedImageUrl,
     templateKey: template.templateKey,
-    creditUsed: Boolean(donationId),
   });
 }
