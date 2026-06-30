@@ -22,6 +22,8 @@ const RELATIONSHIP_OPTIONS = [
   "ญาติ", "เพื่อน", "ผู้แทนครอบครัว",
 ];
 
+const MOBILE_IMAGE_ACCEPT = "image/*,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif,image/heic,image/heif";
+
 type FormData = {
   display_name: string;
   relationship: string;
@@ -84,9 +86,17 @@ export default function MemorialPersonManager({ memorialId }: Props) {
     if (!file) return;
     // ย่อรูปก่อนเก็บ — โหลดเร็ว + ส่งเข้า AI ง่ายขึ้น
     let img = file;
-    try { img = await compressImage(file); } catch { /* ใช้ไฟล์เดิม (เช่น HEIC ที่ decode ไม่ได้) */ }
+    try {
+      img = await compressImage(file);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : "Could not prepare this photo.");
+      e.target.value = "";
+      return;
+    }
     const preview = URL.createObjectURL(img);
     setForm(f => ({ ...f, photo: img, photoPreview: preview }));
+    setError("");
+    e.target.value = "";
   }
 
   async function handleSave() {
@@ -219,7 +229,7 @@ export default function MemorialPersonManager({ memorialId }: Props) {
             </div>
 
             {/* Photo upload */}
-            <input ref={fileRef} type="file" accept="image/*,image/heic" className="hidden" onChange={handlePhotoChange} />
+            <input ref={fileRef} type="file" accept={MOBILE_IMAGE_ACCEPT} className="hidden" onChange={handlePhotoChange} />
             <button type="button" onClick={() => fileRef.current?.click()}
               className="w-full border-2 border-dashed border-gold-300 rounded-xl py-3 flex flex-col items-center gap-1.5 hover:bg-gold-50 active:scale-[0.98] transition-all">
               {form.photoPreview ? (

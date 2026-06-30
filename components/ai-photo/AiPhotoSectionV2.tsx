@@ -2,12 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Camera, CheckCircle2, Loader2, Sparkles, XCircle } from "lucide-react";
-import HostPersonPicker, { type MemorialPerson } from "./HostPersonPicker";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
+import { compressImage } from "@/lib/compress-image";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const MAX_DIM = 1024;
+const MOBILE_IMAGE_ACCEPT = "image/*,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif,image/heic,image/heif";
 
 const DONOR_GENDER_OPTIONS = [
   { value: "male", label: "ชาย" },
@@ -22,35 +23,6 @@ const DONOR_AGE_OPTIONS = [
   { value: "61-75 years old", label: "61-75 ปี" },
   { value: "76+ years old", label: "76 ปีขึ้นไป" },
 ];
-
-function canvasToBlob(canvas: HTMLCanvasElement, q: number) {
-  return new Promise<Blob>((res, rej) =>
-    canvas.toBlob(b => b ? res(b) : rej(new Error("compress fail")), "image/jpeg", q)
-  );
-}
-
-async function compressPhoto(file: File): Promise<File> {
-  if (!file.type.startsWith("image/")) throw new Error("กรุณาเลือกไฟล์รูปภาพ");
-  const url = URL.createObjectURL(file);
-  try {
-    const img = new Image();
-    img.decoding = "async"; img.src = url;
-    await img.decode();
-    const scale = Math.min(1, MAX_DIM / Math.max(img.width, img.height));
-    const w = Math.max(1, Math.round(img.width * scale));
-    const h = Math.max(1, Math.round(img.height * scale));
-    const canvas = document.createElement("canvas");
-    canvas.width = w; canvas.height = h;
-    canvas.getContext("2d")!.drawImage(img, 0, 0, w, h);
-    let blob = await canvasToBlob(canvas, 0.92);
-    for (const q of [0.86, 0.8, 0.72]) {
-      if (blob.size <= MAX_UPLOAD_BYTES) break;
-      blob = await canvasToBlob(canvas, q);
-    }
-    const name = file.name.replace(/\.[^.]+$/, "") || "photo";
-    return new File([blob], `${name}.jpg`, { type: "image/jpeg", lastModified: Date.now() });
-  } finally { URL.revokeObjectURL(url); }
-}
 
 interface Props {
   donorName: string;
@@ -108,7 +80,6 @@ export default function AiPhotoSectionV2({
   const [donorFile, setDonorFile] = useState<File | null>(null);
   const [donorPreview, setDonorPreview] = useState<string | null>(null);
   const [compressing, setCompressing] = useState(false);
-  const [hostPerson, setHostPerson] = useState<MemorialPerson | null>(null);
   const [donorGender, setDonorGender] = useState("male");
   const [donorAgeRange, setDonorAgeRange] = useState("46-60 years old");
   const [consent, setConsent] = useState(false);
@@ -190,7 +161,11 @@ export default function AiPhotoSectionV2({
     if (!file) return;
     setCompressing(true); setError("");
     try {
-      const compressed = await compressPhoto(file);
+      const compressed = await compressImage(file, {
+        maxDim: MAX_DIM,
+        maxBytes: MAX_UPLOAD_BYTES,
+        fallbackToOriginalOnDecodeError: true,
+      });
       setDonorFile(compressed);
       const reader = new FileReader();
       reader.onload = () => setDonorPreview(reader.result as string);
@@ -242,7 +217,6 @@ export default function AiPhotoSectionV2({
       tokenForm.append("funeral_place", funeralPlace ?? "");
       tokenForm.append("donor_gender", donorGender);
       tokenForm.append("donor_age_range", donorAgeRange);
-      if (hostPerson?.id) tokenForm.append("host_person_id", hostPerson.id);
 
       const tokenRes = await fetch("/api/ai-photo/auth-token", { method: "POST", body: tokenForm });
       const tokenText = await tokenRes.text();
@@ -258,10 +232,9 @@ export default function AiPhotoSectionV2({
       }
       if (!tokenRes.ok) throw new Error(tokenData.error ?? "เกิดข้อผิดพลาด");
 
-      const { token, serviceUrl, prompt: builtPrompt, hostPhotoUrl } = tokenData as {
+      const { token, serviceUrl, prompt: builtPrompt } = tokenData as {
         token: string; serviceUrl: string; prompt: string;
         donationId: string | null; memorialId: string | null;
-        hostPhotoUrl?: string | null;
       };
 
       // Step 2: Call AI service
@@ -272,15 +245,6 @@ export default function AiPhotoSectionV2({
       const memorialBackgroundFile = await buildMemorialBackgroundFile();
       if (memorialBackgroundFile) {
         genForm.append("memorial_background_photo", memorialBackgroundFile);
-      }
-
-      // Fetch host photo if available
-      if (hostPhotoUrl) {
-        try {
-          const hostBlob = await fetch(hostPhotoUrl).then(r => r.blob());
-          const hostFile = new File([hostBlob], "host-photo.jpg", { type: "image/jpeg" });
-          genForm.append("host_photo", hostFile);
-        } catch { /* proceed without host photo */ }
       }
 
       const genRes = await fetch(serviceUrl, {
@@ -385,7 +349,6 @@ export default function AiPhotoSectionV2({
       jobForm.append("donor_gender", donorGender);
       jobForm.append("donor_age_range", donorAgeRange);
       jobForm.append("donor_photo", donorFile);
-      if (hostPerson?.id) jobForm.append("host_person_id", hostPerson.id);
 
       const res = await fetch("/api/ai-photo/jobs", {
         method: "POST",
@@ -449,7 +412,7 @@ export default function AiPhotoSectionV2({
       <div className="space-y-1.5">
         <p className="text-xs font-semibold text-gold-700">แนบรูปผู้มอบ</p>
         <p className="text-[10px] text-gold-400">กรุณาแนบรูปที่เห็นใบหน้าชัดเจน เพื่อให้ภาพจำลองใกล้เคียงตัวจริงมากที่สุด</p>
-        <input ref={donorRef} type="file" accept="image/*,image/heic" className="hidden" onChange={handleDonorChange} />
+        <input ref={donorRef} type="file" accept={MOBILE_IMAGE_ACCEPT} className="hidden" onChange={handleDonorChange} />
         <button type="button" onClick={() => donorRef.current?.click()}
           disabled={compressing}
           className="w-full border-2 border-dashed border-gold-300 rounded-xl py-3 px-3 flex items-center gap-3 hover:bg-gold-50 active:scale-[0.98] transition-all">
@@ -499,13 +462,6 @@ export default function AiPhotoSectionV2({
           </select>
         </label>
       </div>
-
-      {/* Step 3: Host/family picker */}
-      <HostPersonPicker
-        memorialId={memorialId}
-        selectedId={hostPerson?.id ?? null}
-        onChange={setHostPerson}
-      />
 
       {/* Consent */}
       <label className="flex items-start gap-2.5 cursor-pointer">

@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import {
   AlertTriangle,
   Banknote,
-  Camera,
   CheckCircle2,
   ExternalLink,
   Info,
@@ -20,7 +19,6 @@ import { canEditCenterWork, getCenterAccess } from "@/lib/iam";
 import type { Donation } from "@/lib/supabase/types";
 import { formatThaiDate, getMemorialById } from "@/lib/memorial";
 import CloseMemorialButton from "./CloseMemorialButton";
-import MemorialPersonManager from "@/components/host/MemorialPersonManager";
 import MemorialShareCard from "@/components/MemorialShareCard";
 import HostVerificationReview from "@/components/HostVerificationReview";
 import CenterMemorialDocsForm from "@/components/CenterMemorialDocsForm";
@@ -184,15 +182,6 @@ export default async function CenterMemorialPage({ params }: { params: Promise<{
         <section id="donors" className="scroll-mt-36 space-y-3">
           <SectionHeader icon={Users} title="รายชื่อผู้ร่วมบุญ" subtitle={`${confirmed.length} รายการรับร่วมบุญแล้ว`} />
           {confirmed.length === 0 ? <Empty icon={Users} text="ยังไม่มีผู้ร่วมบุญ" /> : <DonationList donations={confirmed} mode="donor" />}
-        </section>
-
-        <section id="persons" className="scroll-mt-36 space-y-3">
-          <SectionHeader icon={Camera} title="บุคคลสำหรับภาพจำลอง" subtitle="จัดการบุคคลที่จะปรากฏในภาพจำลอง AI สำหรับผู้ร่วมบุญ" />
-          {canEdit ? (
-            <MemorialPersonManager memorialId={memorial.id} />
-          ) : (
-            <ReadOnlyNotice text="สิทธิ์นี้ไม่สามารถเพิ่มหรือแก้ไขบุคคลสำหรับภาพจำลอง AI ได้" />
-          )}
         </section>
 
         <section id="host-verify" className="scroll-mt-36 space-y-3">

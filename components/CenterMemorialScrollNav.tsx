@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Banknote, Camera, ClipboardCheck, Info, Printer, ScrollText, ShieldCheck, Users } from "lucide-react";
+import { Banknote, ClipboardCheck, Info, Printer, ScrollText, ShieldCheck, Users } from "lucide-react";
 
-type SectionId = "overview" | "slips" | "print" | "donors" | "persons" | "host-verify" | "finance" | "close";
+type SectionId = "overview" | "slips" | "print" | "donors" | "host-verify" | "finance" | "close";
 
 const ITEMS: { id: SectionId; label: string; icon: React.ElementType }[] = [
   { id: "overview", label: "ภาพรวม", icon: Info },
   { id: "slips", label: "สลิปซ้ำ", icon: ClipboardCheck },
   { id: "print", label: "พิมพ์ป้าย", icon: Printer },
   { id: "donors", label: "รายชื่อ", icon: Users },
-  { id: "persons", label: "บุคคลภาพ", icon: Camera },
   { id: "host-verify", label: "เจ้าภาพ", icon: ShieldCheck },
   { id: "finance", label: "การเงิน", icon: Banknote },
   { id: "close", label: "ปิดงาน", icon: ScrollText },

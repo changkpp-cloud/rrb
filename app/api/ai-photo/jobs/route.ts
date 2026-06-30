@@ -117,10 +117,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "อัปโหลดรูปผู้มอบไม่สำเร็จ" }, { status: 500 });
   }
 
-  const referenceImageUrl = supabase.storage
-    .from("donations")
-    .getPublicUrl(uploadData.path).data.publicUrl;
-
   const { error: insertError } = await supabase.from("ai_photo_requests")
     .insert({
       id: jobId,
@@ -128,7 +124,7 @@ export async function POST(req: NextRequest) {
       memorial_id: memorialId,
       template_key: template.templateKey,
       final_prompt: finalPrompt,
-      reference_image_url: referenceImageUrl,
+      reference_image_url: uploadData.path,
       status: "pending",
     });
 

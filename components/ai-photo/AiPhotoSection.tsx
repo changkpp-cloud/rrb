@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import AiPhotoResult from "./AiPhotoResult";
 import type { AiPhotoTemplateKey } from "@/lib/ai-photo-templates";
+import { compressImage } from "@/lib/compress-image";
 
 interface Props {
   donorName: string;
@@ -25,65 +26,7 @@ type CreditState =
 
 const AI_PHOTO_MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const AI_PHOTO_MAX_DIMENSION = 1024;
-
-function canvasToBlob(canvas: HTMLCanvasElement, quality: number) {
-  return new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob(
-      (blob) => {
-        if (blob) resolve(blob);
-        else reject(new Error("ไม่สามารถบีบอัดรูปได้"));
-      },
-      "image/jpeg",
-      quality
-    );
-  });
-}
-
-async function compressAiPhotoUpload(file: File) {
-  if (!file.type.startsWith("image/")) {
-    throw new Error("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
-  }
-
-  const sourceUrl = URL.createObjectURL(file);
-  try {
-    const image = new Image();
-    image.decoding = "async";
-    image.src = sourceUrl;
-    await image.decode();
-
-    const scale = Math.min(
-      1,
-      AI_PHOTO_MAX_DIMENSION / Math.max(image.width, image.height)
-    );
-    const width = Math.max(1, Math.round(image.width * scale));
-    const height = Math.max(1, Math.round(image.height * scale));
-
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) throw new Error("ไม่สามารถเตรียมรูปก่อนส่งได้");
-    ctx.drawImage(image, 0, 0, width, height);
-
-    let blob = await canvasToBlob(canvas, 0.92);
-    for (const quality of [0.86, 0.8, 0.72]) {
-      if (blob.size <= AI_PHOTO_MAX_UPLOAD_BYTES) break;
-      blob = await canvasToBlob(canvas, quality);
-    }
-
-    if (blob.size > AI_PHOTO_MAX_UPLOAD_BYTES) {
-      throw new Error("รูปมีขนาดใหญ่เกินไป กรุณาเลือกรูปที่เล็กลงหรือครอปรูปก่อนอัปโหลด");
-    }
-
-    const name = file.name.replace(/\.[^.]+$/, "") || "donor-photo";
-    return new File([blob], `${name}-ai-photo.jpg`, {
-      type: "image/jpeg",
-      lastModified: Date.now(),
-    });
-  } finally {
-    URL.revokeObjectURL(sourceUrl);
-  }
-}
+const MOBILE_IMAGE_ACCEPT = "image/*,.jpg,.jpeg,.png,.webp,.avif,.heic,.heif,image/heic,image/heif";
 
 export default function AiPhotoSection({
   donorName,
@@ -129,7 +72,11 @@ export default function AiPhotoSection({
     setCompressing(true);
     setImages([]);
     try {
-      const compressedFile = await compressAiPhotoUpload(file);
+      const compressedFile = await compressImage(file, {
+        maxDim: AI_PHOTO_MAX_DIMENSION,
+        maxBytes: AI_PHOTO_MAX_UPLOAD_BYTES,
+        fallbackToOriginalOnDecodeError: true,
+      });
       setPhotoFile(compressedFile);
       const reader = new FileReader();
       reader.onload = () => setPhotoPreview(reader.result as string);
@@ -320,7 +267,7 @@ export default function AiPhotoSection({
       <input
         ref={fileRef}
         type="file"
-        accept="image/*"
+        accept={MOBILE_IMAGE_ACCEPT}
         className="hidden"
         onChange={handleFileChange}
       />

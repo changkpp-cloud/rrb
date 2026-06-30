@@ -234,3 +234,10 @@
 - เมนูแอดมิน "ผู้ใช้" → **"สร้างรหัสเข้าศูนย์"** · self-signup (`/api/center/register`) ขอสิทธิ์เป็น `center_manager`
 - **ล็อกอินศูนย์เปลี่ยนเป็นเบอร์มือถือ + รหัสผ่าน** (`CenterLoginClient`) แทนอีเมล · ปรับ label/ถ้อยคำ (roleLabel, system-health) ให้ตรงโมเดลใหม่
 - ⚠️ **ต้องรัน migration `20260629020000` ก่อน** · ⏳ ที่เหลือ: เทมเพลต export LPA/ITA/จังหวัดสะอาด + มุมรวมหลายศูนย์ (defer)
+
+## 2026-06-30 — แก้บั๊กเจนภาพ AI มอบหรีดล้มเหลว (จำลองมอบหรีด)
+- **สาเหตุหลัก:** รูปผู้มอบอัปโหลดเข้า bucket `donations` (private) แต่ worker `processAiPhotoJob` ดึงรูปผ่าน **public URL** → fetch ไม่ผ่าน → job failed "โหลดรูปผู้มอบเพื่อเจนภาพไม่สำเร็จ"
+- `app/api/ai-photo/jobs/route.ts`: เก็บ `reference_image_url` เป็น **storage path** (`uploadData.path`) แทน public URL
+- `lib/ai-photo-jobs.ts`: เพิ่ม `fileFromDonationStorageReference` → `storage.download(path)` ผ่าน service role (อ่าน private bucket ได้) + `storagePathFromReference` รองรับ row เก่าที่เป็น URL เต็ม (backward-compat)
+- `lib/compress-image.ts`: เพิ่ม `createImageBitmap` + แปลง HEIC/HEIF (`heic2any`) + `fallbackToOriginalOnDecodeError` แก้ client "The source image cannot be decoded." · `isDecodeFailure` รองรับ `DOMException` (EncodingError) ที่บางเบราว์เซอร์ไม่นับเป็น instanceof Error
+- `components/ai-photo/AiPhotoSectionV2.tsx`: ใช้ `compressImage(..., fallbackToOriginalOnDecodeError: true)` ตอนแนบรูปผู้มอบ

@@ -2,11 +2,10 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { AlertTriangle, Users, Download, ExternalLink, Pencil, Banknote, FileText, Camera, Mic } from "lucide-react";
+import { AlertTriangle, Users, Download, ExternalLink, Pencil, Banknote, FileText, Mic } from "lucide-react";
 import IosPageHeader from "./IosPageHeader";
 import LotusIcon from "./LotusIcon";
 import HostVerificationGate from "./HostVerificationGate";
-import MemorialPersonManager from "./host/MemorialPersonManager";
 import PrinterStatusAlert from "./PrinterStatusAlert";
 import type { Memorial, Donation } from "@/lib/supabase/types";
 import { systemFee, netToHost } from "@/lib/fee";
@@ -18,20 +17,16 @@ interface Props {
   hostExpiresInDays?: number | null;
 }
 
-type TabId = "summary" | "donors" | "report" | "bank" | "persons";
-
-// FEATURE FLAG: set SHOW_PERSONS_TAB = true เมื่อพร้อมเปิดใช้งานแท็บภาพจำลอง
-const SHOW_PERSONS_TAB = false;
+type TabId = "summary" | "donors" | "report" | "bank";
 
 const ALL_TABS: { id: TabId; label: string; icon: React.ElementType }[] = [
   { id: "summary", label: "สรุปยอด",     icon: Banknote },
   { id: "donors",  label: "รายชื่อ",      icon: Users },
   { id: "report",  label: "สรุปการเงิน",   icon: FileText },
   { id: "bank",    label: "บัญชีรับเงิน", icon: Banknote },
-  { id: "persons", label: "ภาพจำลอง",     icon: Camera },
 ];
 
-const TABS = SHOW_PERSONS_TAB ? ALL_TABS : ALL_TABS.filter(t => t.id !== "persons");
+const TABS = ALL_TABS;
 
 function formatThaiDate(isoDate: string): string {
   const months = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
@@ -335,19 +330,6 @@ export default function HostDashboardClient({ memorial, donations, id, hostExpir
         {/* ════ ยืนยันตัวตน + บัญชีรับเงิน ════ */}
         {activeTab === "bank" && (
           <HostVerificationGate memorial={memorial} />
-        )}
-
-        {/* ════ ภาพจำลอง ════ */}
-        {activeTab === "persons" && (
-          <div className="space-y-3">
-            <div className="px-1">
-              <p className="text-sm font-bold text-gold-700">บุคคลสำหรับภาพจำลอง AI</p>
-              <p className="text-[11px] text-gold-500 mt-0.5">จัดการรูปภาพบุคคลที่จะปรากฏในภาพจำลองสำหรับผู้ร่วมบุญ</p>
-            </div>
-            <div className="bg-cream-50 rounded-2xl gold-border card-shadow px-4 py-4">
-              <MemorialPersonManager memorialId={memorial.id} />
-            </div>
-          </div>
         )}
 
         <div className="h-4" />

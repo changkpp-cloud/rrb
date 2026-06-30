@@ -47,6 +47,40 @@ async function fileFromPublicUrl(url: string) {
   });
 }
 
+function storagePathFromReference(reference: string) {
+  if (!/^https?:\/\//i.test(reference)) return reference;
+
+  try {
+    const url = new URL(reference);
+    const marker = "/storage/v1/object/public/donations/";
+    const markerIndex = url.pathname.indexOf(marker);
+    if (markerIndex >= 0) {
+      return decodeURIComponent(url.pathname.slice(markerIndex + marker.length));
+    }
+  } catch {}
+
+  return null;
+}
+
+async function fileFromDonationStorageReference(reference: string) {
+  const supabase = createAdminClient();
+  const path = storagePathFromReference(reference);
+
+  if (path) {
+    const { data, error } = await supabase.storage.from("donations").download(path);
+    if (!error && data) {
+      const contentType = data.type || "image/jpeg";
+      return new File([data], `donor-photo.${extFromContentType(contentType)}`, {
+        type: contentType,
+      });
+    }
+  }
+
+  if (/^https?:\/\//i.test(reference)) return fileFromPublicUrl(reference);
+
+  throw new Error("โหลดรูปผู้มอบเพื่อเจนภาพไม่สำเร็จ");
+}
+
 function createServiceToken(): string {
   const secret = process.env.AI_SERVICE_SECRET;
   if (!secret) throw new Error("AI_SERVICE_SECRET ยังไม่ได้ตั้งค่า");
@@ -121,7 +155,7 @@ export async function processAiPhotoJob(jobId: string) {
     if (!row.final_prompt) throw new Error("ไม่มี prompt สำหรับสร้างภาพ");
 
     const donorFile = row.reference_image_url
-      ? await fileFromPublicUrl(row.reference_image_url)
+      ? await fileFromDonationStorageReference(row.reference_image_url)
       : null;
 
     let externalImage: string | null = null;
