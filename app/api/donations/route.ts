@@ -2,7 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { hasHostSession } from "@/lib/host-session";
 import { getCenterAccess } from "@/lib/iam";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notifyHost, msgNewDonation } from "@/lib/notify";
+import { notifyNameplateError } from "@/lib/notify";
 import { bangkokDateWindow, getCenterDailyDonationLimit, isCenterDailyLimitReached, toPublicDonation } from "@/lib/donation-policy";
 import { sendPrintJob } from "@/lib/printnode";
 import { createHash } from "crypto";
@@ -201,37 +201,51 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to save donation" }, { status: 500 });
     }
 
-    // ส่งพิมพ์ป้าย + แจ้งเตือนเจ้าภาพ แบบเบื้องหลัง (after) — ตอบกลับผู้ร่วมบุญทันที ไม่ต้องรอ PrintNode
+    // ส่งพิมพ์ป้ายแบบเบื้องหลัง (after) — ตอบกลับผู้ร่วมบุญทันที ไม่ต้องรอ PrintNode
+    // นโยบายแจ้งเตือน: ไม่ส่ง SMS หาเจ้าภาพรายคน (เงิน=แอปธนาคารแจ้งแล้ว, รายชื่อ=ดูแดชบอร์ด)
+    // แจ้ง "ศูนย์" เฉพาะตอนป้ายพิมพ์ไม่สำเร็จ (ต้องลงมือตรวจเครื่องพิมพ์/พิมพ์ซ้ำ)
     const donationId = data?.id as string | undefined;
     const printerId = memorialInfo.printer_id ?? null;
     const memName = memorialInfo.name ?? "งานศพ";
-    const hostPhone = memorialInfo.host_phone ?? null;
+    const centerId = memorialInfo.center_id ?? null;
 
     after(async () => {
-      if (printerId && donationId) {
-        try {
-          const printResult = await sendPrintJob({
-            printerId,
-            donorName: donor_name,
-            donorTitle: donor_title ?? "",
-            amount,
-            memorialName: memName,
-            donationId,
-          });
-          await (supabase.from("donations") as any)
-            .update({ nameplate_status: printResult.ok ? "queued" : "error" })
-            .eq("id", donationId);
-        } catch {
-          /* best-effort — ป้าย error จะกด "พิมพ์ซ้ำ" ได้ */
-        }
-      }
+      if (!printerId || !donationId) return;
+
+      let printOk = false;
       try {
-        await notifyHost({
-          hostPhone,
-          message: msgNewDonation({ memorialName: memName, donorName: donor_name, donorTitle: donor_title, amount, hostId: memorial_id }),
+        const printResult = await sendPrintJob({
+          printerId,
+          donorName: donor_name,
+          donorTitle: donor_title ?? "",
+          amount,
+          memorialName: memName,
+          donationId,
         });
+        printOk = printResult.ok;
+        await (supabase.from("donations") as any)
+          .update({ nameplate_status: printResult.ok ? "queued" : "error" })
+          .eq("id", donationId);
       } catch {
-        /* best-effort */
+        /* best-effort — ป้าย error จะกด "พิมพ์ซ้ำ" ได้ */
+      }
+
+      // C: ป้ายพิมพ์ไม่สำเร็จ → แจ้งศูนย์ให้ตรวจเครื่องพิมพ์
+      if (!printOk && centerId) {
+        try {
+          const { data: center } = await supabase
+            .from("centers")
+            .select("phone")
+            .eq("id", centerId)
+            .single();
+          await notifyNameplateError({
+            centerPhone: (center as { phone?: string | null } | null)?.phone ?? null,
+            memorialName: memName,
+            donorName: donor_name,
+          });
+        } catch {
+          /* best-effort */
+        }
       }
     });
 
