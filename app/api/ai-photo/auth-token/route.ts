@@ -85,35 +85,7 @@ export async function POST(req: NextRequest) {
 
   const supabase = createAdminClient();
 
-  // Credit check (only when donationId provided)
-  if (donationId) {
-    const { data: credit } = await supabase.from("ai_photo_credits")
-      .select("free_quota, used_count")
-      .eq("donation_id", donationId)
-      .single();
-
-    const c = credit as { free_quota: number; used_count: number } | null;
-    if (c && c.used_count >= c.free_quota) {
-      const { data: prev } = await supabase.from("ai_photo_requests")
-        .select("generated_image_url")
-        .eq("donation_id", donationId)
-        .eq("status", "completed")
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
-
-      return NextResponse.json(
-        {
-          error: "คุณใช้สิทธิ์สร้างภาพที่ระลึกฟรีแล้ว 1 รูป",
-          used: true,
-          existingImageUrl:
-            (prev as { generated_image_url?: string } | null)
-              ?.generated_image_url ?? null,
-        },
-        { status: 429 }
-      );
-    }
-  }
+  // ไม่จำกัดจำนวนภาพต่อรายการร่วมบุญแล้ว — สร้างได้ไม่จำกัด
 
   // Build prompt server-side (fast, no AI call)
   const template = getAiPhotoTemplate(templateKey);

@@ -22,29 +22,5 @@ export async function POST(req: NextRequest) {
     completed_at: new Date().toISOString(),
   });
 
-  // Update credit (only when donationId provided)
-  if (donationId) {
-    const { data: existing } = await supabase.from("ai_photo_credits")
-      .select("used_count")
-      .eq("donation_id", donationId)
-      .single();
-
-    if (existing) {
-      await supabase.from("ai_photo_credits")
-        .update({
-          used_count:
-            (existing as { used_count: number }).used_count + 1,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("donation_id", donationId);
-    } else {
-      await supabase.from("ai_photo_credits").insert({
-        donation_id: donationId,
-        free_quota: 1,
-        used_count: 1,
-      });
-    }
-  }
-
   return NextResponse.json({ saved: true });
 }

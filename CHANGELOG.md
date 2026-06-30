@@ -241,3 +241,9 @@
 - `lib/ai-photo-jobs.ts`: เพิ่ม `fileFromDonationStorageReference` → `storage.download(path)` ผ่าน service role (อ่าน private bucket ได้) + `storagePathFromReference` รองรับ row เก่าที่เป็น URL เต็ม (backward-compat)
 - `lib/compress-image.ts`: เพิ่ม `createImageBitmap` + แปลง HEIC/HEIF (`heic2any`) + `fallbackToOriginalOnDecodeError` แก้ client "The source image cannot be decoded." · `isDecodeFailure` รองรับ `DOMException` (EncodingError) ที่บางเบราว์เซอร์ไม่นับเป็น instanceof Error
 - `components/ai-photo/AiPhotoSectionV2.tsx`: ใช้ `compressImage(..., fallbackToOriginalOnDecodeError: true)` ตอนแนบรูปผู้มอบ
+
+### แก้ AI photo ภาพแตก (ต่อยอดจาก fix บน main) + ปลดลิมิตฟรี 1 ภาพ — 2026-06-30
+- fix บน main (`9c751ab`) แก้ "อ่านรูปผู้มอบจาก private bucket" + decode ฝั่ง client แล้ว แต่ **ยังไม่ได้ย้ายที่เก็บภาพที่สร้าง** → ภาพยังแตก
+- `lib/ai-photo-jobs.ts` `uploadGeneratedImage`: ย้ายที่เก็บภาพที่สร้าง `donations` (private) → **`memorials` (public)** + ถอด data URL (base64) ตรง ๆ แทน `fetch(dataUrl)` + กันไฟล์ 0 ไบต์ (รูปอ้างอิงยังอ่านจาก donations ผ่าน service role ตามเดิมของ main)
+- ถอดระบบจำกัด "ฟรี 1 ภาพ/รายการ" ออกทั้งระบบ: เอา credit check (429) ออกจาก `auth-token`/`generate` · เลิกเขียน `ai_photo_credits` ใน `generate`/`save`/`ai-photo-jobs` · `jobs` คืนงานเดิมเฉพาะ pending/processing · client ลบ UI/ข้อความ credit + ปุ่มเป็น "สร้างภาพใหม่อีกครั้ง"
+- ลบไฟล์ตาย `components/ai-photo/AiPhotoSection.tsx` + `app/api/ai-photo/credits/route.ts`

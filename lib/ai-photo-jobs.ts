@@ -19,21 +19,36 @@ function extFromContentType(contentType: string | null) {
   return "jpg";
 }
 
+// เก็บภาพที่สร้างเสร็จไว้ใน bucket "memorials" (public) เพื่อให้ <img> แสดงผลได้จริง
+// bucket "donations" เป็น private (migration 20260615) → getPublicUrl ใช้ไม่ได้ ภาพแตก
 async function uploadGeneratedImage(jobId: string, imageUrl: string) {
   const supabase = createAdminClient();
-  const response = await fetch(imageUrl);
-  if (!response.ok) throw new Error("โหลดภาพที่สร้างสำเร็จเพื่อบันทึกไม่สำเร็จ");
 
-  const contentType = response.headers.get("content-type") || "image/jpeg";
-  const bytes = await response.arrayBuffer();
+  let contentType: string;
+  let bytes: Buffer;
+  if (imageUrl.startsWith("data:")) {
+    // OpenAI gpt-image คืนภาพเป็น data URL (base64) — ถอดรหัสตรง ๆ
+    // (fetch() ของ data URL บน runtime ฝั่ง server ไม่เสถียร อาจได้ไฟล์ว่าง → ภาพแตก)
+    const match = imageUrl.match(/^data:([^;,]+)?(?:;base64)?,([\s\S]*)$/);
+    if (!match) throw new Error("รูปแบบภาพ (data URL) ไม่ถูกต้อง");
+    contentType = match[1] || "image/jpeg";
+    bytes = Buffer.from(match[2], "base64");
+  } else {
+    const response = await fetch(imageUrl);
+    if (!response.ok) throw new Error("โหลดภาพที่สร้างสำเร็จเพื่อบันทึกไม่สำเร็จ");
+    contentType = response.headers.get("content-type") || "image/jpeg";
+    bytes = Buffer.from(await response.arrayBuffer());
+  }
+
+  if (bytes.length === 0) throw new Error("ภาพที่สร้างมีขนาด 0 ไบต์");
+
   const path = `ai-photo/generated/${jobId}.${extFromContentType(contentType)}`;
-
   const { data, error } = await supabase.storage
-    .from("donations")
+    .from("memorials")
     .upload(path, bytes, { contentType, upsert: true });
   if (error) throw error;
 
-  return supabase.storage.from("donations").getPublicUrl(data.path).data.publicUrl;
+  return supabase.storage.from("memorials").getPublicUrl(data.path).data.publicUrl;
 }
 
 async function fileFromPublicUrl(url: string) {
@@ -113,29 +128,6 @@ async function generateViaExternalService(prompt: string, donorFile: File | null
   return image;
 }
 
-async function markCreditUsed(donationId: string) {
-  const supabase = createAdminClient();
-  const { data: existing } = await supabase.from("ai_photo_credits")
-    .select("used_count")
-    .eq("donation_id", donationId)
-    .single();
-
-  if (existing) {
-    await supabase.from("ai_photo_credits")
-      .update({
-        used_count: Math.max(1, (existing as { used_count: number }).used_count),
-        updated_at: new Date().toISOString(),
-      })
-      .eq("donation_id", donationId);
-  } else {
-    await supabase.from("ai_photo_credits").insert({
-      donation_id: donationId,
-      free_quota: 1,
-      used_count: 1,
-    });
-  }
-}
-
 export async function processAiPhotoJob(jobId: string) {
   const supabase = createAdminClient();
 
@@ -187,8 +179,6 @@ export async function processAiPhotoJob(jobId: string) {
         error_message: null,
       })
       .eq("id", jobId);
-
-    if (row.donation_id) await markCreditUsed(row.donation_id);
   } catch (error) {
     const message = error instanceof Error ? error.message : "สร้างภาพไม่สำเร็จ";
     await supabase.from("ai_photo_requests")
