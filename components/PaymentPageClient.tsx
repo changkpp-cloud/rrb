@@ -37,7 +37,7 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
   const [slipFile, setSlipFile] = useState<File | null>(null);
   const [slipPreview, setSlipPreview] = useState<string | null>(null);
   const [amount, setAmount] = useState("");
-  const [copied, setCopied] = useState(false);
+  const [copiedField, setCopiedField] = useState<"promptpay" | "account" | null>(null);
   const [savedQR, setSavedQR] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -135,11 +135,13 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
     setError("");
   }
 
-  function copyPromptPay() {
-    const text = promptpayPhone ?? memorial.host_bank_account_number ?? memorial.bank_account_number ?? "";
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const bankAccountNumber = memorial.host_bank_account_number || memorial.bank_account_number || "";
+
+  function copyValue(value: string, field: "promptpay" | "account") {
+    if (!value) return;
+    navigator.clipboard.writeText(value);
+    setCopiedField(field);
+    setTimeout(() => setCopiedField(null), 2000);
   }
 
   async function saveQR() {
@@ -279,10 +281,10 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                       <p className="text-base font-bold text-gold-800 tracking-widest">{promptpayPhone}</p>
                     </div>
                   )}
-                  {!promptpayPhone && (
+                  {bankAccountNumber && (
                     <div>
                       <p className="text-[10px] text-gold-500 font-medium">เลขบัญชี</p>
-                      <p className="text-base font-bold text-gold-800 tracking-widest">{memorial.host_bank_account_number || memorial.bank_account_number}</p>
+                      <p className="text-base font-bold text-gold-800 tracking-widest">{bankAccountNumber}</p>
                     </div>
                   )}
                 </div>
@@ -296,10 +298,18 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     {savedQR ? "บันทึกแล้ว" : "บันทึก QR"}
                   </button>
                 )}
-                <button type="button" onClick={copyPromptPay} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  {copied ? "คัดลอกแล้ว" : "คัดลอกเลขพร้อมเพย์"}
-                </button>
+                {promptpayPhone && (
+                  <button type="button" onClick={() => copyValue(promptpayPhone, "promptpay")} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
+                    {copiedField === "promptpay" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedField === "promptpay" ? "คัดลอกแล้ว" : "คัดลอกเลขพร้อมเพย์"}
+                  </button>
+                )}
+                {bankAccountNumber && (
+                  <button type="button" onClick={() => copyValue(bankAccountNumber, "account")} className="flex items-center gap-1.5 text-xs px-3 py-2 rounded-full border border-gold-200 bg-white text-gold-700 hover:bg-cream-50">
+                    {copiedField === "account" ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copiedField === "account" ? "คัดลอกแล้ว" : "คัดลอกเลขบัญชี"}
+                  </button>
+                )}
               </div>
 
               {/* Bank deep links */}

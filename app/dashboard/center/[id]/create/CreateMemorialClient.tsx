@@ -570,7 +570,7 @@ export default function CreateMemorialClient({ centerId, embedded = false, cente
               </Field>
 
               <div className="grid grid-cols-2 gap-3">
-                <Field label="เบอร์โทรศัพท์ (รับ OTP)" required>
+                <Field label="เบอร์ (รับ OTP + เลขพร้อมเพย์)" required>
                   <input type="tel" value={hostPhone} onChange={e => setHostPhone(e.target.value)} required
                     placeholder="081-234-5678" className={inputClass} />
                 </Field>
