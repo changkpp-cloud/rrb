@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getCenterAccess, canEditCenterWork } from "@/lib/iam";
+import { logAudit, getClientIp } from "@/lib/audit";
 import type { Database } from "@/lib/supabase/types";
 
 type MemorialUpdate = Database["public"]["Tables"]["memorials"]["Update"];
@@ -29,7 +30,7 @@ export async function POST(
   const supabase = createAdminClient();
   const { data: memorial, error: fetchErr } = await supabase
     .from("memorials")
-    .select("id, center_id, host_otp_code, host_otp_expires_at")
+    .select("id, center_id, host_otp_code, host_otp_expires_at, host_phone, host_bank_name, host_bank_account_number, host_bank_account_name")
     .eq("id", id)
     .single();
   if (fetchErr || !memorial) return NextResponse.json({ error: "ไม่พบงานศพ" }, { status: 404 });
@@ -39,7 +40,14 @@ export async function POST(
     return NextResponse.json({ error: "ไม่มีสิทธิ์ยืนยันบัญชีงานนี้" }, { status: 403 });
   }
 
-  const m = memorial as { host_otp_code: string | null; host_otp_expires_at: string | null };
+  const m = memorial as {
+    host_otp_code: string | null;
+    host_otp_expires_at: string | null;
+    host_phone: string | null;
+    host_bank_name: string | null;
+    host_bank_account_number: string | null;
+    host_bank_account_name: string | null;
+  };
   if (!m.host_otp_code) {
     return NextResponse.json({ error: "ยังไม่ได้ขอรหัส OTP กรุณากด \"ส่งรหัส\" ก่อน" }, { status: 400 });
   }
@@ -64,6 +72,20 @@ export async function POST(
     .update(update)
     .eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+
+  await logAudit({
+    action: "verify_host_bank",
+    recordId: id,
+    userId: access.user?.display_name ?? access.role ?? null,
+    oldValue: {
+      host_phone: m.host_phone,
+      host_bank_name: m.host_bank_name,
+      host_bank_account_number: m.host_bank_account_number,
+      host_bank_account_name: m.host_bank_account_name,
+    },
+    newValue: { ...update, role: access.role },
+    ipAddress: getClientIp(req),
+  });
 
   return NextResponse.json({ success: true });
 }
