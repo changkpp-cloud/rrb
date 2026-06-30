@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function SiteFooter() {
   return (
     <footer className="shrink-0 text-center pb-6 pt-2 px-4">
@@ -13,6 +15,13 @@ export default function SiteFooter() {
       >
         ลดขยะต้นทาง สร้างสวัสดิการผู้วายชนม์
       </p>
+      <Link
+        href="/privacy"
+        className="mt-2 inline-block text-gold-500 underline underline-offset-2 hover:text-gold-700"
+        style={{ fontSize: "11px" }}
+      >
+        นโยบายความเป็นส่วนตัว
+      </Link>
     </footer>
   );
 }
