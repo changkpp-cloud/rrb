@@ -267,3 +267,7 @@
   - ไม่ตั้ง → fallback โหมดทดสอบเดิม (คืน devCode โชว์บนจอ + log) ไม่พัง
 - UI ไม่ต้องแก้ — กล่อง "โหมดทดสอบ" ผูกกับ devCode อยู่แล้ว (โหมดจริงไม่มี devCode → กล่องไม่ขึ้น)
 - เอกสาร: เพิ่ม env ใน CLAUDE.md + ปรับ note OTP จาก MOCK → ส่งจริงผ่าน ThaiBulkSMS
+
+### คู่มือ + .env.example สำหรับเปิดใช้ SMS OTP — 2026-06-30
+- เพิ่ม `docs/setup-sms-otp.md` — ขั้นตอนสมัคร ThaiBulkSMS → เติมเครดิต → จดทะเบียน Sender → เอา key → ใส่ Vercel env (พร้อมวิธีทดสอบ/แก้ปัญหา)
+- เพิ่มตัวแปร `THAIBULKSMS_API_KEY/SECRET/SENDER` ใน `.env.local.example`
