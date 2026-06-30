@@ -314,7 +314,8 @@ export default function PaymentPageClient({ memorial, basePath = "", promptpayPh
                     เปิดในเบราว์เซอร์เพื่อกดเข้าแอปธนาคาร
                   </button>
                 )}
-                <p className="text-[10px] text-gold-400 mb-2 text-center">เปิดแอปธนาคารเพื่อโอนเงิน</p>
+                <p className="text-[10px] text-gold-400 mb-1 text-center">เปิดแอปธนาคารเพื่อโอนเงิน</p>
+                <p className="text-[10px] text-gold-400 mb-2 text-center">โอนเสร็จ กดย้อนกลับออกจากแอพธนาคาร กลับมาหน้านี้อัตโนมัติ</p>
                 <div className="grid grid-cols-6 gap-1.5">
                   {BANK_LINKS.map(b => (
                     <a
