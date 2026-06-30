@@ -1,86 +1,30 @@
 /**
- * Notification utility — SMS via Twilio + LINE Notify (optional)
+ * แจ้งเตือนเจ้าภาพผ่าน SMS (ThaiBulkSMS — ตัวเดียวกับ OTP)
  *
- * Required env vars (at least one channel must be configured):
- *   TWILIO_ACCOUNT_SID    — Twilio account SID
- *   TWILIO_AUTH_TOKEN     — Twilio auth token
- *   TWILIO_FROM_NUMBER    — Twilio sender number e.g. +15005550006
+ * - ส่งจริงเมื่อตั้ง env THAIBULKSMS_* ครบ (ดู lib/sms.ts) · ถ้าไม่ตั้ง = ไม่ส่ง (no-op) ไม่พัง
+ * - best-effort เสมอ: ไม่ throw ออกไปขัดจังหวะ flow การร่วมบุญ
  *
- * Optional:
- *   LINE_NOTIFY_TOKEN     — LINE Notify group/personal token
- *   NEXT_PUBLIC_SITE_URL  — base URL for dashboard links in messages
+ * หมายเหตุ: เดิมใช้ Twilio + LINE Notify — LINE Notify ปิดบริการแล้ว (มี.ค. 2025)
+ * และ Twilio เป็นคนละเจ้ากับ OTP จึงรวมมาที่ ThaiBulkSMS เจ้าเดียว
  */
 
-function formatThaiPhone(raw: string): string {
-  const cleaned = raw.replace(/[-\s()]/g, "");
-  if (cleaned.startsWith("+66")) return cleaned;
-  if (cleaned.startsWith("0")) return "+66" + cleaned.slice(1);
-  return "+66" + cleaned;
-}
+import { sendSms } from "@/lib/sms";
 
-async function sendTwilioSMS(to: string, body: string): Promise<void> {
-  const sid  = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from  = process.env.TWILIO_FROM_NUMBER;
-  if (!sid || !token || !from) return;
-
-  const url  = `https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`;
-  const auth = Buffer.from(`${sid}:${token}`).toString("base64");
-  const form = new URLSearchParams({ To: to, From: from, Body: body });
-
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { Authorization: `Basic ${auth}`, "Content-Type": "application/x-www-form-urlencoded" },
-    body: form.toString(),
-  });
-  if (!res.ok) {
-    const d = await res.json().catch(() => ({}));
-    throw new Error((d as { message?: string }).message ?? `Twilio ${res.status}`);
-  }
-}
-
-async function sendLineNotify(message: string): Promise<void> {
-  const token = process.env.LINE_NOTIFY_TOKEN;
-  if (!token) return;
-
-  const form = new URLSearchParams({ message });
-  const res = await fetch("https://notify-api.line.me/api/notify", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/x-www-form-urlencoded",
-    },
-    body: form.toString(),
-  });
-  if (!res.ok) throw new Error(`LINE Notify ${res.status}`);
-}
-
-/** Send to host phone (SMS) and/or LINE Notify group — best-effort, never throws */
+/** ส่ง SMS แจ้งเตือนไปเบอร์เจ้าภาพ — best-effort, ไม่ throw */
 export async function notifyHost(params: {
   hostPhone?: string | null;
   message: string;
 }): Promise<void> {
   const { hostPhone, message } = params;
-  const tasks: Promise<void>[] = [];
-
-  if (hostPhone) {
-    tasks.push(
-      sendTwilioSMS(formatThaiPhone(hostPhone), message).catch(e =>
-        console.warn("[notify] SMS error:", (e as Error).message)
-      )
-    );
+  if (!hostPhone) return;
+  try {
+    await sendSms(hostPhone, message);
+  } catch (e) {
+    console.warn("[notify] SMS error:", (e as Error).message);
   }
-
-  tasks.push(
-    sendLineNotify(message).catch(e =>
-      console.warn("[notify] LINE Notify error:", (e as Error).message)
-    )
-  );
-
-  await Promise.allSettled(tasks);
 }
 
-/** Message: new donation pending (sent right after donor submits) */
+/** ข้อความ: มีผู้ร่วมบุญใหม่ (donation auto-confirm + ป้ายชื่อพิมพ์อัตโนมัติ) */
 export function msgNewDonation(params: {
   memorialName: string;
   donorName: string;
@@ -90,35 +34,12 @@ export function msgNewDonation(params: {
 }): string {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const link = `${base}/dashboard/host/${params.hostId}`;
-  const titleLine = params.donorTitle ? `\n   ${params.donorTitle}` : "";
+  const donor = [params.donorTitle, params.donorName].filter(Boolean).join(" ");
   return [
-    `🌸 หรีดร่วมบุญ`,
-    `มีผู้ร่วมบุญใหม่! — ${params.memorialName}`,
-    ``,
-    `👤 ${params.donorName}${titleLine}`,
-    `💰 ยอด ${params.amount.toLocaleString("th-TH")} บาท`,
-    `📋 รอตรวจสลิป`,
-    ``,
-    `🖨️ ตรวจสอบเครื่องพิมพ์ป้ายชื่อ`,
-    `🔗 ${link}`,
-  ].join("\n");
-}
-
-/** Message: donation confirmed by center */
-export function msgDonationConfirmed(params: {
-  memorialName: string;
-  donorName: string;
-  amount: number;
-  hostId: string;
-}): string {
-  const base = process.env.NEXT_PUBLIC_SITE_URL ?? "";
-  const link = `${base}/dashboard/host/${params.hostId}`;
-  return [
-    `✅ ยืนยันการร่วมบุญแล้ว`,
-    `งาน: ${params.memorialName}`,
-    `👤 ${params.donorName} — ${params.amount.toLocaleString("th-TH")} บาท`,
-    ``,
-    `🖨️ ป้ายชื่อพร้อมพิมพ์ — ตรวจสอบเครื่องพิมพ์`,
-    `🔗 ${link}`,
+    `🌸 หรีดร่วมบุญ: มีผู้ร่วมบุญใหม่`,
+    `งาน ${params.memorialName}`,
+    `${donor} — ${params.amount.toLocaleString("th-TH")} บาท`,
+    `เข้าบัญชีเจ้าภาพโดยตรง · ป้ายชื่อกำลังพิมพ์`,
+    `ดูรายการ: ${link}`,
   ].join("\n");
 }
