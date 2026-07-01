@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useEffect, useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { useRef, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Camera, Download, FileText, Image as ImageIcon } from "lucide-react";
@@ -300,12 +300,31 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                   <div style={{ flex: 1, height: Math.round(0.5*s), minWidth: Math.round(20*s), background: "rgba(201,160,80,0.35)" }} />
                 </div>
                 {/* Donor name — large */}
-                <p style={{ fontWeight: 800, color: "#4a1f08", fontSize: Math.round(30*s), lineHeight: 1.15, margin: 0, textAlign: "center", letterSpacing: "-0.01em" }}>
-                  {name || "ชื่อ หรือ องค์กร"}
-                </p>
+                <SingleLineText
+                  text={name || "ชื่อ หรือ องค์กร"}
+                  maxFontSize={Math.round(30*s)}
+                  minFontSize={Math.round(13*s)}
+                  style={{
+                    fontWeight: 800,
+                    color: "#4a1f08",
+                    lineHeight: 1.15,
+                    margin: 0,
+                    letterSpacing: "-0.01em",
+                  }}
+                />
                 {/* Title */}
                 {title && (
-                  <p style={{ fontSize: Math.round(13*s), color: "#78350f", fontWeight: 600, margin: `${Math.round(2*s)}px 0 0`, textAlign: "center", lineHeight: 1.3 }}>{title}</p>
+                  <SingleLineText
+                    text={title}
+                    maxFontSize={Math.round(13*s)}
+                    minFontSize={Math.round(8*s)}
+                    style={{
+                      color: "#78350f",
+                      fontWeight: 600,
+                      margin: `${Math.round(2*s)}px 0 0`,
+                      lineHeight: 1.3,
+                    }}
+                  />
                 )}
                 {/* Action label */}
                 <p style={{ fontSize: Math.round(11*s), color: "#92400e", textAlign: "center", lineHeight: 1.5, margin: `${Math.round(3*s)}px 0 0` }}>
@@ -359,7 +378,17 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
                 </div>
 
                 {/* Deceased info */}
-                <p style={{ fontWeight: 700, color: "#4a1f08", fontSize: Math.round(19*s), lineHeight: 1.25, margin: 0, textAlign: "center" }}>{deceasedName}</p>
+                <SingleLineText
+                  text={deceasedName}
+                  maxFontSize={Math.round(19*s)}
+                  minFontSize={Math.round(10*s)}
+                  style={{
+                    fontWeight: 700,
+                    color: "#4a1f08",
+                    lineHeight: 1.25,
+                    margin: 0,
+                  }}
+                />
                 {(birthDate || deathDate || memorial.age > 0) && (
                   <p style={{ fontSize: Math.round(9.2*s), color: "#92400e", margin: `${Math.round(3*s)}px 0 0`, lineHeight: 1.35, textAlign: "center", whiteSpace: "nowrap", maxWidth: "100%" }}>
                     {birthDate && <>ชาตะ {birthDate}{(deathDate || memorial.age > 0) ? " · " : ""}</>}
@@ -416,6 +445,60 @@ export default function ECardClient({ memorial, basePath = "" }: { memorial: Mem
       </main>
     </div>
     </>
+  );
+}
+
+function SingleLineText({
+  text,
+  maxFontSize,
+  minFontSize,
+  style,
+}: {
+  text: string;
+  maxFontSize: number;
+  minFontSize: number;
+  style?: CSSProperties;
+}) {
+  const textRef = useRef<HTMLParagraphElement>(null);
+
+  useLayoutEffect(() => {
+    const el = textRef.current;
+    const parent = el?.parentElement;
+    if (!el || !parent) return;
+
+    const fit = () => {
+      el.style.fontSize = `${maxFontSize}px`;
+      el.style.width = "max-content";
+      const textWidth = el.getBoundingClientRect().width;
+      const available = parent.getBoundingClientRect().width;
+      el.style.width = "100%";
+
+      if (textWidth <= 0 || available <= 0) return;
+      const nextSize = Math.max(minFontSize, Math.min(maxFontSize, (available / textWidth) * maxFontSize));
+      el.style.fontSize = `${nextSize}px`;
+    };
+
+    fit();
+    const observer = new ResizeObserver(fit);
+    observer.observe(parent);
+    return () => observer.disconnect();
+  }, [maxFontSize, minFontSize, text]);
+
+  return (
+    <p
+      ref={textRef}
+      style={{
+        ...style,
+        width: "100%",
+        maxWidth: "100%",
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "clip",
+      }}
+    >
+      {text}
+    </p>
   );
 }
 
