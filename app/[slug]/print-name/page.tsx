@@ -25,7 +25,6 @@ function PrintNameInner() {
   const [title, setTitle] = useState(params.get("title") ?? "");
   const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [previewSide, setPreviewSide] = useState<"front" | "back">("front");
   const [sending, setSending] = useState(false);
   const [printSuccess, setPrintSuccess] = useState(false);
   const locked = !memorial_id;
@@ -119,7 +118,7 @@ function PrintNameInner() {
               <p className="text-right text-[11px] font-medium text-gold-400">{message.length}/160</p>
             </div>
           </div>
-          <button onClick={() => { setPreviewSide("front"); setShowModal(true); }} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
+          <button onClick={() => setShowModal(true)} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">
             ตรวจดูป้ายก่อนยืนยัน
           </button>
           <div className="h-20" />
@@ -130,36 +129,9 @@ function PrintNameInner() {
         <div className="fixed inset-0 z-50 flex flex-col items-center justify-center px-4" style={{ background: "rgba(0,0,0,0.72)" }} onClick={() => setShowModal(false)}>
           <div className="w-full max-w-lg space-y-5" onClick={(e) => e.stopPropagation()}>
             <p className="text-center text-white/80 text-sm tracking-wide">ตัวอย่างป้ายที่จะพิมพ์</p>
-            {previewSide === "front" ? (
+            <div className="space-y-3">
               <SignPreview name={name} title={title} />
-            ) : (
               <SignBackPreview message={message} />
-            )}
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setPreviewSide("front")}
-                disabled={sending}
-                className={`py-3 rounded-2xl border text-sm font-semibold active:scale-[0.98] transition-all disabled:opacity-40 ${
-                  previewSide === "front"
-                    ? "border-white bg-white text-gold-900"
-                    : "border-white/40 bg-white/10 text-white"
-                }`}
-              >
-                ดูหน้าป้าย
-              </button>
-              <button
-                type="button"
-                onClick={() => setPreviewSide("back")}
-                disabled={sending}
-                className={`py-3 rounded-2xl border text-sm font-semibold active:scale-[0.98] transition-all disabled:opacity-40 ${
-                  previewSide === "back"
-                    ? "border-white bg-white text-gold-900"
-                    : "border-white/40 bg-white/10 text-white"
-                }`}
-              >
-                กดดูหลังป้าย
-              </button>
             </div>
             <div className="flex gap-3">
               <button onClick={() => setShowModal(false)} disabled={sending} className="flex-1 py-3.5 rounded-2xl border-2 border-white/40 bg-white/10 text-white font-semibold text-sm active:scale-[0.98] transition-all disabled:opacity-40">แก้ไขข้อความ</button>
