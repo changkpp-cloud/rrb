@@ -1,17 +1,19 @@
 "use client";
 
 import { useRef, useEffect, useState } from "react";
-import WreathBoard from "./WreathBoard";
+import DynamicVirtualBoard, { type BoardDonation } from "./DynamicVirtualBoard";
 import PaymentSection from "./PaymentSection";
 
 export default function HomeScrollClient({
   basePath = "",
   boardImageUrl,
   boardCaption,
+  boardDonations = [],
 }: {
   basePath?: string;
   boardImageUrl?: string | null;
   boardCaption?: string | null;
+  boardDonations?: BoardDonation[];
 }) {
   const wreathRef = useRef<HTMLDivElement>(null);
   const [paymentVisible, setPaymentVisible] = useState(false);
@@ -32,7 +34,11 @@ export default function HomeScrollClient({
   return (
     <>
       <div ref={wreathRef}>
-        <WreathBoard imageUrl={boardImageUrl} caption={boardCaption} />
+        <DynamicVirtualBoard
+          boardImageUrl={boardImageUrl}
+          boardCaption={boardCaption}
+          donations={boardDonations}
+        />
       </div>
       <div
         style={{

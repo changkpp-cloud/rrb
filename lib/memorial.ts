@@ -1,5 +1,5 @@
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Center, Memorial } from "@/lib/supabase/types";
+import type { Center, Donation, Memorial } from "@/lib/supabase/types";
 
 export async function getMemorial(): Promise<Memorial | null> {
   try {
@@ -72,6 +72,25 @@ export async function getMemorialBySlug(slug: string): Promise<Memorial | null> 
     return (data as Memorial | null);
   } catch {
     return null;
+  }
+}
+
+export type MemorialBoardDonation = Pick<Donation, "id" | "donor_name" | "donor_title" | "message">;
+
+export async function getMemorialBoardDonations(memorialId: string): Promise<MemorialBoardDonation[]> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("donations")
+      .select("id, donor_name, donor_title, message")
+      .eq("memorial_id", memorialId)
+      .eq("status", "confirmed")
+      .order("confirmed_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(12);
+    return (data as MemorialBoardDonation[] | null) ?? [];
+  } catch {
+    return [];
   }
 }
 

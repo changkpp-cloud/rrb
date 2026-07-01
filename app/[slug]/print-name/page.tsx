@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useRef, useEffect } from "react";
 import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { Check, User, Briefcase, Lock } from "lucide-react";
+import { Check, User, Briefcase, Lock, MessageCircleHeart } from "lucide-react";
 
 export default function SlugPrintNamePage() {
   return (
@@ -23,6 +23,7 @@ function PrintNameInner() {
   const duplicate = params.get("duplicate") ?? "";
   const [name, setName] = useState(params.get("name") ?? "");
   const [title, setTitle] = useState(params.get("title") ?? "");
+  const [message, setMessage] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [sending, setSending] = useState(false);
   const [printSuccess, setPrintSuccess] = useState(false);
@@ -31,6 +32,7 @@ function PrintNameInner() {
   async function handleSend() {
     const trimmedName = name.trim();
     const trimmedTitle = title.trim();
+    const trimmedMessage = message.trim();
     setSending(true);
 
     // Create donation now with the real name (single INSERT, no PATCH needed)
@@ -47,6 +49,7 @@ function PrintNameInner() {
           slip_duplicate_warning: duplicate === "true",
         };
         if (trimmedTitle) body.donor_title = trimmedTitle;
+        if (trimmedMessage) body.message = trimmedMessage;
         const res = await fetch("/api/donations", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -96,6 +99,23 @@ function PrintNameInner() {
                 <span className="text-sm font-semibold">ตำแหน่ง หรือ ข้อความแสดงอาลัย</span>
               </div>
               <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} disabled={locked} className="w-full px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed" />
+            </div>
+            <div className="h-px bg-gold-200/50" />
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2 text-gold-700">
+                <MessageCircleHeart className="w-4 h-4" />
+                <span className="text-sm font-semibold">ข้อความหลังป้าย</span>
+              </div>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                disabled={locked}
+                maxLength={160}
+                rows={3}
+                placeholder="ฝากข้อความถึงผู้วายชนม์ หรือให้กำลังใจเจ้าภาพ (ไม่บังคับ)"
+                className="w-full resize-none px-4 py-2.5 rounded-xl gold-border bg-white text-gold-800 placeholder-gold-300 focus:outline-none focus:ring-2 focus:ring-gold-400 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+              />
+              <p className="text-right text-[11px] font-medium text-gold-400">{message.length}/160</p>
             </div>
           </div>
           <button onClick={() => setShowModal(true)} disabled={!name.trim() || locked} className="w-full gold-gradient text-white font-semibold py-3.5 rounded-2xl text-base disabled:opacity-40 shadow-md hover:opacity-90 active:scale-[0.98] transition-all">

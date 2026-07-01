@@ -5,7 +5,7 @@ import HideFloatingBack from "@/components/HideFloatingBack";
 import CeremonyInfo from "@/components/CeremonyInfo";
 import HomeScrollClient from "@/components/HomeScrollClient";
 import SiteFooter from "@/components/SiteFooter";
-import { getMemorialBySlug } from "@/lib/memorial";
+import { getMemorialBoardDonations, getMemorialBySlug } from "@/lib/memorial";
 import { getSiteUrl, SITE_SLOGAN } from "@/lib/site-url";
 import { getSiteSettings, HOME_BOARD_IMAGE_KEY, HOME_BOARD_CAPTION_KEY } from "@/lib/site-settings";
 
@@ -98,6 +98,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
 
   const basePath = `/${slug}`;
   const board = await getSiteSettings([HOME_BOARD_IMAGE_KEY, HOME_BOARD_CAPTION_KEY]);
+  const boardDonations = await getMemorialBoardDonations(memorial.id);
 
   return (
     <div className="relative min-h-screen">
@@ -133,6 +134,7 @@ export default async function SlugPage({ params }: { params: Promise<{ slug: str
               basePath={basePath}
               boardImageUrl={board[HOME_BOARD_IMAGE_KEY] ?? null}
               boardCaption={board[HOME_BOARD_CAPTION_KEY] ?? null}
+              boardDonations={boardDonations}
             />
           </div>
         </main>
