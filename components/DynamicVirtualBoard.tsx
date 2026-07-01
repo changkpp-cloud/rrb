@@ -1,6 +1,6 @@
 "use client";
 
-import { Leaf, MessageCircleHeart, X } from "lucide-react";
+import { MessageCircleHeart, X } from "lucide-react";
 import { useMemo, useState } from "react";
 import LotusIcon from "./LotusIcon";
 
@@ -21,45 +21,55 @@ export type BoardDonation = {
 
 const sponsorTags: BoardTag[] = [
   {
-    id: "sponsor-green-partner",
+    id: "sponsor-green-heart",
     kind: "sponsor",
-    name: "Green Partner Co.",
-    frontNote: "ESG Sponsor",
-    backMessage: "สนับสนุนงานอาลัยแบบลดขยะ และเปลี่ยนความระลึกถึงเป็นพื้นที่สีเขียว",
+    name: "บริษัทรักโลก จำกัด",
+    frontNote: "ผู้สนับสนุนสิ่งแวดล้อม",
+    backMessage: "ร่วมสนับสนุนงานอาลัยแบบลดขยะ และเปลี่ยนความระลึกถึงเป็นพื้นที่สีเขียว",
   },
   {
-    id: "sponsor-better-earth",
+    id: "sponsor-forest-fund",
     kind: "sponsor",
-    name: "Better Earth Foundation",
-    frontNote: "CSR Partner",
-    backMessage: "ทุกป้ายเริ่มต้นจากผู้สนับสนุน และจะค่อยๆ ถูกแทนที่ด้วยชื่อผู้ร่วมบุญจริง",
+    name: "กองทุนป่าเขียว",
+    frontNote: "CSR เพื่อชุมชน",
+    backMessage: "ป้ายเริ่มต้นจากผู้สนับสนุน และจะค่อยๆ ถูกแทนที่ด้วยชื่อผู้ร่วมบุญของงานนี้",
   },
   {
     id: "sponsor-zero-waste",
     kind: "sponsor",
-    name: "Zero Waste Network",
+    name: "เครือข่ายไร้ขยะ",
     frontNote: "Green Memorial",
     backMessage: "ร่วมดูแลให้งานอาลัยสงบ สมเกียรติ และลดขยะจากพวงหรีดใช้ครั้งเดียว",
   },
   {
-    id: "sponsor-community",
+    id: "sponsor-better-earth",
     kind: "sponsor",
-    name: "Community ESG Fund",
+    name: "มูลนิธิสิ่งแวดล้อมดี",
     frontNote: "พื้นที่สนับสนุน",
-    backMessage: "ป้ายนี้เป็นพื้นที่เริ่มต้นของบอร์ด และจะถูกแทนที่เมื่อมีผู้ร่วมบุญของงานนี้เพิ่มขึ้น",
+    backMessage: "ร่วมสนับสนุนพื้นที่ป้ายเริ่มต้น เพื่อให้บอร์ดงานอาลัยดูสมบูรณ์ตั้งแต่วันแรก",
   },
 ];
 
 function toBoardTags(donations: BoardDonation[]) {
-  const donorTags: BoardTag[] = donations.map((donation) => ({
-    id: donation.id,
-    kind: "donor",
-    name: donation.donor_name,
-    frontNote: donation.donor_title || "ร่วมบุญแทนพวงหรีด",
-    backMessage: donation.message?.trim() || "ร่วมส่งความอาลัยและกำลังใจถึงเจ้าภาพ",
-  }));
+  const seenNames = new Set<string>();
+  const donorTags: BoardTag[] = [];
 
-  return [...donorTags, ...sponsorTags].slice(0, 8);
+  for (const donation of donations) {
+    const name = donation.donor_name.trim();
+    const normalizedName = name.replace(/\s+/g, "").toLowerCase();
+    if (!name || seenNames.has(normalizedName)) continue;
+
+    seenNames.add(normalizedName);
+    donorTags.push({
+      id: donation.id,
+      kind: "donor",
+      name,
+      frontNote: donation.donor_title || "ร่วมบุญแทนพวงหรีด",
+      backMessage: donation.message?.trim() || "ร่วมส่งความอาลัยและกำลังใจถึงเจ้าภาพ",
+    });
+  }
+
+  return [...sponsorTags, ...donorTags].slice(0, 8);
 }
 
 function WreathNameplate({ tag, compact = false }: { tag: BoardTag; compact?: boolean }) {
@@ -107,6 +117,17 @@ export default function DynamicVirtualBoard({
 }) {
   const boardTags = useMemo(() => toBoardTags(donations), [donations]);
   const [selectedTag, setSelectedTag] = useState<BoardTag | null>(null);
+  const [showBack, setShowBack] = useState(false);
+
+  function openPreview(tag: BoardTag) {
+    setSelectedTag(tag);
+    setShowBack(false);
+  }
+
+  function closePreview() {
+    setSelectedTag(null);
+    setShowBack(false);
+  }
 
   return (
     <section className="px-4 pt-1 pb-2">
@@ -116,11 +137,11 @@ export default function DynamicVirtualBoard({
             className="font-semibold text-gold-500"
             style={{ fontSize: "11px", letterSpacing: "0.08em", textTransform: "uppercase" }}
           >
-            บอร์ดหรีดร่วมบุญ
+            ผู้มอบหรีดร่วมบุญ
           </p>
           <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-gold-400">
             <MessageCircleHeart className="h-3.5 w-3.5" />
-            แตะป้ายเพื่ออ่านข้อความ
+            แตะป้ายเพื่อดูตัวอย่าง
           </span>
         </div>
 
@@ -129,14 +150,11 @@ export default function DynamicVirtualBoard({
             <button
               key={tag.id}
               type="button"
-              onClick={() => setSelectedTag(tag)}
-              className="group text-left transition active:scale-[0.98]"
+              onClick={() => openPreview(tag)}
+              className="text-left transition active:scale-[0.98]"
+              aria-label={`ดูตัวอย่างป้าย ${tag.name}`}
             >
               <WreathNameplate tag={tag} compact />
-              <span className="mt-1 flex items-center justify-center gap-1 text-[9px] font-semibold text-gold-400 opacity-80">
-                {tag.kind === "sponsor" ? <Leaf className="h-3 w-3 text-emerald-600" /> : <LotusIcon className="h-3 w-3" />}
-                {tag.kind === "sponsor" ? "ESG Sponsor" : "ผู้ร่วมบุญ"}
-              </span>
             </button>
           ))}
         </div>
@@ -152,27 +170,55 @@ export default function DynamicVirtualBoard({
 
       {selectedTag && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-gold-950/70 px-4 backdrop-blur-sm"
-          onClick={() => setSelectedTag(null)}
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-gold-950/75 px-4 backdrop-blur-sm"
+          onClick={closePreview}
         >
           <div className="w-full max-w-lg space-y-4" onClick={(event) => event.stopPropagation()}>
-            <div className="flex items-center justify-between px-1">
-              <p className="text-sm font-semibold tracking-wide text-white/80">ตัวอย่างป้ายบนบอร์ด</p>
+            <div className="flex items-center justify-between gap-3 px-1">
+              <p className="text-sm font-semibold tracking-wide text-white/85">ตัวอย่างป้ายบนบอร์ด</p>
               <button
                 type="button"
-                onClick={() => setSelectedTag(null)}
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white"
-                aria-label="ปิด"
+                onClick={closePreview}
+                className="inline-flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-white bg-white px-4 text-sm font-bold text-gold-900 shadow-lg"
+                aria-label="ปิดตัวอย่างป้าย"
               >
                 <X className="h-5 w-5" />
+                ปิด
               </button>
             </div>
 
-            <WreathNameplate tag={selectedTag} />
+            {showBack ? (
+              <div className="rounded-2xl border border-gold-200 bg-cream-50 px-5 py-5 text-center shadow-lg">
+                <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-500">ข้อความหลังป้าย</p>
+                <p className="mt-3 text-base font-semibold leading-7 text-gold-900">{selectedTag.backMessage}</p>
+              </div>
+            ) : (
+              <WreathNameplate tag={selectedTag} />
+            )}
 
-            <div className="rounded-2xl border border-gold-200 bg-cream-50 px-5 py-4 text-center shadow-lg">
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-500">ข้อความหลังป้าย</p>
-              <p className="mt-2 text-base font-semibold leading-7 text-gold-900">{selectedTag.backMessage}</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setShowBack(false)}
+                className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
+                  !showBack
+                    ? "border-gold-300 bg-cream-50 text-gold-900"
+                    : "border-white/30 bg-white/10 text-white"
+                }`}
+              >
+                ด้านหน้าป้าย
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowBack(true)}
+                className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
+                  showBack
+                    ? "border-gold-300 bg-cream-50 text-gold-900"
+                    : "border-white/30 bg-white/10 text-white"
+                }`}
+              >
+                กดดูหลังป้าย
+              </button>
             </div>
           </div>
         </div>
