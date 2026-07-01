@@ -117,16 +117,13 @@ export default function DynamicVirtualBoard({
 }) {
   const boardTags = useMemo(() => toBoardTags(donations), [donations]);
   const [selectedTag, setSelectedTag] = useState<BoardTag | null>(null);
-  const [showBack, setShowBack] = useState(false);
 
   function openPreview(tag: BoardTag) {
     setSelectedTag(tag);
-    setShowBack(false);
   }
 
   function closePreview() {
     setSelectedTag(null);
-    setShowBack(false);
   }
 
   return (
@@ -187,38 +184,12 @@ export default function DynamicVirtualBoard({
               </button>
             </div>
 
-            {showBack ? (
+            <div className="space-y-3">
+              <WreathNameplate tag={selectedTag} />
               <div className="rounded-2xl border border-gold-200 bg-cream-50 px-5 py-5 text-center shadow-lg">
                 <p className="text-xs font-bold uppercase tracking-[0.18em] text-gold-500">ข้อความหลังป้าย</p>
                 <p className="mt-3 text-base font-semibold leading-7 text-gold-900">{selectedTag.backMessage}</p>
               </div>
-            ) : (
-              <WreathNameplate tag={selectedTag} />
-            )}
-
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setShowBack(false)}
-                className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
-                  !showBack
-                    ? "border-gold-300 bg-cream-50 text-gold-900"
-                    : "border-white/30 bg-white/10 text-white"
-                }`}
-              >
-                ด้านหน้าป้าย
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowBack(true)}
-                className={`rounded-2xl border px-4 py-3 text-sm font-bold transition ${
-                  showBack
-                    ? "border-gold-300 bg-cream-50 text-gold-900"
-                    : "border-white/30 bg-white/10 text-white"
-                }`}
-              >
-                กดดูหลังป้าย
-              </button>
             </div>
           </div>
         </div>
