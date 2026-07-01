@@ -3,7 +3,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
 import { CreditCard, Heart, Home, Plus, Tag } from "lucide-react";
 
 function buildNavItems(slug: string) {
@@ -39,49 +38,11 @@ function buildNavItems(slug: string) {
 export default function SmartAppHeader({ slug }: { slug?: string }) {
   const pathname = usePathname();
   const navItems = slug ? buildNavItems(slug) : [];
-  const [hidden, setHidden] = useState(false);
-  const hiddenRef = useRef(false);
-  const tickingRef = useRef(false);
-
-  useEffect(() => {
-    function updateHeaderVisibility() {
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const viewportHeight = window.innerHeight;
-      const documentHeight = document.documentElement.scrollHeight;
-      const atTop = scrollTop <= 8;
-      const atBottom = scrollTop + viewportHeight >= documentHeight - 8;
-      const nextHidden = !(atTop || atBottom);
-
-      if (hiddenRef.current !== nextHidden) {
-        hiddenRef.current = nextHidden;
-        setHidden(nextHidden);
-      }
-
-      tickingRef.current = false;
-    }
-
-    function onScrollOrResize() {
-      if (tickingRef.current) return;
-      tickingRef.current = true;
-      window.requestAnimationFrame(updateHeaderVisibility);
-    }
-
-    updateHeaderVisibility();
-    window.addEventListener("scroll", onScrollOrResize, { passive: true });
-    window.addEventListener("resize", onScrollOrResize);
-
-    return () => {
-      window.removeEventListener("scroll", onScrollOrResize);
-      window.removeEventListener("resize", onScrollOrResize);
-    };
-  }, []);
 
   return (
     <>
       <header
-        className={`fixed inset-x-0 top-0 z-50 border-b border-gold-200 bg-white/95 shadow-[0_8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md transition-transform duration-500 ease-out will-change-transform ${
-          hidden ? "-translate-y-full" : "translate-y-0"
-        }`}
+        className="fixed inset-x-0 top-0 z-50 translate-y-0 border-b border-gold-200 bg-white/95 shadow-[0_8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md"
         style={{ paddingTop: "env(safe-area-inset-top)" }}
       >
         <div className="relative mx-auto flex h-14 w-full max-w-6xl items-center justify-center px-4 sm:h-16 sm:px-6">
@@ -111,9 +72,7 @@ export default function SmartAppHeader({ slug }: { slug?: string }) {
 
       {navItems.length > 0 && (
       <nav
-        className={`fixed inset-x-0 bottom-0 z-50 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md transition-transform duration-500 ease-out will-change-transform ${
-          hidden ? "translate-y-full" : "translate-y-0"
-        }`}
+        className="fixed inset-x-0 bottom-0 z-50 translate-y-0 border-t border-gold-200 bg-white/95 shadow-[0_-8px_28px_rgba(176,120,32,0.10)] backdrop-blur-md"
         style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto w-full max-w-6xl px-1.5 py-1.5 sm:px-6 sm:py-2">
