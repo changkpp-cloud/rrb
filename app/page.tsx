@@ -8,7 +8,8 @@ import {
 } from "lucide-react";
 import LotusIcon from "@/components/LotusIcon";
 import SiteFooter from "@/components/SiteFooter";
-import { getActiveMemorials } from "@/lib/memorial";
+import DynamicVirtualBoard from "@/components/DynamicVirtualBoard";
+import { getActiveMemorials, getRecentBoardDonations } from "@/lib/memorial";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,10 @@ function formatDisplayDate(value: string | null) {
 }
 
 export default async function Home() {
-  const activeMemorials = await getActiveMemorials();
+  const [activeMemorials, boardDonations] = await Promise.all([
+    getActiveMemorials(),
+    getRecentBoardDonations(8),
+  ]);
 
   return (
     <main className="min-h-screen overflow-hidden">
@@ -130,6 +134,21 @@ export default async function Home() {
               </p>
             </div>
           )}
+        </div>
+      </section>
+
+      <section id="board" className="bg-cream-50/60">
+        <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
+          <div className="text-center">
+            <p className="text-sm font-bold uppercase tracking-[0.18em] text-gold-500">Remembrance board</p>
+            <h2 className="mt-2 text-2xl font-bold text-gold-900">บอร์ดรำลึก · ผู้ร่วมบุญ</h2>
+            <p className="mx-auto mt-2 max-w-2xl text-sm leading-7 text-gold-800/85">
+              รายชื่อผู้ร่วมมอบหรีดร่วมบุญจากทุกงาน — แตะที่ป้ายเพื่อดูข้อความอาลัย/กำลังใจที่ฝากไว้
+            </p>
+          </div>
+          <div className="mt-6">
+            <DynamicVirtualBoard donations={boardDonations} />
+          </div>
         </div>
       </section>
 

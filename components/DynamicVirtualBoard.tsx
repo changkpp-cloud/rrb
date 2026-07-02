@@ -69,7 +69,15 @@ function toBoardTags(donations: BoardDonation[]) {
     });
   }
 
-  return [...sponsorTags, ...donorTags].slice(0, 8);
+  // ผู้มอบจริงขึ้นก่อน แล้วเติมช่องที่เหลือด้วยป้ายสปอนเซอร์
+  // → พอผู้มอบจริงเยอะขึ้น ป้ายสปอนเซอร์จะถูกดันออกเองจนหมด
+  const CAP = 8;
+  const result: BoardTag[] = donorTags.slice(0, CAP);
+  for (const sponsor of sponsorTags) {
+    if (result.length >= CAP) break;
+    result.push(sponsor);
+  }
+  return result;
 }
 
 function WreathNameplate({ tag, compact = false }: { tag: BoardTag; compact?: boolean }) {
