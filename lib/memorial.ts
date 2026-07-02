@@ -94,6 +94,23 @@ export async function getMemorialBoardDonations(memorialId: string): Promise<Mem
   }
 }
 
+// บอร์ดรำลึกหน้าแรก — ผู้มอบจริงจากทุกงาน (ล่าสุดก่อน) เอาไว้โชว์บนหน้าแรก
+export async function getRecentBoardDonations(limit = 8): Promise<MemorialBoardDonation[]> {
+  try {
+    const supabase = createAdminClient();
+    const { data } = await supabase
+      .from("donations")
+      .select("id, donor_name, donor_title, message")
+      .eq("status", "confirmed")
+      .order("confirmed_at", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(limit);
+    return (data as MemorialBoardDonation[] | null) ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export function normalizeHostCode(hostCode: string) {
   return hostCode.trim().toUpperCase();
 }
